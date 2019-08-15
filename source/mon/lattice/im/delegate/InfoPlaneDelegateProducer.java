@@ -17,4 +17,6 @@ public interface InfoPlaneDelegateProducer {
 
     void addDataSource(ID id, int timeout) throws InterruptedException, DSNotFoundException;
     
+    void addControllerAgent(ID id, int timeout) throws InterruptedException, ControllerAgentNotFoundException;
+    
 }

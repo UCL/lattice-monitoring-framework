@@ -9,7 +9,6 @@ import java.io.IOException;
 import mon.lattice.core.ID;
 import mon.lattice.core.plane.AbstractAnnounceMessage;
 import mon.lattice.core.EntityType;
-import mon.lattice.core.plane.InfoPlane;
 import mon.lattice.core.plane.MessageType;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -17,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import mon.lattice.core.plane.InfoPlane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.monoid.json.JSONArray;
@@ -31,17 +31,21 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     private final InfoPlane info;
     private final List<ID> dataSources;
     private final List<ID> dataConsumers;
+    private final List<ID> controllerAgents;
     private final Map<ID, Object> pendingDataSources;
     private final Map<ID, Object> pendingDataConsumers;
-    private static Logger LOGGER = LoggerFactory.getLogger(ControlInformationManager.class);
+    private final Map<ID, Object> pendingControllerAgents;
+    private final static Logger LOGGER = LoggerFactory.getLogger(ControlInformationManager.class);
     
     
     public ControlInformationManager(InfoPlane info){
         this.info=info;
         dataSources = Collections.synchronizedList(new ArrayList());
         dataConsumers = Collections.synchronizedList(new ArrayList());
+        controllerAgents = Collections.synchronizedList(new ArrayList());
         pendingDataSources = new ConcurrentHashMap<>();
         pendingDataConsumers = new ConcurrentHashMap<>();
+        pendingControllerAgents = new ConcurrentHashMap<>();
     }
     
     
@@ -95,7 +99,27 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         }
     }
     
-    
+
+    @Override
+    public void addControllerAgent(ID id, int timeout) throws InterruptedException, ControllerAgentNotFoundException {
+        Object monitor = new Object(); 
+        synchronized(monitor) {
+            LOGGER.debug("Adding pending Controller Agent: " + id);
+            pendingControllerAgents.put(id, monitor);
+            monitor.wait(timeout);
+        }
+        if (pendingControllerAgents.containsKey(id)) //cleaning up
+            pendingControllerAgents.remove(id);
+        
+        if (!containsControllerAgent(id)) {  
+            if (!info.containsControllerAgent(id, 0))
+                throw new ControllerAgentNotFoundException("Announce Message was not received by the ControlInformationManager");
+            else
+                addControllerAgent(id); //we may have lost the message but the DC is up and running
+            
+        }
+    }
+
     
     @Override
     public JSONArray getDataSources() throws JSONException {
@@ -149,6 +173,34 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 deleteDataConsumer(id);
               }
             obj.put(dataConsumerInfo);
+            }
+        return obj;
+    }
+
+    @Override
+    public JSONArray getControllerAgents() throws JSONException {
+        JSONArray obj = new JSONArray();
+        for (ID id: getControllerAgentsList()) {
+            JSONObject controllerAgentAddr = new JSONObject();
+            JSONObject controllerAgentInfo = new JSONObject();
+            try {
+                ControlEndPointMetaData controllerAgentEndPointInfo = getControllerAgentAddressFromID(id);
+                if (controllerAgentEndPointInfo instanceof ZMQControlEndPointMetaData)
+                    controllerAgentAddr.put("type", ((ZMQControlEndPointMetaData)controllerAgentEndPointInfo).getType());
+                else if (controllerAgentEndPointInfo instanceof SocketControlEndPointMetaData) {
+                    controllerAgentAddr.put("host", ((SocketControlEndPointMetaData)controllerAgentEndPointInfo).getHost().getHostAddress());
+                    controllerAgentAddr.put("port", ((SocketControlEndPointMetaData)controllerAgentEndPointInfo).getPort());
+                }
+                controllerAgentInfo.put("id", id.toString());
+                controllerAgentInfo.put("info", controllerAgentAddr);
+            } catch (IOException ioex) {
+                throw new JSONException(ioex);
+              }
+              catch (ControllerAgentNotFoundException ex) {
+                LOGGER.error(ex.getMessage());
+                deleteControllerAgent(id);
+              }
+            obj.put(controllerAgentInfo);
             }
         return obj;
     }
@@ -228,7 +280,7 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     }
     
     @Override
-    public Integer getDSPIDFromID(ID dataSource) throws DSNotFoundException {
+    public int getDSPIDFromID(ID dataSource) throws DSNotFoundException {
         if (!containsDataSource(dataSource))
             throw new DSNotFoundException("Data Source with ID " + dataSource.toString() + " was de-announced");
         
@@ -250,6 +302,21 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         else
             throw new DCNotFoundException("Data Consumer with ID " + dataConsumer.toString() + " not found in the infoplane or missing pid entry");
     }
+
+    @Override
+    public int getControllerAgentPIDFromID(ID controllerAgent) throws ControllerAgentNotFoundException {
+        if (!containsControllerAgent(controllerAgent))
+            throw new ControllerAgentNotFoundException("Controller Agent with ID " + controllerAgent.toString() + " was de-announced");
+        
+        Integer pID = (Integer)info.lookupControllerAgentInfo(controllerAgent, "pid");
+        if (pID != null)
+            return pID;
+        else
+            throw new ControllerAgentNotFoundException("Controller Agent with ID " + controllerAgent.toString() + " not found in the infoplane or missing pid entry");
+    }
+    
+    
+    
     
 
     @Override
@@ -257,9 +324,18 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         if (!containsDataSource(dataSource))
             throw new DSNotFoundException("Data Source with ID " + dataSource.toString() + " was de-announced");
         
-        JSONArray probes = (JSONArray) info.lookupProbesOnDS(dataSource);
+        JSONArray probes = (JSONArray) info.lookupProbesOnDataSource(dataSource);
         return probes;
     }
+    
+    @Override
+    public ControlEndPointMetaData getControllerAgentAddressFromID(ID controllerAgentID) throws ControllerAgentNotFoundException, IOException {
+        if (!containsControllerAgent(controllerAgentID))
+            throw new ControllerAgentNotFoundException("Controller Agent with ID " + controllerAgentID.toString() + " was not found in the infoplane");
+        
+        return this.fetchControllerAgentControlEndPoint(controllerAgentID);    
+    }
+    
     
     
     @Override
@@ -272,6 +348,11 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         return dataConsumers.contains(id);
     }
     
+    @Override
+    public boolean containsControllerAgent(ID id) {
+        return controllerAgents.contains(id);
+    }
+    
     void addDataSource(ID id) {
         dataSources.add(id);
     }
@@ -280,12 +361,20 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         dataConsumers.add(id);
     }
     
+    void addControllerAgent(ID id) {
+        controllerAgents.add(id);
+    }
+    
     void deleteDataSource(ID id) {    
         dataSources.remove(id);
     }
     
     void deleteDataConsumer(ID id) {
         dataConsumers.remove(id);
+    }
+    
+    void deleteControllerAgent(ID id) {
+        controllerAgents.remove(id);
     }
     
     List<ID> getDataSourcesList() {
@@ -300,6 +389,12 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         }
     }
     
+    List<ID> getControllerAgentsList() {
+        synchronized(controllerAgents) {
+            return controllerAgents;
+        }
+    }
+    
     
     private ControlEndPointMetaData fetchDataSourceControlEndPoint(ID dataSourceID) throws IOException {        
         Object rawControlEndPointInfo = info.lookupDataSourceInfo(dataSourceID, "controlEndPoint");
@@ -311,7 +406,11 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         Object rawControlEndPointInfo = info.lookupDataConsumerInfo(dataConsumerID, "controlEndPoint");
         return parseControlEndPointInfo(rawControlEndPointInfo, dataConsumerID);
     }
-         
+    
+    private ControlEndPointMetaData fetchControllerAgentControlEndPoint(ID controllerAgentID) throws IOException {        
+        Object rawControlEndPointInfo = info.lookupControllerAgentInfo(controllerAgentID, "controlEndPoint");
+        return parseControlEndPointInfo(rawControlEndPointInfo, controllerAgentID);
+    }
      
     private ControlEndPointMetaData parseControlEndPointInfo(Object rawControlEndPointInfo, ID entityID) throws IOException {
         JSONObject controlEndPointInfo;
@@ -387,6 +486,10 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 LOGGER.info("Adding Data Consumer " + id.toString());
                 addDataConsumer(id);
                 notifyDataConsumer(id);
+        } else if (type == EntityType.CONTROLLERAGENT && !containsControllerAgent(id)) {
+                LOGGER.info("Adding Controller Agent " + id.toString());
+                addControllerAgent(id);
+                notifyControllerAgent(id);
         }
     }
     
@@ -398,7 +501,11 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         else if (type == EntityType.DATACONSUMER && containsDataConsumer(id)) {
             LOGGER.info("Removing Data Consumer " + id.toString());
             deleteDataConsumer(id);
-        }
+        } else if (type == EntityType.CONTROLLERAGENT && containsControllerAgent(id)) {
+              LOGGER.info("Removing Controller Agent " + id.toString());
+              deleteControllerAgent(id);
+          }
+        
     }
     
     void notifyDataSource(ID id) {
@@ -419,6 +526,18 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         if (pendingDataConsumers.containsKey(id)) {
             LOGGER.debug("Notifying pending Data Consumer: " + id);
             Object monitor = pendingDataConsumers.remove(id);
+            synchronized (monitor) {
+                monitor.notify();
+            }
+        }
+        // else do nothing
+    }
+    
+    void notifyControllerAgent(ID id) {
+        // checking if there is a pending deployment for that Controller Agent ID
+        if (pendingControllerAgents.containsKey(id)) {
+            LOGGER.debug("Notifying pending Controller Agent: " + id);
+            Object monitor = pendingControllerAgents.remove(id);
             synchronized (monitor) {
                 monitor.notify();
             }

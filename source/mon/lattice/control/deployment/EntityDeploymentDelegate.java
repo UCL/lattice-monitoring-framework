@@ -12,8 +12,6 @@ import mon.lattice.core.ID;
  * @author uceeftu
  */
 public interface EntityDeploymentDelegate {
-    public ID startDataSourceIfDoesNotExist(MonitorableEntityInfo resource, DataSourceInfo dataSource) throws DeploymentException;
-    
     public ID startDataSource(MonitorableEntityInfo resource, DataSourceInfo dataSource) throws DeploymentException;
     
     public boolean stopDataSource(ID dataSourceID) throws DeploymentException;
@@ -21,4 +19,8 @@ public interface EntityDeploymentDelegate {
     public ID startDataConsumer(MonitorableEntityInfo resource, DataConsumerInfo dataConsumer) throws DeploymentException; 
     
     public boolean stopDataConsumer(ID dataConsumerID) throws DeploymentException;
+    
+    public ID startControllerAgent(MonitorableEntityInfo resource, ControllerAgentInfo controllerAgent) throws DeploymentException;
+    
+    public boolean stopControllerAgent(ID caID) throws DeploymentException;
 }
