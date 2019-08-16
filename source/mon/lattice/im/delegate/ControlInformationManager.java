@@ -13,9 +13,14 @@ import mon.lattice.core.plane.MessageType;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import mon.lattice.control.deployment.ControllerAgentInfo;
+import mon.lattice.control.deployment.DataConsumerInfo;
+import mon.lattice.control.deployment.DataSourceInfo;
+import mon.lattice.control.deployment.ResourceEntityInfo;
 import mon.lattice.core.plane.InfoPlane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +40,15 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     private final Map<ID, Object> pendingDataSources;
     private final Map<ID, Object> pendingDataConsumers;
     private final Map<ID, Object> pendingControllerAgents;
+    
+    private final Map<ID, ResourceEntityInfo> dataSourcesResourcesInfo;
+    private final Map<ID, ResourceEntityInfo> dataConsumersResourcesInfo;
+    private final Map<ID, ResourceEntityInfo> controllerAgentsResourcesInfo;
+    
+    private final Map<ID, DataSourceInfo> dataSourcesMap;
+    private final Map<ID, DataConsumerInfo> dataConsumersMap;
+    private final Map<ID, ControllerAgentInfo> controllerAgentsMap;
+    
     private final static Logger LOGGER = LoggerFactory.getLogger(ControlInformationManager.class);
     
     
@@ -46,6 +60,14 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         pendingDataSources = new ConcurrentHashMap<>();
         pendingDataConsumers = new ConcurrentHashMap<>();
         pendingControllerAgents = new ConcurrentHashMap<>();
+        
+        dataSourcesResourcesInfo = new ConcurrentHashMap<>();
+        dataConsumersResourcesInfo = new ConcurrentHashMap<>();
+        controllerAgentsResourcesInfo = new ConcurrentHashMap<>(); 
+        
+        dataSourcesMap = new ConcurrentHashMap<>();
+        dataConsumersMap = new ConcurrentHashMap<>();
+        controllerAgentsMap = new ConcurrentHashMap<>();
     }
     
     
@@ -59,7 +81,8 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
     
     @Override
-    public void addDataSource(ID id, int timeout) throws InterruptedException, DSNotFoundException {
+    public void addDataSource(DataSourceInfo dataSource, ResourceEntityInfo resource, int timeout) throws InterruptedException, DSNotFoundException {
+        ID id = dataSource.getId();
         Object monitor = new Object(); 
         synchronized(monitor) {
             LOGGER.debug("Adding pending Data Source: " + id);
@@ -74,13 +97,16 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 throw new DSNotFoundException("Announce Message was not received by the ControlInformationManager");
             else
                 addDataSource(id); //we may have lost the message but the DS might be up and running
-            
         }
+        
+        dataSourcesResourcesInfo.put(id, resource);
+        dataSourcesMap.put(id, dataSource);
     }
     
     
     @Override
-    public void addDataConsumer(ID id, int timeout) throws InterruptedException, DCNotFoundException {
+    public void addDataConsumer(DataConsumerInfo dataConsumer, ResourceEntityInfo resource, int timeout) throws InterruptedException, DCNotFoundException {
+        ID id = dataConsumer.getId();
         Object monitor = new Object(); 
         synchronized(monitor) {
             LOGGER.debug("Adding pending Data Consumer: " + id);
@@ -95,13 +121,15 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 throw new DCNotFoundException("Announce Message was not received by the ControlInformationManager");
             else
                 addDataConsumer(id); //we may have lost the message but the DC is up and running
-            
         }
+        dataConsumersResourcesInfo.put(id, resource);
+        dataConsumersMap.put(id, dataConsumer);
     }
     
 
     @Override
-    public void addControllerAgent(ID id, int timeout) throws InterruptedException, ControllerAgentNotFoundException {
+    public void addControllerAgent(ControllerAgentInfo controllerAgent, ResourceEntityInfo resource, int timeout) throws InterruptedException, ControllerAgentNotFoundException {
+        ID id = controllerAgent.getId();
         Object monitor = new Object(); 
         synchronized(monitor) {
             LOGGER.debug("Adding pending Controller Agent: " + id);
@@ -116,8 +144,9 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 throw new ControllerAgentNotFoundException("Announce Message was not received by the ControlInformationManager");
             else
                 addControllerAgent(id); //we may have lost the message but the DC is up and running
-            
         }
+        controllerAgentsResourcesInfo.put(id, resource);
+        controllerAgentsMap.put(id, controllerAgent);
     }
 
     
@@ -137,6 +166,23 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 }
                 dataSourceInfo.put("id", id.toString());
                 dataSourceInfo.put("info", dsAddr);
+                
+                ResourceEntityInfo resource = dataSourcesResourcesInfo.get(id);
+                DataSourceInfo dataSource = dataSourcesMap.get(id);
+                
+                JSONObject deployment = new JSONObject();
+                
+                if (resource != null && dataSource != null) {
+                    deployment.put("type", "ssh");
+                    deployment.put("InetSocketAddress", resource.getAddress());
+                    Date date = new Date(dataSource.getStartedTime());
+                    deployment.put("date", date.toInstant().toString());
+                }
+                else
+                    deployment.put("type", "none");
+                
+                dataSourceInfo.put("deployment", deployment);
+                
             } catch (IOException ioex) {
                 throw new JSONException(ioex);
             }
@@ -165,6 +211,23 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 }
                 dataConsumerInfo.put("id", id.toString());
                 dataConsumerInfo.put("info", dcAddr);
+                
+                ResourceEntityInfo resource = dataConsumersResourcesInfo.get(id);
+                DataConsumerInfo dataConsumer = dataConsumersMap.get(id);
+                
+                JSONObject deployment = new JSONObject();
+                
+                if (resource != null && dataConsumer != null) {
+                    deployment.put("type", "ssh");
+                    deployment.put("InetSocketAddress", resource.getAddress());
+                    Date date = new Date(dataConsumer.getStartedTime());
+                    deployment.put("date", date.toInstant().toString());
+                }
+                else
+                    deployment.put("type", "none");
+                
+                dataConsumerInfo.put("deployment", deployment);
+                
             } catch (IOException ioex) {
                 throw new JSONException(ioex);
               }
@@ -193,6 +256,23 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 }
                 controllerAgentInfo.put("id", id.toString());
                 controllerAgentInfo.put("info", controllerAgentAddr);
+                
+                ResourceEntityInfo resource = controllerAgentsResourcesInfo.get(id);
+                ControllerAgentInfo controllerAgent = controllerAgentsMap.get(id);
+                
+                JSONObject deployment = new JSONObject();
+                
+                if (resource != null && controllerAgent != null) {
+                    deployment.put("type", "ssh");
+                    deployment.put("InetSocketAddress", resource.getAddress());
+                    Date date = new Date(controllerAgent.getStartedTime());
+                    deployment.put("date", date.toInstant().toString());
+                }
+                else
+                    deployment.put("type", "none");
+                
+                controllerAgentInfo.put("deployment", deployment);
+                
             } catch (IOException ioex) {
                 throw new JSONException(ioex);
               }
@@ -367,6 +447,8 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
     void deleteDataSource(ID id) {    
         dataSources.remove(id);
+        this.dataSourcesMap.remove(id);
+        this.dataSourcesResourcesInfo.remove(id);
     }
     
     void deleteDataConsumer(ID id) {
@@ -544,4 +626,5 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         }
         // else do nothing
     }
+    
 }

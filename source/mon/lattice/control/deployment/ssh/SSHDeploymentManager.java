@@ -11,7 +11,7 @@ import mon.lattice.control.deployment.DeploymentException;
 import mon.lattice.control.deployment.EntityDeploymentDelegate;
 import mon.lattice.control.deployment.DataConsumerInfo;
 import mon.lattice.control.deployment.DataSourceInfo;
-import mon.lattice.control.deployment.MonitorableEntityInfo;
+import mon.lattice.control.deployment.ResourceEntityInfo;
 import mon.lattice.im.delegate.DCNotFoundException;
 import mon.lattice.im.delegate.DSNotFoundException;
 import mon.lattice.im.delegate.InfoPlaneDelegate;
@@ -37,16 +37,12 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
     final String jarFileName;
     final JSch jsch;
     
-    final Map<InetSocketAddress, MonitorableEntityInfo> resources;
+    final Map<InetSocketAddress, ResourceEntityInfo> resources;
     final Map<InetSocketAddress, Session> sessions;
     
     final Map<ID, InetSocketAddress> dataSourcesResources;
     final Map<ID, InetSocketAddress> dataConsumersResources;
     final Map<ID, InetSocketAddress> controllerAgentsResources;
-    
-    //final Map<ID, InetSocketAddress> dsIDsAddresses;
-    //final Map<ID, InetSocketAddress> dcIDsAddresses;
-    //final Map<ID, InetSocketAddress> caIDsAddresses;
     
     final Map<ID, DataSourceInfo> dataSources;
     final Map<ID, DataConsumerInfo> dataConsumers;
@@ -71,10 +67,6 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
         this.dataSourcesResources = new ConcurrentHashMap<>(); 
         this.dataConsumersResources = new ConcurrentHashMap<>();
         this.controllerAgentsResources = new ConcurrentHashMap();
-        
-        //this.dsIDsAddresses = new ConcurrentHashMap();
-        //this.dcIDsAddresses = new ConcurrentHashMap();
-        //this.caIDsAddresses = new ConcurrentHashMap();
         
         this.dataSources = new ConcurrentHashMap<>();
         this.dataConsumers = new ConcurrentHashMap<>();
@@ -104,13 +96,16 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
     
     
     @Override
-    public ID startDataSource(MonitorableEntityInfo resource, DataSourceInfo dataSource) throws DeploymentException {
+    public ID startDataSource(ResourceEntityInfo requestedResource, DataSourceInfo dataSource) throws DeploymentException {
         Session session = null;
         Channel channel = null;
-         
-        resources.putIfAbsent(resource.getAddress(), resource);
+        
+        if (!resources.containsKey(requestedResource.getAddress()))
+            resources.put(requestedResource.getAddress(), requestedResource);
+        
+        ResourceEntityInfo resource = resources.get(requestedResource.getAddress());
+        
         dataSources.putIfAbsent(dataSource.getId(), dataSource);
-        //dataSourcesResources.putIfAbsent(dataSource.getId(), resource.getAddress());
         
         synchronized(dataSource)
             {
@@ -130,7 +125,7 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
                     sessions.put(resource.getAddress(), session);
                 }
                     
-                this.deployJarOnResource(resources.get(resource.getAddress()), session);
+                this.deployJarOnResource(resource, session);
 
                 LOGGER.debug("Future " + dataSource.getEntityType() + " ID: " + dataSource.getId());
 
@@ -147,11 +142,12 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
 
                 // we are supposed to wait here until either the announce message sent by the DS 
                 // is received from the Announcelistener thread or the timeout is reached (5 secs)
-                infoPlaneDelegate.addDataSource(dataSource.getId(), 20000);
+                infoPlaneDelegate.addDataSource(dataSource, resource, 20000);
 
                 // if there is no Exception before we can now try to get the Data Source PID
                 dataSource.setpID(infoPlaneDelegate.getDSPIDFromID(dataSource.getId()));
                 dataSource.setRunning();
+                dataSource.setStartedTime();
                 
                 dataSourcesResources.put(dataSource.getId(), resource.getAddress());
 
@@ -201,9 +197,12 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
         
         try {
             if (resourceAddressFromDSID == null)
-                throw new DSNotFoundException("Data Source with ID " + dataSourceID + " not found");
+                if (infoPlaneDelegate.containsDataSource(dataSourceID))
+                    throw new DSNotFoundException("Data Source with ID " + dataSourceID + " cannot be undeployed as it was not started via the API");
+                else
+                    throw new DSNotFoundException("Data Source with ID " + dataSourceID + " was not found");
         
-            dataSource = this.dataSources.get(dataSourceID);
+            dataSource = dataSources.get(dataSourceID);
             
             synchronized (dataSource) {
                 if (dataSource == null) {
@@ -213,7 +212,7 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
                 session = sessions.get(resourceAddressFromDSID);
                 
                 if (!session.isConnected()) {
-                    MonitorableEntityInfo resource = resources.get(resourceAddressFromDSID);
+                    ResourceEntityInfo resource = resources.get(resourceAddressFromDSID);
                     session = this.connectWithKey(resource);
                     sessions.put(resource.getAddress(), session);
                 }
@@ -257,13 +256,16 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
     
     
     @Override
-    public ID startDataConsumer(MonitorableEntityInfo resource, DataConsumerInfo dataConsumer) throws DeploymentException {
+    public ID startDataConsumer(ResourceEntityInfo requestedResource, DataConsumerInfo dataConsumer) throws DeploymentException {
         Session session = null;
         Channel channel = null;
          
-        resources.putIfAbsent(resource.getAddress(), resource);
+        if (!resources.containsKey(requestedResource.getAddress()))
+            resources.put(requestedResource.getAddress(), requestedResource);
+        
+        ResourceEntityInfo resource = resources.get(requestedResource.getAddress());
+        
         dataConsumers.putIfAbsent(dataConsumer.getId(), dataConsumer);
-        //dataConsumersResources.putIfAbsent(dataConsumer.getId(), resource.getAddress());
         
         synchronized(dataConsumer)
             {
@@ -300,11 +302,12 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
 
                 // we are supposed to wait here until either the announce message sent by the DS 
                 // is received from the Announcelistener thread or the timeout is reached (5 secs)
-                infoPlaneDelegate.addDataConsumer(dataConsumer.getId(), 20000);
+                infoPlaneDelegate.addDataConsumer(dataConsumer, resource, 20000);
 
                 // if there is no Exception before we can now try to get the Data Source PID
                 dataConsumer.setpID(infoPlaneDelegate.getDCPIDFromID(dataConsumer.getId()));
                 dataConsumer.setRunning();
+                dataConsumer.setStartedTime();
                 
                 dataConsumersResources.put(dataConsumer.getId(), resource.getAddress());
 
@@ -353,7 +356,10 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
         
         try {
             if (resourceAddressFromDCID == null)
-                throw new DCNotFoundException("Data Consumer with ID " + dataConsumerID + " not found");
+                if (infoPlaneDelegate.containsDataConsumer(dataConsumerID))
+                    throw new DCNotFoundException("Data Consumer with ID " + dataConsumerID + " cannot be undeployed as it was not started via the API");
+                else
+                    throw new DCNotFoundException("Data Consumer with ID " + dataConsumerID + " was not found");
             
             //dataConsumer = this.resourcesDataConsumers.get(resourceAddressFromDCID);
             dataConsumer = this.dataConsumers.get(dataConsumerID);
@@ -366,7 +372,7 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
                 session = sessions.get(resourceAddressFromDCID);
                 
                 if (!session.isConnected()) {
-                    MonitorableEntityInfo resource = resources.get(resourceAddressFromDCID);
+                    ResourceEntityInfo resource = resources.get(resourceAddressFromDCID);
                     session = this.connectWithKey(resource);
                     sessions.put(resource.getAddress(), session);
                 }
@@ -409,15 +415,18 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
     
     
     @Override
-    public ID startControllerAgent(MonitorableEntityInfo resource, ControllerAgentInfo controllerAgent) throws DeploymentException {
+    public ID startControllerAgent(ResourceEntityInfo requestedResource, ControllerAgentInfo controllerAgent) throws DeploymentException {
         LOGGER.info("Starting Controller Agent: " + controllerAgent.getEntityClassName());
         
         Session session = null;
         Channel channel = null;
          
-        resources.putIfAbsent(resource.getAddress(), resource);
+        if (!resources.containsKey(requestedResource.getAddress()))
+            resources.put(requestedResource.getAddress(), requestedResource);
+        
+        ResourceEntityInfo resource = resources.get(requestedResource.getAddress());
+        
         controllerAgents.putIfAbsent(controllerAgent.getId(), controllerAgent);
-        //controllerAgentsResources.putIfAbsent(controllerAgent.getId(), resource.getAddress());
         
         synchronized(controllerAgent)
             {
@@ -453,11 +462,12 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
 
                 // we are supposed to wait here until either the announce message sent by the MM 
                 // is received by the Announcelistener thread or the timeout is reached (20 secs)
-                infoPlaneDelegate.addControllerAgent(controllerAgent.getId(), 20000);
+                infoPlaneDelegate.addControllerAgent(controllerAgent, resource, 20000);
 
                 // if there is no Exception before we can now try to get the Data Source PID
                 controllerAgent.setpID(infoPlaneDelegate.getControllerAgentPIDFromID(controllerAgent.getId()));
                 controllerAgent.setRunning();
+                controllerAgent.setStartedTime();
                 
                 controllerAgentsResources.put(controllerAgent.getId(), resource.getAddress());
 
@@ -504,11 +514,13 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
         ControllerAgentInfo controllerAgent = null;
         
         resourceAddress = controllerAgentsResources.get(controllerAgentID);
-        LOGGER.debug(resourceAddress.toString());
         
         try {
             if (resourceAddress == null)
-                throw new ControllerAgentNotFoundException("Controller Agent with ID " + controllerAgentID + " not found");
+                if (infoPlaneDelegate.containsControllerAgent(controllerAgentID))
+                    throw new ControllerAgentNotFoundException("Controller Agent with ID " + controllerAgentID + " cannot be undeployed as it was not started via the API");
+                else
+                    throw new ControllerAgentNotFoundException("Controller Agent with ID " + controllerAgentID + " was not found");
         
             
             controllerAgent = controllerAgents.get(controllerAgentID);
@@ -554,7 +566,7 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
     }
 
     
-    boolean deployJarOnResource(MonitorableEntityInfo resource, Session session) throws DeploymentException {
+    boolean deployJarOnResource(ResourceEntityInfo resource, Session session) throws DeploymentException {
         synchronized (resource) 
             {
             File jarFile = new File(this.localJarFilePath + "/" + this.jarFileName);
@@ -594,7 +606,7 @@ public class SSHDeploymentManager implements EntityDeploymentDelegate {
     
     
     
-    Session connectWithKey(MonitorableEntityInfo resource) throws JSchException {
+    Session connectWithKey(ResourceEntityInfo resource) throws JSchException {
         LOGGER.debug("Using identity from file: " + identityFile);
         jsch.addIdentity(identityFile);
         Session session = jsch.getSession(resource.getCredentials(), resource.getAddress().getHostName(), resource.getAddress().getPort());

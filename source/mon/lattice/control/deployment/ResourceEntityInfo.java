@@ -14,7 +14,7 @@ import java.util.Objects;
  *
  * @author uceeftu
  */
-public abstract class MonitorableEntityInfo {
+public abstract class ResourceEntityInfo {
     protected InetSocketAddress address;
     
     protected Long jarDeploymentDate;
@@ -22,7 +22,7 @@ public abstract class MonitorableEntityInfo {
     
     
     
-    public MonitorableEntityInfo(String address, int port) throws DeploymentException {
+    public ResourceEntityInfo(String address, int port) throws DeploymentException {
         try {
             this.address = new InetSocketAddress(InetAddress.getByName(address).getHostAddress(), port);
         } catch (UnknownHostException e) {
@@ -55,8 +55,8 @@ public abstract class MonitorableEntityInfo {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof MonitorableEntityInfo) {
-            return this.address.equals(((MonitorableEntityInfo) obj).getAddress());   
+        if (obj instanceof ResourceEntityInfo) {
+            return this.address.equals(((ResourceEntityInfo) obj).getAddress());   
         }
         else
             return false;     

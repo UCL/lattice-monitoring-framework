@@ -49,7 +49,7 @@ public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements Info
         zmqSubscriber.addAnnounceEventListener(listener);
     }
     
-
+    
     /**
      * Connect to a delivery mechanism.
      */
