@@ -93,7 +93,7 @@ public class VLSPProbe extends AbstractProbe implements Probe {
     public ProbeMeasurement collect() {
         try {
             JSONObject values = vlspDc.collectValues();
-            
+
             Table localControllersTable = new DefaultTable();
             localControllersTable.defineTable(localControllers);
             
