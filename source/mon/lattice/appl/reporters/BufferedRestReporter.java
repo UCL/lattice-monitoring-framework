@@ -11,10 +11,11 @@ import mon.lattice.core.Timestamp;
 import java.io.*;
 import mon.lattice.core.ProbeValueWithName;
 import us.monoid.web.Resty;
-import static us.monoid.web.Resty.form;
+import static us.monoid.web.Resty.content;
 import us.monoid.json.JSONObject;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
+import us.monoid.web.Content;
 /**
  * A BufferReporter groups and sends the Measurements to a specific function.
  */
@@ -44,7 +45,8 @@ public class BufferedRestReporter extends AbstractReporter {
                     LOGGER.info("builder result: " + array.toString());
                     
                     try {
-                            resty.json(uri, form(array.toString()));
+                            Content payload = new Content("application/json", array.toString().getBytes());     
+                            resty.json(uri, payload);
                     } catch (IOException e) {
                             LOGGER.error("Error while sending Measurement: " + e.getMessage());
                         for (StackTraceElement stackTrace : e.getStackTrace()) {
@@ -68,7 +70,7 @@ public class BufferedRestReporter extends AbstractReporter {
                 obj.put("probeid", m.getProbeID().toString());
                 obj.put("timestamp", t.toString());
                 obj.put("type", (((ProbeValueWithName)attribute).getName()));
-                obj.put("value", attribute.getValue().toString());
+                obj.put("value", attribute.getValue());
                 }
             catch (JSONException e) {
                 for (StackTraceElement stackTrace : e.getStackTrace()) {
