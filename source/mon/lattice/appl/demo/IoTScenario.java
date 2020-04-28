@@ -27,12 +27,15 @@ public class IoTScenario {
     LatticeTest restClient = null;
     String dataConsumerID;
     String dataSourceID;
+    String reporterID;
     Properties configuration;
     Integer nSensors;
     Integer nEntities;
     
-    List<String> IDs = new ArrayList<>();;
-   
+    List<String> IDs = new ArrayList<>();
+    
+    int scenarioId;
+    
     
     public IoTScenario(Properties configuration) throws UnknownHostException, IOException {
         this.configuration = configuration;
@@ -40,6 +43,16 @@ public class IoTScenario {
         nSensors = Integer.valueOf(configuration.getProperty("sensors.number"));
         nEntities = Integer.valueOf(configuration.getProperty("entities.number"));
     }
+    
+    
+    public IoTScenario(Properties configuration, int scenarioId) throws UnknownHostException, IOException {
+        this.configuration = configuration;
+        restClient = new LatticeTest(configuration);
+        nSensors = Integer.valueOf(configuration.getProperty("sensors.number"));
+        nEntities = Integer.valueOf(configuration.getProperty("entities.number"));
+        this.scenarioId = scenarioId;
+    }
+    
 
     
     private void generateEntityIDs() {
@@ -54,10 +67,33 @@ public class IoTScenario {
     }
     
     
-    private void loadSensor(String dsID, String probeName, String probeAttributeName, String value, String entityId) throws JSONException {
+    private void deployDS() throws Exception {
+        dataSourceID = restClient.instantiateDS();
+    }
+    
+    
+    private void deployDC() throws Exception {
+        Integer dcPort = Integer.valueOf(restClient.getDCDataPlanePort());
+        dcPort += scenarioId;
+        restClient.setDCDataPlanePort(dcPort.toString());
+        dataConsumerID = restClient.instantiateDC();
+    }
+    
+    
+    private void unDeployDS() throws Exception {
+        restClient.unloadDS(dataSourceID);
+    }
+   
+    
+    private void unDeployDC () throws Exception {
+        restClient.unloadDC(dataConsumerID);
+    }
+    
+    
+    private void loadSensor(String probeName, String probeAttributeName, String value, String entityId) throws JSONException {
         String probeClassName = "mon.lattice.appl.demo.SensorEmulatorProbe";
         
-        JSONObject out = restClient.loadProbe(dsID, probeClassName, probeName + "+" + probeAttributeName + "+" + value);
+        JSONObject out = restClient.loadProbe(dataSourceID, probeClassName, probeName + "+" + probeAttributeName + "+" + value);
         String probeID = out.getString("createdProbeID");
         
         restClient.setProbeServiceID(probeID, entityId);
@@ -65,7 +101,7 @@ public class IoTScenario {
     }
     
     
-    private String loadReporter(String dcID, String reporterName) throws Exception {
+    private String loadReporter(String reporterName) throws Exception {
         String reporterClassName = "mon.lattice.appl.reporters.BufferedRestReporter";
         String bufferSize = configuration.getProperty("rep.buffersize");
         String address = configuration.getProperty("rep.address");
@@ -75,10 +111,8 @@ public class IoTScenario {
         JSONObject out;
         
         try {
-            System.out.println("Starting reporter on DC: " + dcID);
-            System.out.println("Dinamically loading reporter class: " + reporterClassName);
 
-            out = restClient.loadReporter(dcID, reporterClassName, 
+            out = restClient.loadReporter(dataConsumerID, reporterClassName, 
                                         reporterName + "+" +
                                         bufferSize + "+" +
                                         address + "+" +
@@ -86,7 +120,7 @@ public class IoTScenario {
                                         uri
                                         );
             
-            String reporterID = out.getString("createdReporterID");  
+            reporterID = out.getString("createdReporterID");  
             return reporterID;
         }
 
@@ -96,13 +130,15 @@ public class IoTScenario {
     }
     
     
+    private void unloadReporter() throws Exception {
+        restClient.unloadReporter(reporterID);
+    }
+    
+    
     
     
     public static void main(String[] args) {
-        IoTScenario iot = null;
-        String dsID = null;
-        String dcID = null;
-        String reporterID = null;
+        List<IoTScenario> iotList = new ArrayList<>();
         
         boolean errorStatus = false;
         
@@ -126,51 +162,49 @@ public class IoTScenario {
             input = new FileInputStream(propertiesFile);
             configuration.load(input);
             
-            iot = new IoTScenario(configuration);
-
-            // instantiating a new DS on the endpoint as per configuration (field DSEndPointAddress)
-            dsID = iot.restClient.instantiateDS();
             
-            dcID = iot.restClient.instantiateDC();
+            int topologies = Integer.valueOf(configuration.getProperty("topologies.number", "1"));
             
-            iot.dataConsumerID = dcID;
-            iot.dataSourceID= dsID;
             
-            iot.generateEntityIDs();
+            for (int id=0; id < topologies; id++) {
+                System.out.println("\n*** Deploying Topology " + id + " ***");
+                IoTScenario iot = new IoTScenario(configuration, id);
+                iot.deployDS();
+                iot.deployDC();
+                iot.generateEntityIDs();
             
-            for (Integer i=0; i < iot.nSensors; i++) {
-                //generating a random value for the probe
-                Integer value = ThreadLocalRandom.current().nextInt(10, 40);
-                iot.loadSensor(dsID, "Sensor" + i, "temperature", value.toString(), iot.getEntityID());
-                Thread.sleep(500);
+                for (Integer i=0; i < iot.nSensors; i++) {
+                    //generating a random value for the probe
+                    Integer value = ThreadLocalRandom.current().nextInt(10, 40);
+                    iot.loadSensor("Sensor" + i, "temperature", value.toString(), iot.getEntityID());
+                    Thread.sleep(10);
+                }
+            
+                iot.loadReporter("buffered-reporter");
+                iotList.add(iot);
             }
             
-            iot.loadReporter(dcID, "buffered-reporter");
-            
+            System.out.printf("\n*** Deployment Completed ***\n");
+            System.out.print("\nPress a key to stop the emulation");
             System.in.read();
-            
         }
         
         catch (Exception e) {
-            System.out.println("*DEPLOYMENT FAILED*\n" + e.getMessage());
+            System.out.println("\n*** DEPLOYMENT FAILED ***\n" + e.getMessage());
             errorStatus = true;
         }
+        
         finally {
-            // trying to stop the previous instantiated DS/DC anyway
-            try {
-                if (iot.restClient != null) {
-                    if (dsID != null)
-                        iot.restClient.unloadDS(dsID);
-                    if (dcID != null)  {
-                        if (reporterID != null) {
-                            System.out.println("Unloading Reporter " + reporterID);
-                            iot.restClient.unloadReporter(reporterID);
-                        }
-                        iot.restClient.unloadDC(dcID);
-                    }
+            // stopping the emulation (in any case)
+            
+            for (IoTScenario iot : iotList) {
+                try {
+                    iot.unDeployDS();
+                    iot.unloadReporter();
+                    iot.unDeployDC();
                 }
-            }
-            catch (Exception e) { // the DS/DC was either already stopped or not running
+                catch (Exception e) { // the DS/DC was either already stopped or not running
+                }
             }
         }
     if (errorStatus)

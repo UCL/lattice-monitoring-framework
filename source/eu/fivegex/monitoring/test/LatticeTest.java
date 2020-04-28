@@ -583,6 +583,18 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
         mongo.createMongoDBEntry(obj);
         return mongo; //just a bad thing
     }
+
+    public String getDCDataPlanePort() {
+        return DCDataPlanePort;
+    }
+
+    public void setDCDataPlanePort(String DCDataPlanePort) {
+        this.DCDataPlanePort = DCDataPlanePort;
+    }
+    
+    
+    
+    
     
     
     

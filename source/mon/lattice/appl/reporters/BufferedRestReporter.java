@@ -11,7 +11,6 @@ import mon.lattice.core.Timestamp;
 import java.io.*;
 import mon.lattice.core.ProbeValueWithName;
 import us.monoid.web.Resty;
-import static us.monoid.web.Resty.content;
 import us.monoid.json.JSONObject;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
