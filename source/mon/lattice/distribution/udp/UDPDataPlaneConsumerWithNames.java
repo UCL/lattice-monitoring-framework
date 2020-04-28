@@ -24,6 +24,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class UDPDataPlaneConsumerWithNames extends AbstractUDPDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
+
+    // debug
+    int lastSize = 1;
+
+
     /**
      * Construct a UDPDataPlaneConsumerWithNames.
      */
@@ -91,6 +96,17 @@ public class UDPDataPlaneConsumerWithNames extends AbstractUDPDataPlaneConsumer 
 		// this is a new DataSource
 		seqNoMap.put(dataSourceID, seq);
 	    }
+
+            if (seqNoMap.size() != lastSize) {
+                System.err.println(getClass().getSimpleName() + ":" +
+                               " Thread: " + Thread.currentThread().getName() +
+                               " MeasurementReceiver: " + measurementReceiver.getClass().getSimpleName() +
+                               " added key: " + dataSourceID +
+                               " HashMap size: " + seqNoMap.size());
+                lastSize = seqNoMap.size();
+            }
+            
+	    //System.err.println("Received " + type + ". mType " + mType + ". seq " + seq);
 
 	    // Message meta data
 	    MessageMetaData msgMetaData = new MessageMetaData(dataSourceID, seq, mType);

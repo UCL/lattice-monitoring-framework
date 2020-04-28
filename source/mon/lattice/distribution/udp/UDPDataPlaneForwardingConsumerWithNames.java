@@ -9,6 +9,7 @@ import mon.lattice.distribution.ExposedByteArrayInputStream;
 import mon.lattice.distribution.TransmittingData;
 import mon.lattice.distribution.MetaData;
 import mon.lattice.distribution.Receiving;
+import mon.lattice.distribution.Forwarding;
 import mon.lattice.core.plane.DataPlaneMessage;
 import mon.lattice.core.plane.DataPlane;
 import mon.lattice.core.Measurement;
@@ -29,7 +30,7 @@ import java.net.InetSocketAddress;
 /**
  * This consumer also forwards every recevied Measurement.
  */
-public class UDPDataPlaneForwardingConsumerWithNames extends UDPDataPlaneConsumerWithNames implements DataPlane, MeasurementReporting, Receiving, TransmittingData {
+public class UDPDataPlaneForwardingConsumerWithNames extends UDPDataPlaneConsumerWithNames implements DataPlane, MeasurementReporting, Receiving, Forwarding, TransmittingData {
 
     // The address we are sending to
     InetSocketAddress transmitAddress;
@@ -47,8 +48,16 @@ public class UDPDataPlaneForwardingConsumerWithNames extends UDPDataPlaneConsume
      */
     public UDPDataPlaneForwardingConsumerWithNames(InetSocketAddress addr, InetSocketAddress tAddr) {
         super(addr);
-	// sending address
+	// forwarding address
         transmitAddress = tAddr;
+    }
+
+    /**
+     * Construct a UDPDataPlaneForwardingConsumerWithNames.
+     * @param addr the consumer address
+     */
+    public UDPDataPlaneForwardingConsumerWithNames(InetSocketAddress addr) {
+        super(addr);
     }
 
     /**
@@ -57,28 +66,25 @@ public class UDPDataPlaneForwardingConsumerWithNames extends UDPDataPlaneConsume
     public boolean connect() {
         boolean result = false;
 
-        // connect on consumer
-	try {
-	    // only connect if we're not already connected
-	    if (udpReceiver == null) {
-		UDPReceiver rr = new UDPReceiver(this, address);
+        result = super.connect();
 
-		rr.listen();
-		
-		udpReceiver = rr;
+        if (result == true) {
+            // consumer connected fine
 
-		result = true;
-	    } else {
-		result = true;
-	    }
+            if (transmitAddress != null) {
+                // connect the forwarder
+                result = connectForwarder();
+            }
+        }
 
-	} catch (IOException ioe) {
-	    // Current implementation will be to do a stack trace
-	    //ioe.printStackTrace();
+        return result;
+    }
 
-	    return false;
-	}
 
+    /**
+     * Connect the forwarder
+     */
+    public boolean connectForwarder() {
         // now try to connect to the transmitAddress
         // if forward address is specified
         if (transmitAddress != null) {
@@ -92,9 +98,9 @@ public class UDPDataPlaneForwardingConsumerWithNames extends UDPDataPlaneConsume
 		
                     udpTransmitter = tt;
 
-                    result =  true;
+                    return true;
                 } else {
-                    result = true;
+                    return true;
                 }
 
             } catch (IOException ioe) {
@@ -104,11 +110,10 @@ public class UDPDataPlaneForwardingConsumerWithNames extends UDPDataPlaneConsume
                 return false;
             }
 
+        } else {
+            return false;
         }
-
-        return result;
     }
-
 
     /**
      * Disconnect from a delivery mechansim.
@@ -116,27 +121,67 @@ public class UDPDataPlaneForwardingConsumerWithNames extends UDPDataPlaneConsume
     public boolean disconnect() {
         boolean result = false;
 
-	try {
-	    udpReceiver.end();
-	    udpReceiver = null;
-	    result =  true;
-	} catch (IOException ieo) {
-	    udpReceiver = null;
-	    return false;
-	}
+        result = super.disconnect();
 
-        if (udpTransmitter != null) {
-            try {
-                udpTransmitter.end();
-                udpTransmitter = null;
-                result = true;
-            } catch (IOException ieo) {
-                udpTransmitter = null;
-                return false;
+        if (result == true) {
+            // consumer connected fine
+
+            if (udpTransmitter != null) {
+                // connect the forwarder
+                result = disconnectForwarder();
             }
         }
 
         return result;
+    }
+
+    /**
+     * Disonnect the forwarder
+     */
+    public boolean disconnectForwarder() {
+        // now try to disconnect the forwarder
+        if (udpTransmitter != null) {
+            try {
+                udpTransmitter.end();
+                udpTransmitter = null;
+                return true;
+            } catch (IOException ieo) {
+                udpTransmitter = null;
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
+
+    /**
+     * Is it connected
+     */
+    public boolean isConnected() {
+        return (udpReceiver == null ? false : true);
+    }
+
+    /**
+     * Is forwarder connected
+     */
+    public boolean isForwarderConnected() {
+        return (udpTransmitter == null ? false : true);
+    }
+
+    /**
+     * Get the forwarder address
+     */
+    public InetSocketAddress getForwarderAddress() {
+        return transmitAddress;
+    }
+
+    /**
+     * Set up rge forwarder address
+     */
+    public void setForwarderAddress(InetSocketAddress tAddr) {
+        // forwarder address
+        transmitAddress = tAddr;
     }
 
 
@@ -190,7 +235,7 @@ public class UDPDataPlaneForwardingConsumerWithNames extends UDPDataPlaneConsume
 
     /**
      * Never called in the class.
-     * Needed in order to implement TransmittingData
+     * Needed in order to implement Transmitting
      */
     public int transmit(DataPlaneMessage dsp) throws Exception {
         return 0;
@@ -207,4 +252,3 @@ public class UDPDataPlaneForwardingConsumerWithNames extends UDPDataPlaneConsume
 
 }
 
-        
