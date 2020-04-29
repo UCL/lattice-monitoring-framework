@@ -61,6 +61,7 @@ public final class ZMQRequester implements Transmitter {
     @Override
     public void end() throws IOException {
 	transmitter.close();
+        context.close();
     }
     
     
