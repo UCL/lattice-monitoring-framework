@@ -64,6 +64,7 @@ public class ZMQReceiver implements Runnable {
     public void end()  throws IOException {
         threadRunning = false;
         receiverSocket.setLinger(0);
+        receiverSocket.close();
         context.term();
     }
     

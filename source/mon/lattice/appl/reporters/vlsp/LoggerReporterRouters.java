@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A PrintReporter just prints a Measurement.
  */
-public final class LoggerReporter extends AbstractReporter {
+public final class LoggerReporterRouters extends AbstractReporter {
     /**
      * In this LoggerReporter, report() logs and formats the Measurement (from VLSP) to the log file.
      */
@@ -22,7 +22,7 @@ public final class LoggerReporter extends AbstractReporter {
     private static Logger LOGGER = LoggerFactory.getLogger(LoggerReporter.class);
     
     
-    public LoggerReporter(String reporterName) {
+    public LoggerReporterRouters(String reporterName) {
         super(reporterName); 
     }
     
@@ -44,10 +44,9 @@ public final class LoggerReporter extends AbstractReporter {
         int columnsNumber = table.getColumnCount();
         TableRow row;
         StringBuilder lcs = new StringBuilder();
-       
- 
-        LOGGER.info("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        
         for (int i=0; i < rowsNumber; i++) {
+            LOGGER.info("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
             
             row = table.getRow(i);
             
@@ -100,12 +99,9 @@ public final class LoggerReporter extends AbstractReporter {
             router.setLength(0);
             
             } */
-    
-            if (i < rowsNumber - 1)
-               LOGGER.info("");    
-    }
-    LOGGER.info("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-    LOGGER.info("\n");
         
+        LOGGER.info("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        LOGGER.info("\n");
+        }        
     }
 }

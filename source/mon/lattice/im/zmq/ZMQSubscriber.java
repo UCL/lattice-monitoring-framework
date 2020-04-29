@@ -158,6 +158,7 @@ public class ZMQSubscriber extends AbstractIMNode implements IMSubscriberNode, R
     public boolean disconnect() {
         threadRunning = false;
         subscriberSocket.setLinger(0);
+        subscriberSocket.close();
         context.close();
         return true;
     }

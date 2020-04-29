@@ -472,7 +472,7 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
     
     
-    String instantiateDS() throws Exception { // we should create a Lattice test exception 
+    public String instantiateDS() throws Exception { // we should create a Lattice test exception 
         JSONObject out = new JSONObject();
         
         System.out.println("Deploying DS on endpoint: " + DSEndPointName);
@@ -494,7 +494,7 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
     
     
-    void unloadDS(String dsID) throws Exception {
+    public void unloadDS(String dsID) throws Exception {
         JSONObject out;
         System.out.println("Stopping DS on endpoint: "  + DSEndPointAddress + " - DS id: " + dsID);
         try {
@@ -509,7 +509,7 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
     
     
-    String instantiateDC() throws Exception { // we should create a Lattice test exception 
+    public String instantiateDC() throws Exception { // we should create a Lattice test exception 
         JSONObject out = new JSONObject();
         
         System.out.println("Deploying DC on endpoint: " + DCEndPointName);
@@ -529,7 +529,7 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
     
     
-    void unloadDC(String dcID) throws Exception {
+    public void unloadDC(String dcID) throws Exception {
         JSONObject out;
         System.out.println("Stopping DC on endpoint: "  + DCEndPointAddress + " - DC id: " + dcID);
         try {
@@ -583,6 +583,18 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
         mongo.createMongoDBEntry(obj);
         return mongo; //just a bad thing
     }
+
+    public String getDCDataPlanePort() {
+        return DCDataPlanePort;
+    }
+
+    public void setDCDataPlanePort(String DCDataPlanePort) {
+        this.DCDataPlanePort = DCDataPlanePort;
+    }
+    
+    
+    
+    
     
     
     

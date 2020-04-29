@@ -102,7 +102,6 @@ public class VLSPDataCollector {
             /*  get EnergyModel and coefficients per Localcontroller */
             JSONArray hostDetail = localhostInfo.getJSONArray("detail");
 
-
             // return if there is nothing to do
             if (hostDetail.length() == 0) {
                 LOGGER.info("Waiting for LocalController......");
@@ -252,13 +251,14 @@ public class VLSPDataCollector {
             
             // Skip through all LocalControllers
             for (int local = 0;  local < hostDetail.length(); local++) {
-                
+
                 localController = new JSONObject();
                 
-                localController.put("id", local+1);
+                //localController.put("id", local+1);
                 
                 JSONObject hostinfo = hostDetail.getJSONObject(local).getJSONObject("hostinfo");
 
+                localController.put("hostName", hostinfo.get("name"));
             
                 // CPU
                 localController.put("cpuLoad", hostinfo.getDouble("cpuLoad") * 100);
@@ -298,13 +298,9 @@ public class VLSPDataCollector {
                 localController.put("energyNow", localcontrollerEnergyNow);
 
                 localcontrollerEnergyLastTime.put(name, localcontrollerEnergyTotal);
-            }
-            
-            JSONArray routersInfo = new JSONArray();
-            
-            // Skip through all LocalControllers
-            for (int local = 0;  local < hostDetail.length(); local++) {
 
+                JSONArray routersInfo = new JSONArray();
+            
                 // get list of  routers per LocalController
                 JSONArray routers = hostDetail.getJSONObject(local).getJSONArray("routers");
 
@@ -320,7 +316,7 @@ public class VLSPDataCollector {
                     // info per router
                     JSONObject routerInfo = routerDetail.getJSONObject(detail);
 
-                    String name = routerInfo.getString("name");
+                    name = routerInfo.getString("name");
 
                     JSONArray threadGroups = routerInfo.getJSONArray("threadgroup");
 
