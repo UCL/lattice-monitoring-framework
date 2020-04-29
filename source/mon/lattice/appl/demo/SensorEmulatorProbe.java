@@ -10,5 +10,9 @@ public class SensorEmulatorProbe extends RandomProbe {
         super(name, fieldName, scaleFactor);
     }
     
+    public SensorEmulatorProbe(String name, String fieldName, String scaleFactor, String rate) {
+        super(name, fieldName, scaleFactor, rate);
+    }
+    
     
 }

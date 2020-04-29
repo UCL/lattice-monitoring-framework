@@ -16,6 +16,7 @@ import mon.lattice.core.ProducerMeasurement;
 import mon.lattice.core.AbstractProbe;
 import java.util.ArrayList;
 import java.util.Random;
+import mon.lattice.core.datarate.EveryNMilliseconds;
 
 /**
  * A probe that returns a random float.
@@ -54,8 +55,14 @@ public class RandomProbe extends AbstractProbe implements Probe  {
 	this.scaleFactor = scaleFactor;
     }
 
-       public RandomProbe(String name, String fieldName, String scaleFactor) {
+    public RandomProbe(String name, String fieldName, String scaleFactor) {
         this(name, fieldName, Integer.valueOf(scaleFactor));
+    }
+    
+    
+    public RandomProbe(String name, String fieldName, String scaleFactor, String rate) {
+        this(name, fieldName, Integer.valueOf(scaleFactor));
+        this.setDataRate(new EveryNMilliseconds(Integer.valueOf(rate)));
     }
 
 

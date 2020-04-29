@@ -31,6 +31,7 @@ public class IoTScenario {
     Properties configuration;
     Integer nSensors;
     Integer nEntities;
+    Integer rate;
     
     List<String> IDs = new ArrayList<>();
     
@@ -42,14 +43,12 @@ public class IoTScenario {
         restClient = new LatticeTest(configuration);
         nSensors = Integer.valueOf(configuration.getProperty("sensors.number"));
         nEntities = Integer.valueOf(configuration.getProperty("entities.number"));
+        rate = Integer.valueOf(configuration.getProperty("probe.rate", "2000"));
     }
     
     
     public IoTScenario(Properties configuration, int scenarioId) throws UnknownHostException, IOException {
-        this.configuration = configuration;
-        restClient = new LatticeTest(configuration);
-        nSensors = Integer.valueOf(configuration.getProperty("sensors.number"));
-        nEntities = Integer.valueOf(configuration.getProperty("entities.number"));
+        this(configuration);
         this.scenarioId = scenarioId;
     }
     
@@ -93,7 +92,7 @@ public class IoTScenario {
     private void loadSensor(String probeName, String probeAttributeName, String value, String entityId) throws JSONException {
         String probeClassName = "mon.lattice.appl.demo.SensorEmulatorProbe";
         
-        JSONObject out = restClient.loadProbe(dataSourceID, probeClassName, probeName + "+" + probeAttributeName + "+" + value);
+        JSONObject out = restClient.loadProbe(dataSourceID, probeClassName, probeName + "+" + probeAttributeName + "+" + value + "+" + rate);
         String probeID = out.getString("createdProbeID");
         
         restClient.setProbeServiceID(probeID, entityId);
@@ -169,6 +168,7 @@ public class IoTScenario {
             for (int id=0; id < topologies; id++) {
                 System.out.println("\n*** Deploying Topology " + id + " ***");
                 IoTScenario iot = new IoTScenario(configuration, id);
+                iotList.add(iot);
                 iot.deployDS();
                 iot.deployDC();
                 iot.generateEntityIDs();
@@ -181,7 +181,6 @@ public class IoTScenario {
                 }
             
                 iot.loadReporter("buffered-reporter");
-                iotList.add(iot);
             }
             
             System.out.printf("\n*** Deployment Completed ***\n");
