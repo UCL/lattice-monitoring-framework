@@ -85,6 +85,7 @@ public class ZMQDataSubscriber implements Runnable {
             LoggerFactory.getLogger(ZMQDataSubscriber.class).debug("Connecting to: " + remoteHost + ":" + remotePort);
             subscriberSocket.connect("tcp://" + remoteHost + ":" + remotePort);
         }
+        subscriberSocket.setLinger(0);
     }
     
     public void listen() {
@@ -94,7 +95,7 @@ public class ZMQDataSubscriber implements Runnable {
     
     public void end() throws InterruptedException {
         threadRunning = false;
-        subscriberSocket.setLinger(0);
+        subscriberSocket.close();
         context.term();
     }
     

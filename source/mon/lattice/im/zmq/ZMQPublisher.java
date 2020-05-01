@@ -59,6 +59,7 @@ public class ZMQPublisher extends AbstractIMNode implements IMPublisherNode {
             Thread.sleep(1000);
         } catch (InterruptedException ex) {   
             }
+        publisherSocket.setLinger(0);
         return true;
     }
 
@@ -67,7 +68,6 @@ public class ZMQPublisher extends AbstractIMNode implements IMPublisherNode {
      */
     @Override
     public boolean disconnect() {
-        publisherSocket.setLinger(0);
         publisherSocket.close();
         return true;
     }

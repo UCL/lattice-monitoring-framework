@@ -41,14 +41,14 @@ public class ZMQDataForwarder extends Thread {
         frontend.bind("tcp://*:" + localPort);
         backend.bind("tcp://*:" + (localPort + 1));
         backend.bind(internalURI);
+        frontend.setLinger(0);
+        backend.setLinger(0);
         this.start();
         return true;
     }
     
     public boolean stopProxy() {
-        frontend.setLinger(0);
         frontend.close();
-        backend.setLinger(0);
         backend.close();
         context.term();
         return true;

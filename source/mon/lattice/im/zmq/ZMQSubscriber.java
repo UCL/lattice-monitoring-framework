@@ -127,6 +127,7 @@ public class ZMQSubscriber extends AbstractIMNode implements IMSubscriberNode, R
         }
         
         subscriberSocket.connect(uri);
+        subscriberSocket.setLinger(0);
         thread.start();
         return true;
     }
@@ -157,9 +158,8 @@ public class ZMQSubscriber extends AbstractIMNode implements IMSubscriberNode, R
     @Override
     public boolean disconnect() {
         threadRunning = false;
-        subscriberSocket.setLinger(0);
         subscriberSocket.close();
-        context.close();
+        context.term();
         return true;
     }
 

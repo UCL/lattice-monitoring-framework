@@ -52,6 +52,7 @@ public class ZMQReceiver implements Runnable {
     
     public void connect() {
         receiverSocket.connect("tcp://" + routerAddress + ":" + routerPort); // possible need of sleeping
+        receiverSocket.setLinger(0);
     }
 
     public void listen()  throws IOException {        
@@ -63,8 +64,6 @@ public class ZMQReceiver implements Runnable {
     
     public void end()  throws IOException {
         threadRunning = false;
-        receiverSocket.setLinger(0);
-        receiverSocket.close();
         context.term();
     }
     
@@ -92,7 +91,7 @@ public class ZMQReceiver implements Runnable {
             
 	} catch (ZMQException e) {
             LoggerFactory.getLogger(ZMQReceiver.class).debug(e.getMessage());
-            receiverSocket.close();
+            //receiverSocket.close();
             lastException = e;
             return false; // generated when closing the context
         } 
@@ -150,6 +149,7 @@ public class ZMQReceiver implements Runnable {
                 }
 	    }
 	}
+        receiverSocket.close();
     }    
     
 }

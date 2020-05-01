@@ -34,6 +34,8 @@ public class ZMQRouter implements Runnable {
     public void bind() {
         frontend.bind("inproc://frontend");
         backend.bind("tcp://*:" + backendPort);
+        frontend.setLinger(0);
+        backend.setLinger(0);
         router = new Thread(this, "zmq-router");
         router.start();
     }

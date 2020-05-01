@@ -50,9 +50,7 @@ public final class ZMQRequester implements Transmitter {
     @Override
     public void connect()  throws IOException {
 	transmitter.connect("inproc://frontend");
-        //try {
-        //    Thread.sleep(500);
-        //} catch (InterruptedException e) {}
+        transmitter.setLinger(0);
     }
 
     /**
@@ -61,7 +59,7 @@ public final class ZMQRequester implements Transmitter {
     @Override
     public void end() throws IOException {
 	transmitter.close();
-        context.close();
+        context.term();
     }
     
     

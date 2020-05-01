@@ -39,6 +39,8 @@ public class ZMQProxy extends Thread {
     
     public boolean startProxy() {
         this.setName("zmq-info-proxy");
+        frontend.setLinger(0);
+        backend.setLinger(0);
         this.start();
         return true;
     }
