@@ -23,36 +23,67 @@ import java.util.concurrent.ThreadLocalRandom;
  * @author uceeftu
  */
 public class IoTScenario {
+    static Properties configuration;
+    static Integer nSensors;
+    static Integer nEntities;
+    static Integer rate;
+    static Integer waitMin;
+    static Integer waitMax;
+    
+    static String bufferSize;
+    static String address;
+    static String port;
+    static String uri;
+    static Integer topologies;
     
     LatticeTest restClient = null;
+    
     String dataConsumerID;
     String dataSourceID;
     String reporterID;
-    Properties configuration;
-    Integer nSensors;
-    Integer nEntities;
-    Integer rate;
     
     List<String> IDs = new ArrayList<>();
     
     int scenarioId;
     
     
-    public IoTScenario(Properties configuration) throws UnknownHostException, IOException {
-        this.configuration = configuration;
+        
+    public IoTScenario() throws UnknownHostException, IOException {
         restClient = new LatticeTest(configuration);
-        nSensors = Integer.valueOf(configuration.getProperty("sensors.number"));
-        nEntities = Integer.valueOf(configuration.getProperty("entities.number"));
-        rate = Integer.valueOf(configuration.getProperty("probe.rate", "2000"));
     }
     
     
-    public IoTScenario(Properties configuration, int scenarioId) throws UnknownHostException, IOException {
-        this(configuration);
+    public IoTScenario(int scenarioId) throws UnknownHostException, IOException {
+        this();
         this.scenarioId = scenarioId;
     }
     
 
+    static void loadEmulationConfiguration() {
+        nSensors = Integer.valueOf(configuration.getProperty("sensors.number"));
+        nEntities = Integer.valueOf(configuration.getProperty("entities.number"));
+        rate = Integer.valueOf(configuration.getProperty("probe.rate", "2000"));
+        waitMin = Integer.valueOf(configuration.getProperty("probe.activation.min", "100"));
+        waitMax = Integer.valueOf(configuration.getProperty("probe.activation.max", "200"));
+        topologies = Integer.valueOf(configuration.getProperty("topologies.number", "1"));
+        bufferSize = configuration.getProperty("rep.buffersize");
+        address = configuration.getProperty("rep.address");
+        port = configuration.getProperty("rep.port");
+        uri = configuration.getProperty("rep.uri");
+    }
+    
+    
+    static void printEmulationConfiguration() {
+        System.out.println("\n*** Using the following Configuration ***\n");
+        System.out.println("Number of emulated monitored Entities: " + nEntities);
+        System.out.println("Number of Probes/Sensors: " + nSensors);
+        System.out.println("Probes/Sensors rate: " + rate);
+        System.out.println("Probes/Sensors random activation interval: " + waitMin + "-" + waitMax);
+        System.out.println("Reporter buffer size: " + bufferSize);
+        System.out.println("Reporter destination URL: " + "http://" + address + ":" + port + "/" + uri);
+        System.out.println("Number of concurrent generators: " + topologies);
+        
+    }
     
     private void generateEntityIDs() {
         for (int i=0; i < nEntities; i++)
@@ -89,12 +120,15 @@ public class IoTScenario {
     }
     
     
-    private void loadSensor(String probeName, String probeAttributeName, String value, String entityId) throws JSONException {
+    private void loadSensor(String probeName, String probeAttributeName, String value, String entityId) throws JSONException, InterruptedException  {
         String probeClassName = "mon.lattice.appl.demo.SensorEmulatorProbe";
         
         JSONObject out = restClient.loadProbe(dataSourceID, probeClassName, probeName + "+" + probeAttributeName + "+" + value + "+" + rate);
         String probeID = out.getString("createdProbeID");
         
+        // waiting a random time in msecs before activating the sensor / probe
+        int randomWait = ThreadLocalRandom.current().nextInt(waitMin, waitMax);
+        Thread.sleep(randomWait);
         restClient.setProbeServiceID(probeID, entityId);
         restClient.turnOnProbe(probeID);
     }
@@ -102,10 +136,6 @@ public class IoTScenario {
     
     private String loadReporter(String reporterName) throws Exception {
         String reporterClassName = "mon.lattice.appl.reporters.BufferedRestReporter";
-        String bufferSize = configuration.getProperty("rep.buffersize");
-        String address = configuration.getProperty("rep.address");
-        String port = configuration.getProperty("rep.port");
-        String uri = configuration.getProperty("rep.uri");
         
         JSONObject out;
         
@@ -142,7 +172,7 @@ public class IoTScenario {
         boolean errorStatus = false;
         
         try {
-            Properties configuration = new Properties();
+            configuration = new Properties();
             InputStream input = null;
             String propertiesFile = null;
             
@@ -160,24 +190,24 @@ public class IoTScenario {
             
             input = new FileInputStream(propertiesFile);
             configuration.load(input);
+            loadEmulationConfiguration();
+            printEmulationConfiguration();
             
-            
-            int topologies = Integer.valueOf(configuration.getProperty("topologies.number", "1"));
-            
-            
-            for (int id=0; id < topologies; id++) {
+            for (int id=1; id <= topologies; id++) {
                 System.out.println("\n*** Deploying Topology " + id + " ***");
-                IoTScenario iot = new IoTScenario(configuration, id);
+                IoTScenario iot = new IoTScenario(id);
                 iotList.add(iot);
-                iot.deployDS();
+                
                 iot.deployDC();
                 iot.generateEntityIDs();
+                
+                iot.deployDS();
+                System.out.println("Loading Probes / Sensors");
             
-                for (Integer i=0; i < iot.nSensors; i++) {
+                for (Integer i=0; i < nSensors; i++) {
                     //generating a random value for the probe
                     Integer value = ThreadLocalRandom.current().nextInt(10, 40);
                     iot.loadSensor("Sensor" + i, "temperature", value.toString(), iot.getEntityID());
-                    Thread.sleep(10);
                 }
             
                 iot.loadReporter("buffered-reporter");
