@@ -41,7 +41,7 @@ public class BufferedRestReporter extends AbstractReporter {
             
             else {
                     // Send the grouped data and reinitiaze the buffer and counter
-                    LOGGER.info("builder result: " + array.toString());
+                    LOGGER.debug("builder result: " + array.toString());
                     
                     try {
                             Content payload = new Content("application/json", array.toString().getBytes());     
@@ -82,7 +82,7 @@ public class BufferedRestReporter extends AbstractReporter {
     
     @Override
     public void report(Measurement m) {
-	LOGGER.info("Received measurement: " + m.toString());
+	LOGGER.debug("Received measurement: " + m.toString());
     addToBuffer(m);
     }
 }

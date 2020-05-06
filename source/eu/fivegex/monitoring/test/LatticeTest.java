@@ -42,7 +42,7 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     String DCEndPointUserName;
 
     String DCDataPlaneAddress;
-    String DCDataPlanePort;
+    protected String DCDataPlanePort;
     
     String controllerInfoPlaneAddress;
     String controllerInfoPlanePort;
@@ -583,14 +583,7 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
         mongo.createMongoDBEntry(obj);
         return mongo; //just a bad thing
     }
-
-    public String getDCDataPlanePort() {
-        return DCDataPlanePort;
-    }
-
-    public void setDCDataPlanePort(String DCDataPlanePort) {
-        this.DCDataPlanePort = DCDataPlanePort;
-    }
+  
     
     
     

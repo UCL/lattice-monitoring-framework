@@ -21,12 +21,6 @@ import static us.monoid.web.Resty.put;
 import eu.fivegex.monitoring.control.probescatalogue.JSONProbesCatalogue;
 import static us.monoid.web.Resty.content;
 import static us.monoid.web.Resty.form;
-import static us.monoid.web.Resty.content;
-import static us.monoid.web.Resty.form;
-import static us.monoid.web.Resty.content;
-import static us.monoid.web.Resty.form;
-import static us.monoid.web.Resty.content;
-import static us.monoid.web.Resty.form;
 
 /**
  * Makes REST calls to the Lattice Controller through the REST API using Resty
