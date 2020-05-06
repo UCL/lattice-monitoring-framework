@@ -125,9 +125,9 @@ public class ZMQSubscriber extends AbstractIMNode implements IMSubscriberNode, R
                 Thread.sleep(500);
             } catch (InterruptedException e) {}
         }
-        
-        subscriberSocket.connect(uri);
         subscriberSocket.setLinger(0);
+        subscriberSocket.setRcvHWM(0);
+        subscriberSocket.connect(uri);
         thread.start();
         return true;
     }

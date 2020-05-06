@@ -65,6 +65,8 @@ public class ZMQDataSubscriber implements Runnable {
         
         context = ctx;
         subscriberSocket = context.socket(ZMQ.SUB);
+        subscriberSocket.setLinger(0);
+        subscriberSocket.setRcvHWM(0);
     }
     
     
@@ -85,7 +87,6 @@ public class ZMQDataSubscriber implements Runnable {
             LoggerFactory.getLogger(ZMQDataSubscriber.class).debug("Connecting to: " + remoteHost + ":" + remotePort);
             subscriberSocket.connect("tcp://" + remoteHost + ":" + remotePort);
         }
-        subscriberSocket.setLinger(0);
     }
     
     public void listen() {

@@ -49,8 +49,9 @@ public final class ZMQRequester implements Transmitter {
      */
     @Override
     public void connect()  throws IOException {
-	transmitter.connect("inproc://frontend");
         transmitter.setLinger(0);
+        transmitter.setHWM(0);
+	transmitter.connect("inproc://frontend");
     }
 
     /**

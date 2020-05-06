@@ -8,7 +8,6 @@ package mon.lattice.distribution.zmq;
 import mon.lattice.distribution.Transmitting;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
 
 /**
@@ -36,8 +35,8 @@ public class ZMQDataPublisher {
     
     public void connect() throws IOException {
         String uri = "tcp://" + subscriberHost + ":" + subscriberPort;
-        publisherSocket.connect(uri);
         publisherSocket.setLinger(0);
+        publisherSocket.connect(uri);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ex) {   

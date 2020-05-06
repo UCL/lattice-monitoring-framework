@@ -51,8 +51,9 @@ public class ZMQReceiver implements Runnable {
     }
     
     public void connect() {
-        receiverSocket.connect("tcp://" + routerAddress + ":" + routerPort); // possible need of sleeping
         receiverSocket.setLinger(0);
+        receiverSocket.setRcvHWM(0);
+        receiverSocket.connect("tcp://" + routerAddress + ":" + routerPort); // possible need of sleeping
     }
 
     public void listen()  throws IOException {        

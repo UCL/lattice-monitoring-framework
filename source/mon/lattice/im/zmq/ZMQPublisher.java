@@ -54,12 +54,13 @@ public class ZMQPublisher extends AbstractIMNode implements IMPublisherNode {
     @Override
     public boolean connect() {
         String uri = "tcp://" + remoteHost + ":" + remotePort;
+        publisherSocket.setLinger(5000);
+        publisherSocket.setHWM(0);
         publisherSocket.connect(uri);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ex) {   
             }
-        publisherSocket.setLinger(0);
         return true;
     }
 
@@ -423,7 +424,7 @@ public class ZMQPublisher extends AbstractIMNode implements IMPublisherNode {
 	for (ControllableReporter aReporter : reporters) {
 	    removeReporter(aReporter);
 	}
-	  
+        
         sendInfo("info.dataconsumer", infoObj.toString());
         
 	return this;
@@ -480,10 +481,8 @@ public class ZMQPublisher extends AbstractIMNode implements IMPublisherNode {
      * Send stuff to the Subscribers.
      */
     public boolean sendInfo(String aKey, String aValue) {
-	LOGGER.debug("sending " + aKey + " => " + aValue);
-        publisherSocket.sendMore(aKey);
-        publisherSocket.send(aValue);
-	return true;    
+	LOGGER.info("sending " + aKey + " => " + aValue);
+        return publisherSocket.sendMore(aKey) && publisherSocket.send(aValue); 
     }
 
     @Override
