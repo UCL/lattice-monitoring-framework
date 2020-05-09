@@ -37,9 +37,12 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     private final List<ID> dataSources;
     private final List<ID> dataConsumers;
     private final List<ID> controllerAgents;
+    private final List<ID> probes;
+    
     private final Map<ID, Object> pendingDataSources;
     private final Map<ID, Object> pendingDataConsumers;
     private final Map<ID, Object> pendingControllerAgents;
+    private final Map<ID, Object> pendingProbes;
     
     private final Map<ID, ResourceEntityInfo> dataSourcesResourcesInfo;
     private final Map<ID, ResourceEntityInfo> dataConsumersResourcesInfo;
@@ -57,9 +60,12 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         dataSources = Collections.synchronizedList(new ArrayList());
         dataConsumers = Collections.synchronizedList(new ArrayList());
         controllerAgents = Collections.synchronizedList(new ArrayList());
+        probes = Collections.synchronizedList(new ArrayList());
+        
         pendingDataSources = new ConcurrentHashMap<>();
         pendingDataConsumers = new ConcurrentHashMap<>();
         pendingControllerAgents = new ConcurrentHashMap<>();
+        pendingProbes = new ConcurrentHashMap<>();
         
         dataSourcesResourcesInfo = new ConcurrentHashMap<>();
         dataConsumersResourcesInfo = new ConcurrentHashMap<>();
@@ -148,6 +154,30 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         controllerAgentsResourcesInfo.put(id, resource);
         controllerAgentsMap.put(id, controllerAgent);
     }
+    
+    
+    @Override
+    public void addProbe(ID probeID, int timeout) throws InterruptedException, ProbeNotFoundException {
+        if (!info.containsProbe(probeID, 0)) {
+            Object monitor = new Object(); 
+            synchronized(monitor) {
+                LOGGER.debug("Adding pending Probe: " + probeID);
+                pendingProbes.put(probeID, monitor);
+                monitor.wait(timeout);
+            }
+            if (pendingProbes.containsKey(probeID)) //cleaning up
+                pendingProbes.remove(probeID);
+
+            if (!containsProbe(probeID)) {  
+                if (!info.containsProbe(probeID, 0))
+                    throw new ProbeNotFoundException("Probe Information not found in the Info Plane");
+                else
+                    addProbe(probeID);
+            }
+        }
+    }
+    
+    
 
     
     @Override
@@ -404,8 +434,8 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         if (!containsDataSource(dataSource))
             throw new DSNotFoundException("Data Source with ID " + dataSource.toString() + " was de-announced");
         
-        JSONArray probes = (JSONArray) info.lookupProbesOnDataSource(dataSource);
-        return probes;
+        JSONArray probesOnDS = (JSONArray) info.lookupProbesOnDataSource(dataSource);
+        return probesOnDS;
     }
     
     @Override
@@ -433,6 +463,12 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         return controllerAgents.contains(id);
     }
     
+    @Override
+    public boolean containsProbe(ID id) {
+        return probes.contains(id);
+    }
+    
+    
     void addDataSource(ID id) {
         dataSources.add(id);
     }
@@ -443,6 +479,10 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
     void addControllerAgent(ID id) {
         controllerAgents.add(id);
+    }
+    
+    void addProbe(ID id) {
+        probes.add(id);
     }
     
     void deleteDataSource(ID id) {    
@@ -572,7 +612,11 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 LOGGER.info("Adding Controller Agent " + id.toString());
                 addControllerAgent(id);
                 notifyControllerAgent(id);
-        }
+        } else if (type == EntityType.PROBE && !containsProbe(id)) {
+                LOGGER.info("Adding Probe " + id.toString());
+                addProbe(id);
+                notifyProbe(id);
+        } 
     }
     
     void removeDeannouncedEntity(ID id, EntityType type) {
@@ -626,5 +670,18 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         }
         // else do nothing
     }
+    
+    void notifyProbe(ID id) {
+        // checking if there is a pending deployment for that Probe ID
+        if (pendingProbes.containsKey(id)) {
+            LOGGER.debug("Notifying pending Probe: " + id);
+            Object monitor = pendingProbes.remove(id);
+            synchronized (monitor) {
+                monitor.notify();
+            }
+        }
+        // else do nothing
+    }
+    
     
 }

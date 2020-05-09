@@ -134,6 +134,11 @@ public abstract class AbstractDHTInfoPlane implements InfoPlane {
     }
     
     
+    @Override
+    public boolean containsProbe(ID probeID, int timeOut) {
+        return imNode.containsProbe(probeID, timeOut);
+    }
+    
     
     @Override
     public String toString() {

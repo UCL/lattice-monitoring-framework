@@ -21,6 +21,8 @@ public interface InfoPlaneDelegateConsumer {
     
     public boolean containsControllerAgent(ID id);
     
+    public boolean containsProbe(ID id);
+    
     public JSONArray getDataSources() throws JSONException;
     
     public JSONArray getDataConsumers() throws JSONException;

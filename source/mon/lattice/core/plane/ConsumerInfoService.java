@@ -25,6 +25,8 @@ public interface ConsumerInfoService {
     Object lookupDataSourceInfo(DataSource dataSource, String info);
 
     Object lookupDataSourceInfo(ID dataSourceID, String info);
+    
+    boolean containsProbe(ID probeID, int timeOut);
 
     Object lookupProbeAttributeInfo(Probe probe, int field, String info);
 

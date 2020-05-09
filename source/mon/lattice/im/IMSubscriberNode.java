@@ -34,4 +34,6 @@ public interface IMSubscriberNode extends IMBasicNode {
     
     public boolean containsControllerAgent(ID controllerAgentID, int timeout);
     
+    public boolean containsProbe(ID controllerAgentID, int timeout);
+    
 }

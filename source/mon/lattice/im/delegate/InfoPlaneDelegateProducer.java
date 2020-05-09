@@ -9,6 +9,7 @@ import mon.lattice.control.deployment.ControllerAgentInfo;
 import mon.lattice.control.deployment.DataConsumerInfo;
 import mon.lattice.control.deployment.DataSourceInfo;
 import mon.lattice.control.deployment.ResourceEntityInfo;
+import mon.lattice.core.ID;
 
 /**
  *
@@ -20,4 +21,6 @@ public interface InfoPlaneDelegateProducer {
     void addDataConsumer(DataConsumerInfo dataConsumer, ResourceEntityInfo resource, int timeout) throws InterruptedException, DCNotFoundException;
     
     void addControllerAgent(ControllerAgentInfo controllerAgent, ResourceEntityInfo resource, int timeout) throws InterruptedException, ControllerAgentNotFoundException; 
+    
+    void addProbe(ID probeID, int timeout) throws InterruptedException, ProbeNotFoundException; 
 }

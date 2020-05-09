@@ -433,7 +433,20 @@ public class PlanxIMNode extends AbstractDHTIMNode {
             return false;
         }
     }
+
+    @Override
+    public boolean containsProbe(ID probeID, int timeout) {
+        try {
+            BigInteger newKey = keyToBigInteger("/probe/" + probeID + "/name");
+            return dht.contains(newKey);
+        } 
+        catch (IOException ioe) {
+            LOGGER.error("IMNode: containsProbe failed for probe " + probeID);
+            return false;
+        }
+    }
     
+
 
     /**
      * Put stuff into DHT.

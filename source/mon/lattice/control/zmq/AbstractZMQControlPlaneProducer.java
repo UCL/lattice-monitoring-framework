@@ -144,8 +144,20 @@ public abstract class AbstractZMQControlPlaneProducer implements
                 mData = new ZMQControlMetaData(dataSourceID.toString());
                 //we return the ID of the new created probe as result
                 probeID = (ID) synchronousTransmit(m, mData);
+                
+                // should wait until the info plane message for that probe is received
+                infoPlaneDelegate.addProbe(probeID, 10000);
             }  
-        } catch (IOException | DSNotFoundException | ControlPlaneConsumerException ex) {
+        } 
+          catch (InterruptedException iex) {
+            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
+            throw new ControlServiceException(iex);
+          }   
+          catch (ProbeNotFoundException pex) {
+            LOGGER.error("The probe information was not received on the info plane " + pex.getMessage());
+            throw new ControlServiceException(pex);  
+          }
+          catch (IOException | DSNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing load probe command " + ex.getMessage());
             throw new ControlServiceException(ex);
           }

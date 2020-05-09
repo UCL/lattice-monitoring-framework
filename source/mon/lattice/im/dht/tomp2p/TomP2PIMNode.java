@@ -501,6 +501,22 @@ public class TomP2PIMNode extends AbstractDHTIMNode implements AnnounceEventList
             return false;
         }     
     }
+    
+    
+    @Override
+    public boolean containsProbe(ID probeID, int timeout) {
+        try {
+            String newKey = "/probe/" + probeID + "/name";
+            return dht.contains(newKey, timeout);
+        } 
+        catch (IOException ioe) {
+            LOGGER.error("IMNode: containsProbe failed for probe " + probeID);
+            return false;
+        }
+    }
+    
+    
+    
 
     /**
      * Put stuff into DHT.

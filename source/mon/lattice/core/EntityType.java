@@ -16,7 +16,8 @@ import java.util.HashMap;
 public enum EntityType {
         DATASOURCE(1),
         DATACONSUMER(2),
-        CONTROLLERAGENT(3);
+        CONTROLLERAGENT(3),
+        PROBE(4);
         
         private static final HashMap<Integer, EntityType> lookup = new HashMap<>();
         private Integer entityValue;

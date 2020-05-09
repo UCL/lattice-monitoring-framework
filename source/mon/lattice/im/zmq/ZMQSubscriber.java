@@ -8,6 +8,7 @@ import mon.lattice.core.plane.AnnounceMessage;
 import mon.lattice.core.plane.DeannounceMessage;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import mon.lattice.im.AbstractIMNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,6 +187,11 @@ public class ZMQSubscriber extends AbstractIMNode implements IMSubscriberNode, R
         return controllerAgents.containsKey(controllerAgentID);
     }
     
+    @Override
+    public boolean containsProbe(ID probeID, int timeOut) {
+        return probes.containsKey(probeID);
+    }
+    
     
     @Override
     public Object getDataSourceInfo(ID dataSourceID, String info) {
@@ -341,6 +347,7 @@ public class ZMQSubscriber extends AbstractIMNode implements IMSubscriberNode, R
                 case "probe":
                     if (operation.equals("add")) {
                         probes.put(entityID, msgObj.getJSONObject("info"));
+                        sendMessage(new AnnounceMessage(entityID, EntityType.PROBE));
                     }
                     else if (operation.equals("remove")) {
                         probes.remove(entityID);

@@ -37,6 +37,11 @@ public abstract class AbstractZMQInfoPlane implements InfoPlane  {
     }
     
     @Override
+    public boolean containsProbe(ID probeID, int timeout) {
+        return zmqSubscriber.containsProbe(probeID, timeout);
+    }
+    
+    @Override
     public Object lookupDataSourceInfo(DataSource dataSource, String info) {
         return zmqSubscriber.getDataSourceInfo(dataSource.getID(), info);
     }

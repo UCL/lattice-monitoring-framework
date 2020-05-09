@@ -251,6 +251,11 @@ public class ZMQInfoPlaneWithControlAgents implements InfoPlane, ControllerAgent
     }
 
     @Override
+    public boolean containsProbe(ID probeID, int timeOut) {
+        return false;
+    }
+
+    @Override
     public boolean putInfo(String key, Serializable value) {
         return false;
     }
