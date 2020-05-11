@@ -11,9 +11,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractZMQInfoPlane implements InfoPlane  {
     
-    ZMQSubscriber zmqSubscriber;
-    
-    ZMQPublisher zmqPublisher;
+    AbstractZMQSubscriber zmqSubscriber;
+    AbstractZMQPublisher zmqPublisher;
     
     static Logger LOGGER = LoggerFactory.getLogger(AbstractZMQInfoPlane.class);
     

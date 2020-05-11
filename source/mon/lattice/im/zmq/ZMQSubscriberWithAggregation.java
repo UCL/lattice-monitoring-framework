@@ -5,23 +5,24 @@ import mon.lattice.core.EntityType;
 import mon.lattice.core.plane.AnnounceMessage;
 import mon.lattice.core.plane.DeannounceMessage;
 import org.zeromq.ZMQ;
+import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import mon.lattice.im.IMSubscriberNode;
 
 /**
  * An ZMQSubscriber is responsible for receiving information about  
- * DataSources, DataConsumers, Probes and probes attributes on the InfoPlane 
- * using ZMQ.
+ DataSources, DataConsumers, Probes and probes embeddedAttributes on the InfoPlane 
+ using ZMQ.
 **/
 
-public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriberNode, Runnable {
+public class ZMQSubscriberWithAggregation extends AbstractZMQSubscriber implements IMSubscriberNode, Runnable {
     
     /**
      * Construct a ZMQSubscriber given a remote host, a remote 
      * port where connecting to and a message filter.
      */
-    public ZMQSubscriber(String remHost, int remPort, String filter) {
+    public ZMQSubscriberWithAggregation(String remHost, int remPort, String filter) {
         super(remHost, remPort, filter, ZMQ.context(1));
     } 
     
@@ -29,7 +30,7 @@ public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriber
      * Construct a ZMQInformationConsumer given a remote host, a remote 
      * port where connecting to, a message filter and an existing ZMQ.Context.
      */
-    public ZMQSubscriber(String remHost, int remPort, String filter, ZMQ.Context context) {
+    public ZMQSubscriberWithAggregation(String remHost, int remPort, String filter, ZMQ.Context context) {
 	super(remHost, remPort, filter, context);
     }
     
@@ -38,7 +39,7 @@ public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriber
      * Construct a ZMQInformationConsumer given a remote host, a remote 
      * port where connecting to, a message filter and an existing ZMQ.Context.
      */
-    public ZMQSubscriber(String internalURI, String filter, ZMQ.Context context) {
+    public ZMQSubscriberWithAggregation(String internalURI, String filter, ZMQ.Context context) {
 	super(internalURI, filter, context);
     }
     
@@ -48,7 +49,7 @@ public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriber
      * Construct a ZMQSubscriber given a local port where connecting to 
      * and a message filter.
      */
-    public ZMQSubscriber(int port, String filter) {
+    public ZMQSubscriberWithAggregation(int port, String filter) {
         super(port, filter);
     }
     
@@ -58,9 +59,10 @@ public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriber
      * a message filter and an existing ZMQ.Context.
      */
     
-    public ZMQSubscriber(int port, String filter, ZMQ.Context context) {
+    public ZMQSubscriberWithAggregation(int port, String filter, ZMQ.Context context) {
 	super(port, filter, context);
     }
+    
     
     
     @Override
@@ -80,6 +82,9 @@ public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriber
             else
                 field = msgObj.getJSONObject("info").getString("field");
             
+            LOGGER.debug("Received: " + msgObj);
+            
+            
             switch(entityType) {
                 case "datasource":  
                     if (operation.equals("add")) {
@@ -98,7 +103,7 @@ public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriber
                     break;
                         
                 case "probe":
-                    if (operation.equals("add")) {
+                    if (operation.equals("add")) {    
                         probes.put(entityID, msgObj.getJSONObject("info"));
                         sendMessage(new AnnounceMessage(entityID, EntityType.PROBE));
                     }
@@ -107,6 +112,10 @@ public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriber
                         sendMessage(new DeannounceMessage(entityID, EntityType.PROBE));
                     }
                     
+                    JSONArray embeddedAttributes = msgObj.getJSONArray("attributes");
+                    for (int i=0; i < embeddedAttributes.length(); i++) {
+                        messageHandler(embeddedAttributes.getString(i));
+                    }
                     
                     LOGGER.trace("probe map:\n");
                     for (ID id: probes.keySet())

@@ -36,8 +36,8 @@ public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements In
 	remoteHost = remoteHostname;
 	this.remotePort = remotePort;
 
-	zmqPublisher = new ZMQPublisher(remoteHost, remotePort);
-        zmqSubscriber = new ZMQSubscriber(remoteHost, remotePort + 1, "info.probe", zmqPublisher.getContext()); //reusing context
+	zmqPublisher = new ZMQPublisherWithAggregation(remoteHost, remotePort);
+        zmqSubscriber = new ZMQSubscriberWithAggregation(remoteHost, remotePort + 1, "info.probe", zmqPublisher.getContext()); //reusing context
     }
      
      
