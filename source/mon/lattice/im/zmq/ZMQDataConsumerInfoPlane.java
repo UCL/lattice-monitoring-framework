@@ -106,7 +106,7 @@ public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements In
     public boolean addReporterInfo(Reporter r) {
         try {
             zmqPublisher.addReporter((ControllableReporter)r);
-            LOGGER.info("just added Reporter " + ((ControllableReporter)r).getName());
+            LOGGER.info("just added " + ((ControllableReporter)r).getName() + " (ID: " + ((ControllableReporter)r).getId() + ")");
             return true;
         } catch (IOException e) 
             {

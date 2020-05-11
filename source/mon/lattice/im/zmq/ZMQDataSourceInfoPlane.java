@@ -117,7 +117,7 @@ public class ZMQDataSourceInfoPlane extends AbstractZMQInfoPlane implements Info
 	try {
 	    zmqPublisher.addProbe(p);
 
-	    LOGGER.info("just added Probe " + p.getClass());
+	    LOGGER.info("just added Probe " + p.getName() +  " {class: " + p.getClass() + ", id: " + p.getID() + "}");
             LOGGER.debug(p.toString());
 	    return true;
 	} catch (IOException ioe) {

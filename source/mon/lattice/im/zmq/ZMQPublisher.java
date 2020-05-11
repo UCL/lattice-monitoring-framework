@@ -125,7 +125,7 @@ public class ZMQPublisher extends AbstractIMNode implements IMPublisherNode {
             infoObj.put("entity", "datasource");
             infoObj.put("operation", "add"); // FIXME: could use an ENUM
             infoObj.put("info", dataSourceInfo);
-            LOGGER.info(dataSourceInfo.toString());
+            LOGGER.debug(dataSourceInfo.toString());
  
         } catch(JSONException e) {
             LOGGER.error("Error while formatting info" + e.getMessage());
@@ -230,6 +230,7 @@ public class ZMQPublisher extends AbstractIMNode implements IMPublisherNode {
             infoObj.put("entity", "dataconsumer");
             infoObj.put("operation", "add"); // FIXME: could use an ENUM
             infoObj.put("info", dataConsumerInfo);
+            LOGGER.debug(dataConsumerInfo.toString());
  
         } catch(JSONException e) {
             LOGGER.error("Error while formatting info" + e.getMessage());
@@ -288,7 +289,7 @@ public class ZMQPublisher extends AbstractIMNode implements IMPublisherNode {
             infoObj.put("entity", "controlleragent");
             infoObj.put("operation", "add"); // FIXME: could use an ENUM
             infoObj.put("info", controllerAgentInfo);
-            LOGGER.info(controllerAgentInfo.toString());
+            LOGGER.debug(controllerAgentInfo.toString());
  
         } catch(JSONException e) {
             LOGGER.error("Error while formatting info" + e.getMessage());
@@ -481,7 +482,7 @@ public class ZMQPublisher extends AbstractIMNode implements IMPublisherNode {
      * Send stuff to the Subscribers.
      */
     public boolean sendInfo(String aKey, String aValue) {
-	LOGGER.info("sending " + aKey + " => " + aValue);
+	LOGGER.debug("sending " + aKey + " => " + aValue);
         return publisherSocket.sendMore(aKey) && publisherSocket.send(aValue); 
     }
 

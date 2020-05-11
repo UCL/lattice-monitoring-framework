@@ -84,12 +84,15 @@ public class ZMQDataSourceControlPlaneXDRConsumer extends AbstractZMQControlPlan
     public ID loadProbe(ID dataSourceID, String probeClassName, Object ... probeArgs) throws ControlServiceException {
         DataSource dataSource = dataSourceDelegate.getDataSource();
         try {
-            LOGGER.info("** invoking loadProbe **");
+            
             ProbeLoader p = new ProbeLoader(probeClassName, probeArgs);
-            if (dataSource instanceof ControllableDataSource)
-                return ((ControllableDataSource)dataSource).addProbe(p);
+            if (dataSource instanceof ControllableDataSource) {
+                ID probeID = ((ControllableDataSource)dataSource).addProbe(p);
+                LOGGER.info("** invoked loadProbe (Probe ID: " + probeID + ") **");
+                return probeID;
+            }
             else
-                throw new ControlServiceException("Probe cannot be loaded on the DS");
+                throw new ControlServiceException("Probe could be loaded on the DS");
         } catch (ProbeLoaderException ex) {
             throw new ControlServiceException(ex);
         }
@@ -98,9 +101,9 @@ public class ZMQDataSourceControlPlaneXDRConsumer extends AbstractZMQControlPlan
     @Override
     public boolean unloadProbe(ID probeID) throws ControlServiceException {
         DataSource dataSource = dataSourceDelegate.getDataSource();
-        LOGGER.info("** invoking unloadProbe **");
         Probe p = dataSource.getProbeByID(probeID);
         dataSource.removeProbe(p);
+        LOGGER.info("** invoked unloadProbe (Probe ID: " + probeID + ") **");
         return true;
     }
     
@@ -125,9 +128,8 @@ public class ZMQDataSourceControlPlaneXDRConsumer extends AbstractZMQControlPlan
     @Override
     public boolean setProbeServiceID(ID probeID, ID id) {
         DataSource dataSource = dataSourceDelegate.getDataSource();
-        LOGGER.info("** invoking setProbeServiceID **");
-        dataSource.setProbeServiceID(probeID, id);
-        return true;
+        LOGGER.info("** invoking setProbeServiceID (Probe ID: " + probeID +  ") **");
+        return dataSource.setProbeServiceID(probeID, id);
         }
 
     @Override
@@ -171,19 +173,23 @@ public class ZMQDataSourceControlPlaneXDRConsumer extends AbstractZMQControlPlan
     @Override
     public boolean turnOnProbe(ID probeID) {
         DataSource dataSource = dataSourceDelegate.getDataSource();
-        LOGGER.info("** invoking turnOnProbe **");
         if (!dataSource.isProbeOn(probeID))
-            dataSource.turnOnProbe(probeID);
-        return true;
+            if (dataSource.turnOnProbe(probeID) != null) {
+                LOGGER.info("** invoked turnOnProbe (Probe ID: " + probeID + ") **");
+                return true;
+            }
+        return false;
     }
 
     @Override
     public boolean turnOffProbe(ID probeID) {
         DataSource dataSource = dataSourceDelegate.getDataSource();
-        LOGGER.info("** invoking turnOffProbe **");
         if (dataSource.isProbeOn(probeID))
-            dataSource.turnOffProbe(probeID);
-        return true;
+            if (dataSource.turnOffProbe(probeID) != null) {
+                 LOGGER.info("** invoked turnOffProbe (Probe ID: " + probeID + ") **");
+                 return true;
+            }
+        return false;
     }
 
     @Override
