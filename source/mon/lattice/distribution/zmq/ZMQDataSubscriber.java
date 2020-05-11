@@ -65,7 +65,6 @@ public class ZMQDataSubscriber implements Runnable {
         
         context = ctx;
         subscriberSocket = context.socket(ZMQ.SUB);
-        subscriberSocket.setLinger(0);
         subscriberSocket.setRcvHWM(0);
     }
     
