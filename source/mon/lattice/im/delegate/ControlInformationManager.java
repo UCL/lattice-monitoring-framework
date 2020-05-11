@@ -487,16 +487,24 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
     void deleteDataSource(ID id) {    
         dataSources.remove(id);
-        this.dataSourcesMap.remove(id);
-        this.dataSourcesResourcesInfo.remove(id);
+        dataSourcesMap.remove(id);
+        dataSourcesResourcesInfo.remove(id);
     }
     
     void deleteDataConsumer(ID id) {
         dataConsumers.remove(id);
+        dataConsumersMap.remove(id);
+        dataConsumersResourcesInfo.remove(id);
     }
     
     void deleteControllerAgent(ID id) {
         controllerAgents.remove(id);
+        controllerAgentsMap.remove(id);
+        controllerAgentsResourcesInfo.remove(id);
+    }
+    
+    void deleteProbe(ID id) {
+        probes.remove(id);
     }
     
     List<ID> getDataSourcesList() {
@@ -630,7 +638,10 @@ public class ControlInformationManager implements InfoPlaneDelegate {
         } else if (type == EntityType.CONTROLLERAGENT && containsControllerAgent(id)) {
               LOGGER.info("Removing Controller Agent " + id.toString());
               deleteControllerAgent(id);
-          }
+        } else if (type == EntityType.PROBE && containsProbe(id)) {
+              LOGGER.info("Removing Probe " + id.toString());
+              deleteProbe(id); 
+        }
         
     }
     

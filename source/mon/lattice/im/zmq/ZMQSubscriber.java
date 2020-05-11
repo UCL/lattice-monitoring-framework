@@ -6,9 +6,8 @@ import mon.lattice.core.EntityType;
 import mon.lattice.core.plane.AnnounceEventListener;
 import mon.lattice.core.plane.AnnounceMessage;
 import mon.lattice.core.plane.DeannounceMessage;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
+import java.util.concurrent.ConcurrentHashMap;
 import mon.lattice.im.AbstractIMNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,14 +36,14 @@ public class ZMQSubscriber extends AbstractIMNode implements IMSubscriberNode, R
     
     boolean threadRunning = false;
     
-    Map<ID, JSONObject> dataSources = new HashMap<>();
-    Map<ID, JSONObject> probes = new HashMap<>();
-    Map<ID, JSONObject> probeAttributes = new HashMap<>();
+    Map<ID, JSONObject> dataSources = new ConcurrentHashMap<>();
+    Map<ID, JSONObject> probes = new ConcurrentHashMap<>();
+    Map<ID, JSONObject> probeAttributes = new ConcurrentHashMap<>();
     
-    Map<ID, JSONObject> dataConsumers = new HashMap<>();
-    Map<ID, JSONObject> reporters = new HashMap<>();
+    Map<ID, JSONObject> dataConsumers = new ConcurrentHashMap<>();
+    Map<ID, JSONObject> reporters = new ConcurrentHashMap<>();
     
-    Map<ID, JSONObject> controllerAgents = new HashMap<>();
+    Map<ID, JSONObject> controllerAgents = new ConcurrentHashMap<>();
     
     AnnounceEventListener listener;
     
@@ -126,7 +125,6 @@ public class ZMQSubscriber extends AbstractIMNode implements IMSubscriberNode, R
                 Thread.sleep(500);
             } catch (InterruptedException e) {}
         }
-        subscriberSocket.setLinger(0);
         subscriberSocket.setRcvHWM(0);
         subscriberSocket.connect(uri);
         thread.start();
@@ -351,6 +349,7 @@ public class ZMQSubscriber extends AbstractIMNode implements IMSubscriberNode, R
                     }
                     else if (operation.equals("remove")) {
                         probes.remove(entityID);
+                        sendMessage(new DeannounceMessage(entityID, EntityType.PROBE));
                     }
                     
                     
