@@ -89,6 +89,27 @@ public class ZMQPublisher extends AbstractZMQPublisher implements IMPublisherNod
     }
     
     
+    @Override
+    public AbstractZMQPublisher removeDataSource(DataSource ds) throws IOException {
+        JSONObject infoObj = new JSONObject();
+        try {
+            JSONObject dsInfo = new JSONObject();
+            dsInfo.put("id", ds.getID().toString());
+            infoObj.put("entity", "datasource");
+            infoObj.put("operation", "remove"); // FIXME: could use an ENUM
+            infoObj.put("info", dsInfo);
+        } catch (JSONException e) {
+            LOGGER.error("Error" + e.getMessage());
+        }
+        Collection<Probe> probes = ds.getProbes();
+        for (Probe aProbe : probes) {
+            removeProbe(aProbe);
+        }
+        sendInfo("info.datasource", infoObj.toString());
+        return this;
+    }
+    
+    
     
     @Override
     public ZMQPublisher removeProbe(Probe aProbe) throws IOException {

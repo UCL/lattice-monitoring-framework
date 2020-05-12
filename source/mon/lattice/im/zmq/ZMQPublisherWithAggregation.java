@@ -61,9 +61,50 @@ public class ZMQPublisherWithAggregation extends AbstractZMQPublisher {
     }
     
     
+    
+    @Override
+    public AbstractZMQPublisher removeDataSource(DataSource ds) throws IOException {
+        JSONObject infoObj = new JSONObject();
+        try {
+            JSONObject dsInfo = new JSONObject();
+            dsInfo.put("id", ds.getID().toString());
+            infoObj.put("entity", "datasource");
+            infoObj.put("operation", "remove"); // FIXME: could use an ENUM
+            infoObj.put("info", dsInfo);
+            
+            JSONArray probesInfo = new JSONArray();
+            Collection<Probe> probes = ds.getProbes();
+            
+            for (Probe aProbe : probes) {
+                probesInfo.put(setRemoveProbeInfo(aProbe));
+            }
+            
+            infoObj.put("probes", probesInfo);
+        } catch (JSONException e) {
+            LOGGER.error("Error " + e.getMessage());
+        }
+        sendInfo("info.datasource", infoObj.toString());
+        return this;
+    }
+    
+    
 
     @Override
     public ZMQPublisherWithAggregation removeProbe(Probe aProbe) throws IOException {
+        JSONObject infoObj = setRemoveProbeInfo(aProbe);
+        sendInfo("info.probe", infoObj.toString());
+        return this;
+    }
+
+    @Override
+    public ZMQPublisherWithAggregation removeProbeAttribute(Probe aProbe, ProbeAttribute attr) throws IOException {
+        JSONObject infoObj = setRemoveProbeAttributeInfo(aProbe, attr);
+        sendInfo("info.probeattribute", infoObj.toString());
+        return this;
+    }
+    
+    
+    private JSONObject setRemoveProbeInfo(Probe aProbe) {
         JSONObject infoObj = new JSONObject();
         try {
             JSONObject probeInfo = new JSONObject();
@@ -83,16 +124,7 @@ public class ZMQPublisherWithAggregation extends AbstractZMQPublisher {
             LOGGER.error("Error" + e.getMessage());
         }
         
-        sendInfo("info.probe", infoObj.toString());
-        return this;
-        
-    }
-
-    @Override
-    public ZMQPublisherWithAggregation removeProbeAttribute(Probe aProbe, ProbeAttribute attr) throws IOException {
-        JSONObject infoObj = setRemoveProbeAttributeInfo(aProbe, attr);
-        sendInfo("info.probeattribute", infoObj.toString());
-        return this;
+        return infoObj;  
     }
     
     

@@ -94,6 +94,10 @@ public class ZMQSubscriberWithAggregation extends AbstractZMQSubscriber implemen
                     else if (operation.equals("remove")) {
                         dataSources.remove(entityID);
                         sendMessage(new DeannounceMessage(entityID, EntityType.DATASOURCE));
+                        
+                        JSONArray embeddedProbes = msgObj.getJSONArray("probes");
+                        for (int i=0; i < embeddedProbes.length(); i++)
+                            messageHandler(embeddedProbes.getString(i));
                     }
                     
                     LOGGER.trace("datasource map:\n");
@@ -113,9 +117,8 @@ public class ZMQSubscriberWithAggregation extends AbstractZMQSubscriber implemen
                     }
                     
                     JSONArray embeddedAttributes = msgObj.getJSONArray("attributes");
-                    for (int i=0; i < embeddedAttributes.length(); i++) {
+                    for (int i=0; i < embeddedAttributes.length(); i++)
                         messageHandler(embeddedAttributes.getString(i));
-                    }
                     
                     LOGGER.trace("probe map:\n");
                     for (ID id: probes.keySet())

@@ -206,24 +206,7 @@ public abstract class AbstractZMQPublisher extends AbstractIMNode implements IMP
      * Remove stuff
      */
     @Override
-    public AbstractZMQPublisher removeDataSource(DataSource ds) throws IOException {
-        JSONObject infoObj = new JSONObject();
-        try {
-            JSONObject dsInfo = new JSONObject();
-            dsInfo.put("id", ds.getID().toString());
-            infoObj.put("entity", "datasource");
-            infoObj.put("operation", "remove"); // FIXME: could use an ENUM
-            infoObj.put("info", dsInfo);
-        } catch (JSONException e) {
-            LOGGER.error("Error" + e.getMessage());
-        }
-        Collection<Probe> probes = ds.getProbes();
-        for (Probe aProbe : probes) {
-            removeProbe(aProbe);
-        }
-        sendInfo("info.datasource", infoObj.toString());
-        return this;
-    }
+    public abstract AbstractZMQPublisher removeDataSource(DataSource ds) throws IOException;
 
     @Override
     public abstract AbstractZMQPublisher removeProbe(Probe aProbe) throws IOException;
