@@ -95,7 +95,6 @@ public class ZMQDataSubscriber implements Runnable {
     
     public void end() throws InterruptedException {
         threadRunning = false;
-        subscriberSocket.close();
         context.term();
     }
     
@@ -164,7 +163,8 @@ public class ZMQDataSubscriber implements Runnable {
                     receiver.error(lastException);
                 }
 	    }
-	}        
+	}
+        subscriberSocket.close();
     }
     
 }

@@ -160,6 +160,10 @@ public abstract class AbstractZMQControlPlaneProducer implements
           catch (IOException | DSNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing load probe command " + ex.getMessage());
             throw new ControlServiceException(ex);
+          } 
+          catch (Exception e) {
+            LOGGER.error("Unknown Error while performing load probe command " + e.getMessage());
+            throw new ControlServiceException(e);
           }
         return probeID;
     }
@@ -212,6 +216,10 @@ public abstract class AbstractZMQControlPlaneProducer implements
         } catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing set probe service ID command " + ex.getMessage());
             throw new ControlServiceException(ex);
+          }
+          catch (Exception e) {
+            LOGGER.error("Unknown Error while performing setProbeServiceID command " + e.getMessage());
+            throw new ControlServiceException(e);
           }
         
         return result;
@@ -344,6 +352,10 @@ public abstract class AbstractZMQControlPlaneProducer implements
         } catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing turn on probe command " + ex.getMessage());
             throw new ControlServiceException(ex);
+          }
+          catch (Exception e) {
+            LOGGER.error("Unknown Error while performing turnOnProbe command " + e.getMessage());
+            throw new ControlServiceException(e);
           }
         }
 

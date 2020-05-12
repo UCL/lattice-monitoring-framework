@@ -32,7 +32,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
     
 
     @Override
-    public Object synchronousTransmit(ControlPlaneMessage cpMessage, MetaData metadata) throws IOException, ControlPlaneConsumerException {
+    public synchronized Object synchronousTransmit(ControlPlaneMessage cpMessage, MetaData metadata) throws IOException, ControlPlaneConsumerException {
         Object result=null;
         
         // convert the object to a byte []
