@@ -15,7 +15,7 @@ import us.monoid.json.JSONObject;
  *
  * @author uceeftu
  */
-public class IotTopology extends Thread {
+public class IotTopology {
     RestInteractor restClient;
     List<String> entityIDs;
     Integer topologyId;
@@ -37,6 +37,8 @@ public class IotTopology extends Thread {
     String dataSourceID;
     String reporterID;
     List<String> probesIDs = new ArrayList<>();
+    
+    Thread currentThread;
     
 
     public IotTopology(int topologyId,
@@ -88,12 +90,12 @@ public class IotTopology extends Thread {
     }
     
     
-    void unDeployDS() throws Exception {
+    private void unDeployDS() throws Exception {
         restClient.unloadDS(dataSourceID);
     }
    
     
-    void unDeployDC () throws Exception {
+    private void unDeployDC () throws Exception {
         restClient.unloadDC(dataConsumerID);
     }
     
@@ -156,8 +158,9 @@ public class IotTopology extends Thread {
     }
     
     
-    @Override
-    public void run() {
+    
+    void createTopology() {
+
         try {
             //changing the initial DC port setting according to the topology ID
             //this might need to be done differently
@@ -180,8 +183,31 @@ public class IotTopology extends Thread {
             System.out.println("*** Topology " + topologyId + " Created ***");
             
         } catch (Exception e) {
-            System.err.println("Error while creating the topology: " + this.topologyId + " – " + e.getMessage());
+            System.err.println("Error while creating topology: " + this.topologyId + " – " + e.getMessage());
         }
+        
+    }
+    
+    
+    void deleteTopology() {
+        try {
+            this.unDeployDS();
+            this.unloadReporter();
+            this.unDeployDC();
+        } catch (Exception e) {
+            System.err.println("Error while deleting topology: " + this.topologyId + " – " + e.getMessage());
+        }
+        
+    }
+    
+    void startDeployment() {
+        currentThread = new Thread( () -> this.createTopology() );
+        currentThread.start();
+    }
+    
+    void stopDeployment() {
+        currentThread = new Thread( () -> this.deleteTopology() );
+        currentThread.start();
     }
     
 }

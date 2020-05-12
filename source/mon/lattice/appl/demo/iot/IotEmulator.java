@@ -136,12 +136,12 @@ public class IotEmulator {
                 
                 t.setEntitiesIDs(iot.entityIDs);
                 iotList.add(t);
-                t.start();
+                t.startDeployment();
 
             }
             
             for (IotTopology t : iotList)
-                t.join();
+                t.currentThread.join();
             
             System.out.printf("\n*** Deployment Completed ***\n");
             System.out.print("\nPress a key to stop the emulation");
@@ -156,13 +156,7 @@ public class IotEmulator {
         finally {
             // stopping the emulation
             for (IotTopology t : iotList) {
-                try {
-                    t.unDeployDS();
-                    t.unloadReporter();
-                    t.unDeployDC();
-                }
-                catch (Exception e) { // the DS/DC was either already stopped or not running
-                }
+                t.stopDeployment();
             }
         }
     if (errorStatus)
