@@ -25,4 +25,13 @@ public class ListProbeAttribute extends AbstractProbeAttribute implements ProbeA
 	this.elementType = type;
     }
 
+    /**
+     * Get the Element type
+     */
+    public ProbeAttributeType getElementType() {
+        return elementType;
+    }
+
+
+
 }
