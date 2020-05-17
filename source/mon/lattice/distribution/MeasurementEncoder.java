@@ -181,8 +181,7 @@ public class MeasurementEncoder {
 		// write out no of byte first
 		// so the decoder knows how many to get
 		byte [] array = (byte[])value;
-		out.writeInt(array.length);
-		out.write(array);
+		writeBytes(array);
 		break;
 
 	    case TABLE:
@@ -218,6 +217,24 @@ public class MeasurementEncoder {
      */
     protected void writeUTF(Object value) throws IOException {
 	out.writeUTF((String)value);
+    }
+
+    /**
+     * Write a byte[] to the output.
+     */
+    protected void writeBytes(Object value) throws IOException {
+        byte[] bytes = (byte[])value;
+	writeInt(bytes.length);
+	out.write(bytes);
+        // now pad
+        int lenMod = bytes.length %4;
+        int pad =  4 - lenMod;
+        
+        for (int p=0; p < pad; p++) {
+            out.write((byte)0);
+        }
+
+
     }
 
     /**
