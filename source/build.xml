@@ -74,6 +74,11 @@
      </javadoc>
   </target>
 
+  <target name="clean">
+  <echo message="------ Deleting all existing class files"/>
+     <delete dir="../classes"/>
+  </target>
+
   <!-- ALL -->
   <target name="all" depends="dist, javadoc">
   </target>
@@ -88,7 +93,8 @@
      <echo message="            build : Build Application"/>     
      <echo message="            dist  : Build Application + Archive (JAR)"/>     
      <echo message="            javadoc  : Build Application + Javadoc"/>     
-     <echo message="            all   : Build Application + Archive + JavaDoc"/>       
+     <echo message="            all   : Build Application + Archive + JavaDoc"/>      
+     <echo message="            clean  : Clean Application class files"/>	 
   </target>
        
 </project>
