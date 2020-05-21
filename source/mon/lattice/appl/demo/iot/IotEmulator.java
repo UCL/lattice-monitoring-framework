@@ -5,21 +5,35 @@
  */
 package mon.lattice.appl.demo.iot;
 
-import eu.fivegex.monitoring.test.LatticeTest;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import mon.lattice.appl.RestClient;
+import us.monoid.json.JSONException;
 
 
 public class IotEmulator {
+    RestClient restClient;
     Properties configuration;
     
+    String username;
+    String userKey;
+    
+    String hostAddress;
+    Integer hostPort;
+    
+    String controllerAddress;
+    Integer controllerPort;
+    
+    String userID;
+    String hostID;
+    
     Integer topologies;
-    LatticeTest restClient;
     List<String> entityIDs = new ArrayList<>();
     
     Integer nSensors;
@@ -29,11 +43,12 @@ public class IotEmulator {
     Integer waitMax;
     Integer valueMin;
     Integer valueMax;
+    Integer dsNumber;
 
     Integer bufferSize;
-    String address;
-    String port;
-    String uri;
+    String reporterAddress;
+    String reporterPort;
+    String reporterURI;
 
     
     public IotEmulator(Properties configuration) {
@@ -41,6 +56,16 @@ public class IotEmulator {
     }
 
     void loadEmulationConfiguration() {
+        username = configuration.getProperty("user.id");
+        userKey = configuration.getProperty("user.key");
+        
+        // we use the same host for Data Sources and Data Consumers
+        hostAddress = configuration.getProperty("host.address");
+        hostPort = Integer.valueOf(configuration.getProperty("host.port"));
+        
+        controllerAddress = configuration.getProperty("controller.address");
+        controllerPort = Integer.valueOf(configuration.getProperty("controller.rest.port"));
+        
         nSensors = Integer.valueOf(configuration.getProperty("sensors.number"));
         nEntities = Integer.valueOf(configuration.getProperty("entities.number"));
         rate = Integer.valueOf(configuration.getProperty("probe.rate", "2000"));
@@ -50,20 +75,22 @@ public class IotEmulator {
         valueMax = Integer.valueOf(configuration.getProperty("probe.value.max", "40"));
         topologies = Integer.valueOf(configuration.getProperty("topologies.number", "1"));
         bufferSize = Integer.valueOf(configuration.getProperty("rep.buffersize"));
-        address = configuration.getProperty("rep.address");
-        port = configuration.getProperty("rep.port");
-        uri = configuration.getProperty("rep.uri");
+        dsNumber = Integer.valueOf(configuration.getProperty("ds.number"));
+        reporterAddress = configuration.getProperty("rep.address");
+        reporterPort = configuration.getProperty("rep.port");
+        reporterURI = configuration.getProperty("rep.uri");
     }
     
     
     void printEmulationConfiguration() {
         System.out.println("*** Using the following Configuration ***");
         System.out.println("Number of emulated monitored Entities: " + nEntities);
-        System.out.println("Number of Probes/Sensors: " + nSensors);
+        System.out.println("Number of Data Sources per topology: " + dsNumber);
+        System.out.println("Number of Probes/Sensors per Data Source: " + nSensors);
         System.out.println("Probes/Sensors rate: " + rate);
         System.out.println("Probes/Sensors random activation interval: " + waitMin + "-" + waitMax);
         System.out.println("Reporter buffer size: " + bufferSize);
-        System.out.println("Reporter destination URL: " + "http://" + address + ":" + port + "/" + uri);
+        System.out.println("Reporter destination URL: " + "http://" + reporterAddress + ":" + reporterPort + "/" + reporterURI);
         System.out.println("Number of concurrent generators: " + topologies);
         System.out.println();
     }
@@ -79,10 +106,27 @@ public class IotEmulator {
         return entityIDs.get(randomIndex);
     }
     
+    void initialise() throws IOException, JSONException {
+        restClient = new RestClient(controllerAddress, controllerPort);
+        userID = restClient.addUser(username, "KEY", userKey).getString("ID");
+            
+        // we create a single host object as it is the same for all the Data Sources and Data Consumers
+        hostID = restClient.addHost(hostAddress, hostPort.toString()).getString("ID");
+    }
+    
+    
+    void cleanup() {
+        try {
+            restClient.removeHost(hostID);
+            restClient.deleteUser(userID);
+            } catch (Exception e) {
+                System.err.println("There was an error while removing either the users or the hosts" + e.getMessage());
+            }
+    }
     
     
     public static void main(String[] args) {
-        IotEmulator iot;
+        IotEmulator iot = null;
         List<IotTopology> iotList = new ArrayList<>();
         
         boolean errorStatus = false;
@@ -113,15 +157,16 @@ public class IotEmulator {
             iot.loadEmulationConfiguration();
             iot.printEmulationConfiguration();
             iot.generateEntityIDs();
+            iot.initialise();
             
             // creating requested sensors topologies
             for (int id=1; id <= iot.topologies; id++) {
                 System.out.println("*** Creating Topology " + id + " ***");
                 
-                //creating a RestInteractor for this topology
-                RestInteractor r = new RestInteractor(configuration);
-                
                 IotTopology t = new IotTopology(id,
+                                                iot.userID,
+                                                iot.hostID,
+                                                iot.dsNumber,
                                                 iot.nSensors,
                                                 iot.rate,
                                                 iot.waitMin,
@@ -129,11 +174,15 @@ public class IotEmulator {
                                                 iot.valueMin,
                                                 iot.valueMax,
                                                 iot.bufferSize,
-                                                iot.address,
-                                                iot.port,
-                                                iot.uri,
-                                                r);
+                                                iot.reporterAddress,
+                                                iot.reporterPort,
+                                                iot.reporterURI,
+                                                iot.controllerAddress,
+                                                iot.controllerPort
+                                                );
                 
+                t.setProperties(configuration);
+                t.loadConfiguration();
                 t.setEntitiesIDs(iot.entityIDs);
                 iotList.add(t);
                 t.startDeployment();
@@ -143,7 +192,7 @@ public class IotEmulator {
             for (IotTopology t : iotList)
                 t.currentThread.join();
             
-            System.out.printf("\n*** Deployment Completed ***\n");
+            System.out.print("\n*** Deployment Completed ***\n");
             System.out.print("\nPress a key to stop the emulation");
             System.in.read();
         }
@@ -158,6 +207,10 @@ public class IotEmulator {
             for (IotTopology t : iotList) {
                 t.stopDeployment();
             }
+            
+            if (iot != null) 
+                iot.cleanup();
+            
         }
     if (errorStatus)
         System.exit(1);
