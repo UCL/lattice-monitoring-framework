@@ -11,7 +11,7 @@ import mon.lattice.core.Rational;
  *
  * @author uceeftu
  */
-public interface ControllerAgentInterface <ReturnType> {
+public interface ControlAgentsInterface <ReturnType> {
     ReturnType setCollectionRate(Rational collectionRate) throws Exception;
     
     ReturnType getConnectionRate() throws Exception;

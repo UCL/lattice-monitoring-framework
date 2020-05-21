@@ -187,27 +187,28 @@ class DataSourceRestHandler extends BasicRequestHandler {
         String[] segments = path.getSegments(); 
         Query query = request.getQuery();
         
-        String endPoint;
-        String port;
-        String userName;
+        String sessionID;
+        String className;
         String rawArgs="";
         
-        if (query.containsKey("endpoint"))
-            endPoint = query.get("endpoint");
+        if (query.containsKey("session"))
+            sessionID = query.get("session");
         else {
-            badRequest(response, "missing endpoint arg");
+            badRequest(response, "missing session arg");
             response.close();
             return;
         }
         
-        if (query.containsKey("port"))
-            port = query.get("port");
+        
+        if (query.containsKey("class"))
+            className = query.get("class");
         else {
-            badRequest(response, "missing port arg");
+            badRequest(response, "missing port class");
             response.close();
             return;
         }
         
+        /*
         if (query.containsKey("username"))
             userName = query.get("username");
         else {
@@ -215,6 +216,7 @@ class DataSourceRestHandler extends BasicRequestHandler {
             response.close();
             return;
         }
+        */
         
         if (query.containsKey("args")) {
             rawArgs = query.get("args");
@@ -226,7 +228,7 @@ class DataSourceRestHandler extends BasicRequestHandler {
         String failMessage = null;
         JSONObject jsobj = null;
         
-        jsobj = controllerInstance.startDataSource(endPoint, port, userName, rawArgs);
+        jsobj = controllerInstance.startDataSource(className, rawArgs, sessionID);
         
         if (!jsobj.getBoolean("success")) {
             failMessage = (String)jsobj.get("msg");
@@ -249,25 +251,27 @@ class DataSourceRestHandler extends BasicRequestHandler {
     
     private void stopDS(Request request, Response response) throws JSONException, IOException {
         Path path = request.getPath();
+        Query query = request.getQuery();
+        
         //String[] segments = path.getSegments();
         
-        //String endPoint;
-        //String port;
+        //String sessionID;
+        //String className;
         //String userName;
         
         /*
         if (query.containsKey("endpoint"))
-            endPoint = query.get("endpoint");
+            sessionID = query.get("endpoint");
         else {
             badRequest(response, "missing endpoint arg");
             response.close();
             return;
         }
         
-        if (query.containsKey("port"))
-            port = query.get("port");
+        if (query.containsKey("className"))
+            className = query.get("className");
         else {
-            badRequest(response, "missing port arg");
+            badRequest(response, "missing className arg");
             response.close();
             return;
         }
@@ -296,11 +300,21 @@ class DataSourceRestHandler extends BasicRequestHandler {
             return;
         }
         
+        String sessionID;
+        
+        if (query.containsKey("session"))
+            sessionID = query.get("session");
+        else {
+            badRequest(response, "missing session arg");
+            response.close();
+            return;
+        }
+        
         boolean success = true;
         String failMessage = null;
         JSONObject jsobj = null;
         
-        jsobj = controllerInstance.stopDataSource(dsID);
+        jsobj = controllerInstance.stopDataSource(dsID, sessionID);
         
         if (!jsobj.getBoolean("success")) {
             failMessage = (String)jsobj.get("msg");

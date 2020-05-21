@@ -10,7 +10,6 @@ package mon.lattice.control;
  * @author uceeftu
  */
 public interface ControlInterface<ReturnType> {
-    ReturnType getDataSourceInfo(String dsID) throws Exception;
     
     ReturnType loadProbe(String id, String probeClassName, String probeArgs) throws Exception;
     
@@ -29,6 +28,8 @@ public interface ControlInterface<ReturnType> {
     ReturnType getProbeDataRate(String probeID) throws Exception;
     
     ReturnType getProbeServiceID(String probeID) throws Exception;
+    
+    ReturnType getDataSourceInfo(String dsID) throws Exception;
     
     ReturnType getDataConsumerMeasurementRate(String dcID) throws Exception;
     

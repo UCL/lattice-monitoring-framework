@@ -1,48 +1,43 @@
 package eu.fivegex.monitoring.test;
 
-import mon.lattice.control.ControlInterface;
+import mon.lattice.appl.RestClient;
 import mon.lattice.core.ID;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.text.ParseException;
 import java.util.Properties;
-import mon.lattice.control.deployment.DeploymentInterface;
 import us.monoid.json.JSONArray;
-
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import us.monoid.web.Resty;
-
-import static us.monoid.web.Resty.delete;
-import static us.monoid.web.Resty.put;
 import eu.fivegex.monitoring.control.probescatalogue.JSONProbesCatalogue;
-import static us.monoid.web.Resty.content;
-import static us.monoid.web.Resty.form;
 
 /**
- * Makes REST calls to the Lattice Controller through the REST API using Resty
+ * A Test of the basic Lattice components for the 5GEx CI/CD validation
  **/
-public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInterface<JSONObject>, JSONProbesCatalogue {
-    // A URI for a Lattice Controller to interact with
-    String vimURI;
-    Resty rest;
-    int port;
+public class LatticeTest extends RestClient implements JSONProbesCatalogue {
+    
+    String username;
+    String userKey;
+    String userID;
     
     //general attributes
     String DSEndPointAddress;
     String DSEndPointName;
     String DSEndPointPort;
-    String DSEndPointUserName;
+    String DSHostID;
+    String DSHostSessionID;
+    String DSClassName;
     
     String DCEndPointAddress;
     String DCEndPointName;
     String DCEndPointPort;
-    String DCEndPointUserName;
+    String DCHostID;
+    String DCHostSessionID;
+    String DCClassName;
 
     String DCDataPlaneAddress;
-    protected String DCDataPlanePort;
+    String DCDataPlanePort;
     
     String controllerInfoPlaneAddress;
     String controllerInfoPlanePort;
@@ -64,8 +59,8 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     String mongoDBName;
     String mongoCollection;
     
-    
-    
+
+      
     /**
      * Construct a LatticeTest
      * using defaults of localhost and port 6666
@@ -73,17 +68,20 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     public LatticeTest(Properties configuration) throws IOException {
         this(configuration.getProperty("controller.infoplane.address"), Integer.valueOf(configuration.getProperty("controller.rest.port")));
         
+        username = configuration.getProperty("user.id");
+        userKey = configuration.getProperty("user.key");
+        
         controllerInfoPlaneAddress = configuration.getProperty("controller.infoplane.address");
         controllerInfoPlanePort = configuration.getProperty("controller.infoplane.port");
         controllerControlPlanePort = configuration.getProperty("controller.controlplane.port");
-        
+               
         DSEndPointAddress = configuration.getProperty("ds.endpoint.address");
         DSEndPointName = configuration.getProperty("ds.endpoint.name");
-        DSEndPointUserName = configuration.getProperty("ds.endpoint.user");
+        DSClassName = configuration.getProperty("ds.class");
         
         DCEndPointAddress = configuration.getProperty("dc.endpoint.address");
         DCEndPointName = configuration.getProperty("dc.endpoint.name");
-        DCEndPointUserName = configuration.getProperty("dc.endpoint.user");
+        DCClassName = configuration.getProperty("dc.class");
 
         DCDataPlaneAddress = configuration.getProperty("dc.dataplane.address");
         DCDataPlanePort = configuration.getProperty("dc.dataplane.port");
@@ -108,260 +106,12 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
 
  
+    
     public LatticeTest(String addr, int port) throws IOException  {
-        initialize(InetAddress.getByName(addr), port);
-    }
-
-
-    public LatticeTest(InetAddress addr, int port) throws IOException  {
-        initialize(addr, port);
-    }
-
-    /**
-     * Initialize
-     */
-    private synchronized void initialize(InetAddress addr, int port) {
-        try {
-            this.port = port;
-            vimURI = "http://" + addr.getHostName() + ":" + Integer.toString(port);
-            rest = new Resty();
-        } catch (Exception e) {
-            System.out.println("Error while initializing the rest client:" + e.getMessage());
-        }
-    }
-
-    /**
-     * Get the port this VimClient is connecting to
-     */
-    public int getPort() {
-        return port;
-    }
-
-    
-    //curl -X POST http://localhost:6666/datasource/?endpoint=<endpoint>\&username=<username>\&args=arg1+arg2+argN
-    @Override
-    public JSONObject startDataSource(String endPoint, String port, String userName, String args) throws JSONException {
-        try {
-            String uri = vimURI + "/datasource/?endpoint=" + endPoint + "&port=" + port + "&username=" + userName + "&args=" + args;
-            //System.out.println(uri);
-            JSONObject jsobj = rest.json(uri, form("")).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("deployDS FAILED" + " IOException: " + ioe.getMessage());
-        }
+        super(addr, port);
     }
     
     
-    //curl -X DELETE http://localhost:6666/datasource/?endpoint=<endpoint>\&username=<username>
-    @Override
-    public JSONObject stopDataSource(String dataSourceID) throws JSONException {
-        try {
-            String uri = vimURI + "/datasource/" + dataSourceID;
-            
-            JSONObject jsobj = rest.json(uri, delete()).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("stopDS FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-
-    
-    @Override
-    public JSONObject getDataSourceInfo(String dsID) throws JSONException {
-        try {
-            String uri = vimURI + "/datasource/" + dsID;
-            
-            JSONObject jsobj = rest.json(uri).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("getDataSourceInfo FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-
-    
-    //curl -X POST http://localhost:6666/datasource/<dsUUID>/probe/?className=<probeClassName>\&args=<arg1>+<arg2>+<argN>
-    @Override
-    public JSONObject loadProbe(String id, String probeClassName, String probeArgs) throws JSONException {
-        try {
-            String uri = vimURI + "/datasource/" + id + "/probe/?className=" + probeClassName + "&args=" + java.net.URLEncoder.encode(probeArgs, "UTF-8");
-            //System.out.println(uri);
-            JSONObject jsobj = rest.json(uri, form("")).toObject();
-
-            return jsobj;
-
-        } catch (IOException ioe) {
-            throw new JSONException("loadProbe FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-    
-    
-    //curl -X DELETE http://localhost:6666/probe/<probeUUID>
-    @Override
-    public JSONObject unloadProbe(String probeID) throws JSONException {
-        try {
-            String uri = vimURI + "/probe/" + probeID;
-            
-            JSONObject jsobj = rest.json(uri, delete()).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("unloadProbe FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-    
-    
-    //curl -X PUT http://localhost:6666/probe/<probeUUID>/?status=off
-    @Override
-    public JSONObject turnOffProbe(String id) throws JSONException {
-        try {
-            String uri = vimURI + "/probe/" + id + "/?status=off";
-            //System.out.println(uri);
-            JSONObject jsobj = rest.json(uri, put(content(""))).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("turnOffProbe FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-
-    
-     //curl -X PUT http://localhost:6666/probe/<probeUUID>/?status=on
-    @Override
-    public JSONObject turnOnProbe(String id) throws JSONException {
-         try {
-            String uri = vimURI + "/probe/" + id + "/?status=on";
-            //System.out.println(uri);
-            JSONObject jsobj = rest.json(uri, put(content(""))).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("turnProbeOn FAILED" + " IOException: " + ioe.getMessage());
-            }
-    }
-    
-    
-    //curl -X PUT http://localhost:6666/probe/<probeUUID>/?serviceid=<serviceUUID>
-    @Override
-    public JSONObject setProbeServiceID(String probeID, String serviceID) throws JSONException {
-        try {
-            String uri = vimURI + "/probe/" + probeID + "/?serviceid=" + serviceID;
-            
-            JSONObject jsobj = rest.json(uri, put(content(""))).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("setProbeServiceID FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-    
-    
-    //curl -X PUT http://localhost:6666/probe/<probeUUID>/?sliceid=<sliceUUID>
-    @Override
-    public JSONObject setProbeGroupID(String probeID, String groupID) throws JSONException {
-        try {
-            String uri = vimURI + "/probe/" + probeID + "/?sliceid=" + groupID;
-            
-            JSONObject jsobj = rest.json(uri, put(content(""))).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("setProbeSliceID FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-    
-
-    @Override
-    public JSONObject setProbeDataRate(String probeID, String dataRate) throws JSONException {
-        try {
-            String uri = vimURI + "/probe/" + probeID + "/?datarate=" + dataRate;
-            
-            JSONObject jsobj = rest.json(uri, put(content(""))).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("setProbeDataRate FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-
-    @Override
-    public JSONObject startDataConsumer(String endPoint, String port, String userName, String args) throws JSONException {
-        try {
-            String uri = vimURI + "/dataconsumer/?endpoint=" + endPoint + "&port=" + port +  "&username=" + userName + "&args=" + args;
-            //System.out.println(uri);
-            JSONObject jsobj = rest.json(uri, form("")).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("deployDC FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-
-    
-    @Override
-    public JSONObject stopDataConsumer(String dataConsumerID) throws JSONException {
-        try {
-            String uri = vimURI + "/dataconsumer/" + dataConsumerID;
-            
-            JSONObject jsobj = rest.json(uri, delete()).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("stopDC FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-    
-    
-    @Override
-    public JSONObject getDataConsumerMeasurementRate(String dcID) throws JSONException {
-        try {
-            String uri = vimURI + "/dataconsumer/" + dcID + "/rate/";
-            
-            JSONObject jsobj = rest.json(uri).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("getDataConsumerMeasurementRate FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-
-    @Override
-    public JSONObject loadReporter(String id, String reporterClassName, String reporterArgs) throws JSONException {
-        try {
-            String uri = vimURI + "/dataconsumer/" + id + "/reporter/?className=" + reporterClassName + "&args=" + java.net.URLEncoder.encode(reporterArgs, "UTF-8");
-            JSONObject jsobj = rest.json(uri, form("")).toObject();
-
-            return jsobj;
-
-        } catch (IOException ioe) {
-            throw new JSONException("loadReporter FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-
-    @Override
-    public JSONObject unloadReporter(String id) throws JSONException {
-        try {
-            String uri = vimURI + "/reporter/" + id;
-            
-            JSONObject jsobj = rest.json(uri, delete()).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("unloadReporter FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
-
-    @Override
-    public JSONObject getDataSources() throws JSONException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public JSONObject getDataConsumers() throws JSONException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     // curl -X GET http://localhost:6666/probe/catalogue/
     @Override
@@ -378,27 +128,9 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
     
     
-    @Override
-    public JSONObject getProbeDataRate(String probeID) throws JSONException {
-         try {
-            String uri = vimURI + "/probe/" + probeID + "/rate/";
-            
-            JSONObject jsobj = rest.json(uri).toObject();
-
-            return jsobj;
-        } catch (IOException ioe) {
-            throw new JSONException("getProbeDataRate FAILED" + " IOException: " + ioe.getMessage());
-        }
-    }
     
     
-    @Override
-    public JSONObject getProbeServiceID(String probeID) throws JSONException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    
-    void testMemoryInfoProbe(String probeName, String dsID, String serviceID, String sliceID) throws Exception {
+    private void testMemoryInfoProbe(String probeName, String dsID, String serviceID, String sliceID) throws Exception {
         String probeClassName = "eu.fivegex.monitoring.appl.probes.MemoryInfoProbe";
         JSONObject out = new JSONObject();
         
@@ -432,7 +164,7 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
         }  
     }
     
-    void testDockerProbe(String probeName, String dsID, String serviceID, String sliceID) throws Exception { 
+    private void testDockerProbe(String probeName, String dsID, String serviceID, String sliceID) throws Exception { 
         String probeClassName = "eu.fivegex.monitoring.appl.probes.docker.DockerProbe";
         JSONObject out;
         
@@ -472,19 +204,35 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
     
     
-    public String instantiateDS() throws Exception { // we should create a Lattice test exception 
+    private void addUser() throws Exception {
+        JSONObject out = null;
+        try {
+            out = addUser(username, "KEY", userKey);
+            userID = out.getString("ID");
+        } catch (JSONException e) {
+            throw new Exception("Error while instantiating DS\n" + out.getString("msg"));
+        }
+    }
+    
+    
+    protected String instantiateDS() throws Exception {
         JSONObject out = new JSONObject();
         
         System.out.println("Deploying DS on endpoint: " + DSEndPointName);
         
         try {
-            out = startDataSource(DSEndPointAddress, DSEndPointPort, DSEndPointUserName, 
-                                                                                 DCDataPlaneAddress + "+" + 
-                                                                                 DCDataPlanePort + "+" +
-                                                                                 controllerInfoPlaneAddress + "+" +
-                                                                                 controllerInfoPlanePort + "+" +
-                                                                                 controllerControlPlanePort
-                         );
+            out = addHost(DSEndPointAddress, DSEndPointPort);
+            DSHostID = out.getString("ID");
+            
+            out = createSession(DSHostID, userID);
+            DSHostSessionID = out.getString("ID");
+            
+            out = startDataSource(DSClassName, DSHostSessionID, DCDataPlaneAddress + "+" + 
+                                                                DCDataPlanePort + "+" +
+                                                                controllerInfoPlaneAddress + "+" +
+                                                                controllerInfoPlanePort + "+" +
+                                                                controllerControlPlanePort
+                                );
             
             return out.getString("ID");
         }
@@ -494,14 +242,16 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
     
     
-    public void unloadDS(String dsID) throws Exception {
+    protected void unloadDS(String dsID) throws Exception {
         JSONObject out;
         System.out.println("Stopping DS on endpoint: "  + DSEndPointAddress + " - DS id: " + dsID);
         try {
-            out = stopDataSource(dsID);  
-
+            out = stopDataSource(dsID, DSHostSessionID);  
+    
             if (!out.getBoolean("success"))
                 throw new Exception("Error while stopping DS: " + dsID + out.getString("msg")); 
+            
+            out = deleteSession(DSHostSessionID);
         }
         catch (JSONException e) {
             throw new Exception("Error while unloading DS: " + e.getMessage());
@@ -509,17 +259,23 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
     
     
-    public String instantiateDC() throws Exception { // we should create a Lattice test exception 
+    protected String instantiateDC() throws Exception { // we should create a Lattice test exception 
         JSONObject out = new JSONObject();
         
         System.out.println("Deploying DC on endpoint: " + DCEndPointName);
         
         try {
-            out = startDataConsumer(DCEndPointAddress, DCEndPointPort, DCEndPointUserName, DCDataPlanePort + "+" +
-                                                                 controllerInfoPlaneAddress + "+" +
-                                                                 controllerInfoPlanePort + "+" +
-                                                                 controllerControlPlanePort
-                         );
+            out = addHost(DCEndPointAddress, DCEndPointPort);
+            DCHostID = out.getString("ID");
+            
+            out = createSession(DCHostID, userID);
+            DCHostSessionID = out.getString("ID");
+            
+            out = startDataConsumer(DCClassName, DCHostSessionID,   DCDataPlanePort + "+" +
+                                                                    controllerInfoPlaneAddress + "+" +
+                                                                    controllerInfoPlanePort + "+" +
+                                                                    controllerControlPlanePort
+                                    );
             
             return out.getString("ID");
         }
@@ -529,14 +285,16 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
     
     
-    public void unloadDC(String dcID) throws Exception {
+    protected void unloadDC(String dcID) throws Exception {
         JSONObject out;
         System.out.println("Stopping DC on endpoint: "  + DCEndPointAddress + " - DC id: " + dcID);
         try {
-            out = stopDataConsumer(dcID);  
-
+            out = stopDataConsumer(dcID, DCHostSessionID);
+    
             if (!out.getBoolean("success"))
                 throw new Exception("Error while stopping DC: " + dcID + out.getString("msg")); 
+            
+            out = deleteSession(DSHostSessionID);
         }
         catch (JSONException e) {
             throw new Exception("Error while unloading DC: " + e.getMessage());
@@ -544,7 +302,7 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
     
     
-    String loadMongoDBReporter(String dcID) throws Exception {
+    private String loadMongoDBReporter(String dcID) throws Exception {
         String reporterClassName = "eu.fivegex.monitoring.appl.reporters.MongoDBReporter";
         
         JSONObject out;
@@ -571,7 +329,7 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
     
     
-    MongoDBInteracter createMongoDBEntry(String serviceID, String probeName) throws JSONException, ParseException, IOException {
+    private MongoDBInteracter createMongoDBEntry(String serviceID, String probeName) throws JSONException, ParseException, IOException {
         
         JSONObject obj = new JSONObject();
         obj.put("agreementId", serviceID);
@@ -585,18 +343,37 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
     }
   
     
+    private void removeHosts() throws Exception {
+        try {
+            super.removeHost(DSHostID);
+        } catch (JSONException je) {
+            throw new Exception("Error removing host: " + DSHostID + " " + je.getMessage());
+        }
+        
+        try {
+            super.removeHost(DCHostID);
+        } catch (JSONException je) {
+            throw new Exception("Error removing host: " + DCHostID + " " + je.getMessage());
+        }
+    }
     
     
     
+    @Override
+    public void initCatalogue() {
+        throw new UnsupportedOperationException("This method is only supported by the Controller");
+    }
     
     
     
     
     public static void main(String[] args) {
-        LatticeTest client = null;
+        LatticeTest test = null;
         String dsID = null;
         String dcID = null;
         String reporterID = null;
+        
+        String sessionID = null;
         
         boolean errorStatus = false;
         
@@ -617,15 +394,16 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
             input = new FileInputStream(propertiesFile);
             configuration.load(input);
             
-            client = new LatticeTest(configuration);
+            test = new LatticeTest(configuration);
 
+            test.addUser();
             // instantiating a new DS on the endpoint as per configuration (field DSEndPointAddress)
-            dsID = client.instantiateDS();
+            dsID = test.instantiateDS();
             
-            dcID = client.instantiateDC();
+            dcID = test.instantiateDC();
             
             
-            //reporterID = client.loadMongoDBReporter(dcID);
+            //reporterID = test.loadMongoDBReporter(dcID);
             
             // generating service/slice IDs to be associated to all the test probes
             String serviceID = ID.generate().toString();
@@ -633,10 +411,10 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
             String probeName = "testMemoryProbe";
             
             // creating entry in DB
-            //MongoDBInteracter m = client.createMongoDBEntry(serviceID, probeName);
+            //MongoDBInteracter m = test.createMongoDBEntry(serviceID, probeName);
             
             // instantiating some test probes on the previous DS
-            client.testMemoryInfoProbe(probeName, dsID, serviceID, sliceID);
+            test.testMemoryInfoProbe(probeName, dsID, serviceID, sliceID);
             //client.testDockerProbe("testDockerProbe", dsID, serviceID, sliceID);
 
             //Document mongoDBEntry = m.getMongoDBEntry(serviceID, probeName); // TODO: incorrect this should also check id the ProbeName element is not empty
@@ -656,15 +434,15 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
         finally {
             // trying to stop the previous instantiated DS/DC anyway
             try {
-                if (client != null) {
+                if (test != null) {
                     if (dsID != null)
-                        client.unloadDS(dsID);
+                        test.unloadDS(dsID);
                     if (dcID != null)  {
                         if (reporterID != null) {
                             System.out.println("Unloading Reporter " + reporterID);
-                            client.unloadReporter(reporterID);
+                            test.unloadReporter(reporterID);
                         }
-                        client.unloadDC(dcID);
+                        test.unloadDC(dcID);
                     }
                 }
             }
@@ -675,25 +453,6 @@ public class LatticeTest implements ControlInterface<JSONObject>, DeploymentInte
         System.exit(1);
     }
 
-    @Override
-    public void initDeployment() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void initCatalogue() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public JSONObject startControllerAgent(String endPoint, String port, String userName, String className, String args) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public JSONObject stopControllerAgent(String mmID) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+    
     
 }

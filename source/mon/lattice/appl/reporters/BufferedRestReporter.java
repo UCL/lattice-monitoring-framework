@@ -48,9 +48,6 @@ public class BufferedRestReporter extends AbstractReporter {
                             resty.json(uri, payload);
                     } catch (IOException e) {
                             LOGGER.error("Error while sending Measurement: " + e.getMessage());
-                        for (StackTraceElement stackTrace : e.getStackTrace()) {
-                            LOGGER.error(stackTrace.toString());
-                        }
                     } finally {
                             array = new JSONArray();
                             array.put(processMeasurement(m));

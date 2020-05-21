@@ -5,6 +5,7 @@
  */
 package eu.fivegex.monitoring.test;
 
+import mon.lattice.appl.RestClient;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,13 +33,16 @@ public class MockIMoS {
     
     String serviceID;
     
+    String dcClassName = "mon.lattice.appl.dataconsumers.ZMQControllableDataConsumerDaemon";
+    String dsClassName = "mon.lattice.appl.datasources.ZMQDataSourceDaemon";
+    
     private JSONObject MdOMapping;
     private Map<String, JSONObject> DOMappingRequests = new HashMap<>();
     private Map<String, JSONObject> DOMappingInfo = new HashMap<>();
     
     private JSONObject fakeDomainsInfo = new JSONObject();
     
-    private LatticeControllerClient lattice;
+    private RestClient latticeInterface;
     
 
     public MockIMoS(String address, int port, String serviceID) {
@@ -51,7 +55,7 @@ public class MockIMoS {
         // we assume only one controller instance exists
         latticeControllerURI = "http://" + latticeControllerAddress + ":" + Integer.toString(latticeControllerPort);
         try {
-            lattice = new LatticeControllerClient(latticeControllerAddress, latticeControllerPort);
+            latticeInterface = new RestClient(latticeControllerAddress, latticeControllerPort);
         } catch (IOException e) {
             System.out.println("Error while instantiating Lattice controller client: " + e.getMessage());
         }
@@ -215,7 +219,7 @@ public class MockIMoS {
         System.out.println("NF ID: " + NFId);
         System.out.println("Container ID: " + localId);
         
-        JSONObject probeInfo = lattice.loadProbe(dsId, 
+        JSONObject probeInfo = latticeInterface.loadProbe(dsId, 
                                                  probeClassName, 
                                                  localMonitoringAddress + "+" + localMonitoringPort + "+" + NFId + "+" + localId + "+" + NFId
                                                 );
@@ -223,8 +227,8 @@ public class MockIMoS {
         String probeId = probeInfo.getString("createdProbeID");
         System.out.println("Created probe ID: " + probeId);
         
-        lattice.turnOnProbe(probeId);
-        lattice.setProbeServiceID(probeId, serviceID);
+        latticeInterface.turnOnProbe(probeId);
+        latticeInterface.setProbeServiceID(probeId, serviceID);
     }
     
     
@@ -232,12 +236,23 @@ public class MockIMoS {
     public JSONObject instantiateMonitoringElements() {
         try {
             // start a DC where the MdO is running
-            JSONObject dataConsumerInfo = lattice.startDataConsumer("mininet-vm", "22", "lattice", "22998+lattice-controller+6699+9999+5555");
+            JSONObject out;
+
+            out = latticeInterface.addUser("lattice", "KEY", "pathToTheKey");
+            String userID = out.getString("ID");
+            
+            out = latticeInterface.addHost("mininet-vm", "22");
+            String dcHostID = out.getString("ID");
+            
+            out = latticeInterface.createSession(dcHostID, userID);
+            String sessionID = out.getString("ID");
+            
+            JSONObject dataConsumerInfo = latticeInterface.startDataConsumer(dcClassName, sessionID, "22998+lattice-controller+6699+9999+5555");
             String dataConsumerID = dataConsumerInfo.getString("ID");
             
             // load a Logger Reporter
-            lattice.loadReporter(dataConsumerID, "eu.fivegex.monitoring.appl.reporters.LoggerReporter", "logger-reporter");
-            lattice.loadReporter(dataConsumerID, "eu.fivegex.monitoring.appl.reporters.InfluxDBReporter", "localhost+8086+fgx");
+            latticeInterface.loadReporter(dataConsumerID, "eu.fivegex.monitoring.appl.reporters.LoggerReporter", "logger-reporter");
+            latticeInterface.loadReporter(dataConsumerID, "eu.fivegex.monitoring.appl.reporters.InfluxDBReporter", "localhost+8086+fgx");
             
             // should check created reporter ID
             
@@ -256,7 +271,16 @@ public class MockIMoS {
                 String DSSSHHostPort = fakeDomainsInfo.getJSONObject(domain).getString("ssh");
                 String username = fakeDomainsInfo.getJSONObject(domain).getString("user");
                 
-                JSONObject dataSourceInfo = lattice.startDataSource(DSHostAddress, DSSSHHostPort, username, "mininet-vm+22998+lattice-controller+6699+9999+5555");
+                out = latticeInterface.addUser(username, "KEY", "pathToTheKey");
+                userID = out.getString("ID");
+                
+                out = latticeInterface.addHost(DSHostAddress, DSSSHHostPort);
+                String dsHostID = out.getString("ID");
+            
+                out = latticeInterface.createSession(dsHostID, userID);
+                sessionID = out.getString("ID");
+                
+                JSONObject dataSourceInfo = latticeInterface.startDataSource(dsClassName, sessionID, "mininet-vm+22998+lattice-controller+6699+9999+5555");
                 String dataSourceId = dataSourceInfo.getString("ID");
                 
                 JSONArray mappings = DOMappingInfo.get(domain).getJSONObject("mapping").getJSONArray("instances");

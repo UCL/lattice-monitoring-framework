@@ -13,9 +13,9 @@ import mon.lattice.control.ControlServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import mon.lattice.control.controller.json.ZMQController;
-import mon.lattice.control.deployment.ControllerAgentInfo;
-import mon.lattice.control.deployment.DeploymentException;
-import mon.lattice.control.deployment.ssh.SSHServerEntityInfo;
+import mon.lattice.management.ControllerAgentInfo;
+import mon.lattice.management.ManagementException;
+import mon.lattice.management.ssh.SSHSession;
 import mon.lattice.core.ID;
 import mon.lattice.core.Rational;
 import mon.lattice.core.plane.ControlPlane;
@@ -31,7 +31,7 @@ import mon.lattice.core.plane.ControllerControlPlaneWithAgents;
  *
  * @author uceeftu
  */
-public class ZMQJSONControllerWithControlAgents extends ZMQController implements ControllerAgentInterface<JSONObject> {
+public class ZMQJSONControllerWithControlAgents extends ZMQController implements ControlAgentsInterface<JSONObject> {
     
     private static final ZMQJSONControllerWithControlAgents CONTROLLER = new ZMQJSONControllerWithControlAgents();
     
@@ -75,7 +75,7 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
     }
 
     @Override
-    public JSONObject stopControllerAgent(String mmID) throws Exception {
+    public JSONObject stopControllerAgent(String mmID, String sessionID) throws Exception {
         JSONObject result = new JSONObject();
         
         result.put("operation", "stopControllerAgent");
@@ -83,9 +83,9 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
         
         if (this.usingDeploymentManager) {
             try {
-                this.deploymentManager.stopControllerAgent(ID.fromString(mmID));
+                this.deploymentManager.stopControllerAgent(ID.fromString(mmID), ID.fromString(sessionID));
                 result.put("success", true);
-            } catch (DeploymentException ex) {
+            } catch (ManagementException ex) {
                 result.put("success", false);
                 result.put("msg", "DeploymentException while performing stopControllerAgent operation: " + ex.getMessage());
               }
@@ -98,18 +98,17 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
     }
 
     @Override
-    public JSONObject startControllerAgent(String endPoint, String port, String userName, String className, String args) throws Exception {
+    public JSONObject startControllerAgent(String className, String args, String hostID) throws Exception {
         JSONObject result = new JSONObject();
         
         ID controllerAgentID;
         
         result.put("operation", "startControllerAgent");
-        result.put("endpoint", endPoint);
+        result.put("endpoint", hostID);
 
         if (this.usingDeploymentManager) {
             try {
-                controllerAgentID = this.deploymentManager.startControllerAgent(new SSHServerEntityInfo(endPoint, Integer.valueOf(port), userName), 
-                                                                       new ControllerAgentInfo(className, args));
+                controllerAgentID = this.deploymentManager.startControllerAgent(className, args, ID.fromString(hostID));
 
                 if (controllerAgentID == null) {
                     result.put("msg", "en error occured while starting the Controller Agent on the specified endpoint");
@@ -121,7 +120,7 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
                     result.put("success", true);
                 }
 
-            } catch (DeploymentException ex) {
+            } catch (ManagementException ex) {
                     result.put("success", false);
                     result.put("msg", "DeploymentException while performing startControllerAgent operation: " + ex.getMessage());
               }
@@ -232,7 +231,7 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
         ZMQJSONControllerWithControlAgents myController = ZMQJSONControllerWithControlAgents.getInstance();
         myController.setPropertyHandler(prop);
         myController.initPlanes();
-        myController.initDeployment();
+        myController.init();
         myController.initRESTConsole();
     }
 }

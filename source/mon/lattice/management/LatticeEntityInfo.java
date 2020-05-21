@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mon.lattice.control.deployment;
+package mon.lattice.management;
 
 import mon.lattice.core.ID;
 import mon.lattice.core.EntityType;
@@ -31,7 +31,7 @@ public abstract class LatticeEntityInfo {
     public LatticeEntityInfo(EntityType t, String name, String args) {
         this.entityType = t;
         this.entityClassName = name;
-        this.arguments = args;
+        this.arguments = args.replace('+', ' ');
         this.argumentsAsList.addAll(Arrays.asList(args.split("\\+")));
     }
 
@@ -57,6 +57,10 @@ public abstract class LatticeEntityInfo {
 
     public String getArguments() {
         return arguments;
+    }
+    
+    public List getArgumentsAsList() {
+        return argumentsAsList;
     }
 
     public EntityType getEntityType() {

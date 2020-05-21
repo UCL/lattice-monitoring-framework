@@ -3,16 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mon.lattice.control.deployment;
+package mon.lattice.management;
 
 import mon.lattice.core.ID;
 import mon.lattice.core.EntityType;
 
 
-public class DataConsumerInfo extends LatticeEntityInfo {
+public class DataSourceInfo extends LatticeEntityInfo {
 
-    public DataConsumerInfo(String className, String args) {
-        super(EntityType.DATACONSUMER, className, args);
+    public DataSourceInfo(String className, String args) {
+        super(EntityType.DATASOURCE, className, args);
         this.id = ID.generate();
     }
     

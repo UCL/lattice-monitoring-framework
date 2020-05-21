@@ -129,7 +129,7 @@ public class UDPControllerWithPlanx extends AbstractJSONRestController {
         UDPControllerWithPlanx myController = UDPControllerWithPlanx.getInstance();
         myController.setPropertyHandler(prop);
         myController.initPlanes();
-        myController.initDeployment();
+        myController.init();
         myController.initRESTConsole();
     }
 }

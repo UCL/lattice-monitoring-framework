@@ -109,7 +109,7 @@ public class FiveGExController extends ZMQController implements JSONProbesCatalo
         FiveGExController myController = FiveGExController.getInstance();
         myController.setPropertyHandler(prop);
         myController.initPlanes();
-        myController.initDeployment();
+        myController.init();
         myController.initRESTConsole();
         myController.initCatalogue();
     }

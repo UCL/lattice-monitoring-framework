@@ -9,7 +9,6 @@ import cc.clayman.console.BasicRequestHandler;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Scanner;
-import mon.lattice.control.deployment.DeploymentInterface;
 import org.simpleframework.http.Path;
 import org.simpleframework.http.Query;
 import org.simpleframework.http.Request;
@@ -18,15 +17,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import mon.lattice.control.agents.ControllerAgentInterface;
+import mon.lattice.management.ManagementInterface;
+import mon.lattice.control.agents.ControlAgentsInterface;
 
 /**
  *
  * @author uceeftu
  */
 class ControllerAgentRestHandler extends BasicRequestHandler {
-    ControllerAgentInterface<JSONObject> controllerInstance;
-    DeploymentInterface<JSONObject> deploymentControllerInstance;
+    ControlAgentsInterface<JSONObject> controllerInstance;
+    ManagementInterface<JSONObject> deploymentControllerInstance;
     private Logger LOGGER = LoggerFactory.getLogger(ControllerAgentRestHandler.class);
     
     public ControllerAgentRestHandler() {
@@ -36,8 +36,8 @@ class ControllerAgentRestHandler extends BasicRequestHandler {
      @Override
     public boolean handle(Request request, Response response) {
         // get Controller
-        controllerInstance = (ControllerAgentInterface<JSONObject>) getManagementConsole().getAssociated();
-        deploymentControllerInstance = (DeploymentInterface<JSONObject>) getManagementConsole().getAssociated();
+        controllerInstance = (ControlAgentsInterface<JSONObject>) getManagementConsole().getAssociated();
+        deploymentControllerInstance = (ManagementInterface<JSONObject>) getManagementConsole().getAssociated();
         
         LOGGER.debug("-------- REQUEST RECEIVED --------\n" + request.getMethod() + " " +  request.getTarget());
         
@@ -177,40 +177,22 @@ class ControllerAgentRestHandler extends BasicRequestHandler {
         String[] segments = path.getSegments(); 
         Query query = request.getQuery();
         
-        String endPoint;
-        String port;
-        String userName;
+        String sessionID;
         String className;
         String rawArgs="";
         
-        if (query.containsKey("endpoint"))
-            endPoint = query.get("endpoint");
+        if (query.containsKey("session"))
+            sessionID = query.get("session");
         else {
-            badRequest(response, "missing endpoint arg");
+            badRequest(response, "missing session arg");
             response.close();
             return;
         }
         
-        if (query.containsKey("port"))
-            port = query.get("port");
+        if (query.containsKey("class"))
+            className = query.get("class");
         else {
-            badRequest(response, "missing port arg");
-            response.close();
-            return;
-        }
-        
-        if (query.containsKey("username"))
-            userName = query.get("username");
-        else {
-            badRequest(response, "missing username arg");
-            response.close();
-            return;
-        }
-        
-        if (query.containsKey("className"))
-            className = query.get("className");
-        else {
-            badRequest(response, "missing className arg");
+            badRequest(response, "missing class arg");
             response.close();
             return;
         }
@@ -225,7 +207,7 @@ class ControllerAgentRestHandler extends BasicRequestHandler {
         String failMessage = null;
         JSONObject jsobj = null;
         
-        jsobj = deploymentControllerInstance.startControllerAgent(endPoint, port, userName, className, rawArgs);
+        jsobj = deploymentControllerInstance.startControllerAgent(className, rawArgs, sessionID);
         
         if (!jsobj.getBoolean("success")) {
             failMessage = (String)jsobj.get("msg");
@@ -248,6 +230,8 @@ class ControllerAgentRestHandler extends BasicRequestHandler {
     
     private void stop(Request request, Response response) throws Exception {
         Path path = request.getPath();
+        Query query = request.getQuery();
+                
         String monManagID;
         
         Scanner scanner = new Scanner(path.getName());
@@ -263,11 +247,22 @@ class ControllerAgentRestHandler extends BasicRequestHandler {
             return;
         }
         
+        
+        String sessionID;
+        
+        if (query.containsKey("session"))
+            sessionID = query.get("session");
+        else {
+            badRequest(response, "missing session arg");
+            response.close();
+            return;
+        }
+        
         boolean success = true;
         String failMessage = null;
         JSONObject jsobj = null;
         
-        jsobj = deploymentControllerInstance.stopControllerAgent(monManagID);
+        jsobj = deploymentControllerInstance.stopControllerAgent(monManagID, sessionID);
         
         if (!jsobj.getBoolean("success")) {
             failMessage = (String)jsobj.get("msg");

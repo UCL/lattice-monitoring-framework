@@ -149,6 +149,8 @@ public class DataRateController implements Runnable {
         String dcID = null;
         String reporterID = null;
         
+        String sessionID = null;
+        
         boolean errorStatus = false;
         
         try {

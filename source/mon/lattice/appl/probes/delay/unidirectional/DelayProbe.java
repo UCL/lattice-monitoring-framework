@@ -5,7 +5,7 @@
  */
 package mon.lattice.appl.probes.delay.unidirectional;
 
-import eu.fivegex.monitoring.test.LatticeTest;
+import mon.lattice.appl.RestClient;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -23,6 +23,7 @@ public final class DelayProbe {
     
     String username;
     Integer port;
+    String keyPath;
     
     String controllerAddress;
     Integer controllerAPIPort;
@@ -49,8 +50,22 @@ public final class DelayProbe {
     Integer destProbeMgmPort;
     String destProbeDataAddress;
     Integer destProbeDataPort;
+    
+    String sourceHostID;
+    String sourceHostSessionID;
+    
+    String destHostID;
+    String destHostSessionID;
+    
+    String dcHostID;
+    String dcHostSessionID;
+    
+    String userID;
+    
+    String dcClassName = "mon.lattice.appl.dataconsumers.ZMQControllableDataConsumerDaemon";
+    String dsClassName = "mon.lattice.appl.datasources.ZMQDataSourceDaemon";
 
-    LatticeTest rest;
+    RestClient rest;
     
     Map<String, String> uuids;
     
@@ -65,7 +80,7 @@ public final class DelayProbe {
    
     
     private void init() throws IOException {
-        rest = new LatticeTest(controllerAddress, controllerAPIPort);
+        rest = new RestClient(controllerAddress, controllerAPIPort);
         uuids = new HashMap<>();
     }
     
@@ -137,6 +152,7 @@ public final class DelayProbe {
         try {
             username = configuration.getJSONObject("ssh").getString("username");
             port = configuration.getJSONObject("ssh").getInt("port");
+            keyPath = configuration.getJSONObject("ssh").getString("key");
 
             controllerAddress = latticeConf.getJSONObject("controller").getString("address");
             controllerAPIPort = latticeConf.getJSONObject("controller").getInt("apiPort");
@@ -166,18 +182,39 @@ public final class DelayProbe {
         String dcArgs = dcPort + "+" + controllerAddress + "+" + controllerInfoPort + "+" + controllerControlPort;
         String dsArgs = dcAddress + "+" + dcPort + "+" + controllerAddress + "+" + controllerInfoPort + "+" + controllerControlPort;
   
-        uuids.put("dc", rest.startDataConsumer(dcAddress, "22", "lattice", dcArgs).getString("ID"));
-        uuids.put("dssource", rest.startDataSource(sourceProbeMgmAddress, "22", "lattice", dsArgs).getString("ID"));
-        uuids.put("dsdest", rest.startDataSource(destProbeMgmAddress, "22", "lattice", dsArgs).getString("ID"));
+        userID = rest.addUser(username, "KEY", keyPath).getString("ID");
+        
+        dcHostID = rest.addHost(dcAddress, port.toString()).getString("ID");
+        dcHostSessionID = rest.createSession(dcHostID, userID).getString("ID");
+        
+        sourceHostID = rest.addHost(sourceProbeMgmAddress, port.toString()).getString("ID");
+        sourceHostSessionID = rest.createSession(sourceHostID, userID).getString("ID");
+        
+        destHostID = rest.addHost(destProbeMgmAddress, port.toString()).getString("ID");
+        destHostSessionID = rest.createSession(destHostID, userID).getString("ID");
+        
+        uuids.put("dc", rest.startDataConsumer(dcClassName, dcHostSessionID, dcArgs).getString("ID"));
+        uuids.put("dssource", rest.startDataSource(dsClassName, sourceHostSessionID, dsArgs).getString("ID"));
+        uuids.put("dsdest", rest.startDataSource(dsClassName,  destHostSessionID, dsArgs).getString("ID"));
     }
     
     
     public void undeployComponents() throws JSONException {
         System.out.println("Undeploying Lattice Components");
 
-        rest.stopDataSource(uuids.get("dssource"));
-        rest.stopDataSource(uuids.get("dsdest"));
-        rest.stopDataConsumer(uuids.get("dc"));
+        rest.stopDataSource(uuids.get("dssource"), destHostSessionID);
+        rest.stopDataSource(uuids.get("dsdest"), sourceHostSessionID);
+        rest.stopDataConsumer(uuids.get("dc"), dcHostSessionID);
+        
+        rest.deleteSession(destHostSessionID);
+        rest.deleteSession(sourceHostSessionID);
+        rest.deleteSession(dcHostSessionID);
+        
+        rest.removeHost(dcHostID);
+        rest.removeHost(sourceHostID);
+        rest.removeHost(destHostID);
+        
+        rest.deleteUser(userID);
     }
     
     

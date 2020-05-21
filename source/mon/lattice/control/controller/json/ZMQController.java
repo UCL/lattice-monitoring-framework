@@ -105,7 +105,8 @@ public class ZMQController extends AbstractJSONRestController {
         ZMQController myController = ZMQController.getInstance();
         myController.setPropertyHandler(prop);
         myController.initPlanes();
-        myController.initDeployment();
+        myController.init();
         myController.initRESTConsole();
+
     }
 }

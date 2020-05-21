@@ -3,15 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mon.lattice.control.deployment;
+package mon.lattice.management.ssh;
 
 /**
  *
  * @author uceeftu
  */
-public class DeploymentException extends Exception {
-    public DeploymentException (String msg) {
-        super(msg);
-    }
+public enum AuthType {
+    PASS, KEY;
     
 }

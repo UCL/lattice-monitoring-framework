@@ -123,31 +123,22 @@ class DataConsumerRestHandler extends BasicRequestHandler {
     private void deployDC(Request request, Response response) throws JSONException, IOException {
         Query query = request.getQuery();
         
-        String endPoint;
-        String port;
-        String userName;
+        String sessionID;
+        String className;
         String rawArgs="";
         
-        if (query.containsKey("endpoint"))
-            endPoint = query.get("endpoint");
+        if (query.containsKey("session"))
+            sessionID = query.get("session");
         else {
-            badRequest(response, "missing endpoint arg");
+            badRequest(response, "missing session arg");
             response.close();
             return;
         }
         
-        if (query.containsKey("port"))
-            port = query.get("port");
+        if (query.containsKey("class"))
+            className = query.get("class");
         else {
-            badRequest(response, "missing port arg");
-            response.close();
-            return;
-        }
-        
-        if (query.containsKey("username"))
-            userName = query.get("username");
-        else {
-            badRequest(response, "missing username args");
+            badRequest(response, "missing class args");
             response.close();
             return;
         }
@@ -162,8 +153,8 @@ class DataConsumerRestHandler extends BasicRequestHandler {
         String failMessage = null;
         JSONObject jsobj = null;
         
-        jsobj = controllerInstance.startDataConsumer(endPoint, port, userName, rawArgs);
-        
+        jsobj = controllerInstance.startDataConsumer(className, rawArgs, sessionID);
+                
         if (!jsobj.getBoolean("success")) {
             failMessage = (String)jsobj.get("msg");
             LOGGER.error("startDC: failure detected: " + failMessage);
@@ -185,14 +176,15 @@ class DataConsumerRestHandler extends BasicRequestHandler {
     
     private void stopDC(Request request, Response response) throws JSONException, IOException {
         Path path = request.getPath();
+        Query query = request.getQuery();
         
         /*
-        String endPoint;
+        String sessionID;
         String port;
-        String userName;
+        String className;
         
         if (query.containsKey("endpoint"))
-            endPoint = query.get("endpoint");
+            sessionID = query.get("endpoint");
         else {
             badRequest(response, "missing endpoint arg");
             response.close();
@@ -208,7 +200,7 @@ class DataConsumerRestHandler extends BasicRequestHandler {
         }
         
         if (query.containsKey("username"))
-            userName = query.get("username");
+            className = query.get("username");
         else {
             badRequest(response, "missing username args");
             response.close();
@@ -230,11 +222,23 @@ class DataConsumerRestHandler extends BasicRequestHandler {
             return;
         }
         
+        
+        String sessionID;
+        
+        if (query.containsKey("session"))
+            sessionID = query.get("session");
+        else {
+            badRequest(response, "missing session arg");
+            response.close();
+            return;
+        }
+        
+        
         boolean success = true;
         String failMessage = null;
         JSONObject jsobj = null;
         
-        jsobj = controllerInstance.stopDataConsumer(dcID);
+        jsobj = controllerInstance.stopDataConsumer(dcID, sessionID);
         
         if (!jsobj.getBoolean("success")) {
             failMessage = (String)jsobj.get("msg");

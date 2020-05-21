@@ -17,10 +17,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import mon.lattice.control.deployment.ControllerAgentInfo;
-import mon.lattice.control.deployment.DataConsumerInfo;
-import mon.lattice.control.deployment.DataSourceInfo;
-import mon.lattice.control.deployment.ResourceEntityInfo;
+import mon.lattice.management.ControllerAgentInfo;
+import mon.lattice.management.DataConsumerInfo;
+import mon.lattice.management.DataSourceInfo;
+import mon.lattice.management.Host;
 import mon.lattice.core.plane.InfoPlane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,9 +44,9 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     private final Map<ID, Object> pendingControllerAgents;
     private final Map<ID, Object> pendingProbes;
     
-    private final Map<ID, ResourceEntityInfo> dataSourcesResourcesInfo;
-    private final Map<ID, ResourceEntityInfo> dataConsumersResourcesInfo;
-    private final Map<ID, ResourceEntityInfo> controllerAgentsResourcesInfo;
+    private final Map<ID, Host> dataSourcesResourcesInfo;
+    private final Map<ID, Host> dataConsumersResourcesInfo;
+    private final Map<ID, Host> controllerAgentsResourcesInfo;
     
     private final Map<ID, DataSourceInfo> dataSourcesMap;
     private final Map<ID, DataConsumerInfo> dataConsumersMap;
@@ -87,7 +87,7 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
     
     @Override
-    public void addDataSource(DataSourceInfo dataSource, ResourceEntityInfo resource, int timeout) throws InterruptedException, DSNotFoundException {
+    public void addDataSource(DataSourceInfo dataSource, Host resource, int timeout) throws InterruptedException, DSNotFoundException {
         ID id = dataSource.getId();
         Object monitor = new Object(); 
         synchronized(monitor) {
@@ -111,7 +111,7 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
     
     @Override
-    public void addDataConsumer(DataConsumerInfo dataConsumer, ResourceEntityInfo resource, int timeout) throws InterruptedException, DCNotFoundException {
+    public void addDataConsumer(DataConsumerInfo dataConsumer, Host resource, int timeout) throws InterruptedException, DCNotFoundException {
         ID id = dataConsumer.getId();
         Object monitor = new Object(); 
         synchronized(monitor) {
@@ -134,7 +134,7 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
 
     @Override
-    public void addControllerAgent(ControllerAgentInfo controllerAgent, ResourceEntityInfo resource, int timeout) throws InterruptedException, ControllerAgentNotFoundException {
+    public void addControllerAgent(ControllerAgentInfo controllerAgent, Host resource, int timeout) throws InterruptedException, ControllerAgentNotFoundException {
         ID id = controllerAgent.getId();
         Object monitor = new Object(); 
         synchronized(monitor) {
@@ -197,7 +197,7 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 dataSourceInfo.put("id", id.toString());
                 dataSourceInfo.put("info", dsAddr);
                 
-                ResourceEntityInfo resource = dataSourcesResourcesInfo.get(id);
+                Host resource = dataSourcesResourcesInfo.get(id);
                 DataSourceInfo dataSource = dataSourcesMap.get(id);
                 
                 JSONObject deployment = new JSONObject();
@@ -242,7 +242,7 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 dataConsumerInfo.put("id", id.toString());
                 dataConsumerInfo.put("info", dcAddr);
                 
-                ResourceEntityInfo resource = dataConsumersResourcesInfo.get(id);
+                Host resource = dataConsumersResourcesInfo.get(id);
                 DataConsumerInfo dataConsumer = dataConsumersMap.get(id);
                 
                 JSONObject deployment = new JSONObject();
@@ -287,7 +287,7 @@ public class ControlInformationManager implements InfoPlaneDelegate {
                 controllerAgentInfo.put("id", id.toString());
                 controllerAgentInfo.put("info", controllerAgentAddr);
                 
-                ResourceEntityInfo resource = controllerAgentsResourcesInfo.get(id);
+                Host resource = controllerAgentsResourcesInfo.get(id);
                 ControllerAgentInfo controllerAgent = controllerAgentsMap.get(id);
                 
                 JSONObject deployment = new JSONObject();

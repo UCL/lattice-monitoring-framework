@@ -119,7 +119,7 @@ public class UDPController extends AbstractJSONRestController {
         UDPController myController = UDPController.getInstance();
         myController.setPropertyHandler(prop);
         myController.initPlanes();
-        myController.initDeployment();
+        myController.init();
         myController.initRESTConsole();
     }
 }
