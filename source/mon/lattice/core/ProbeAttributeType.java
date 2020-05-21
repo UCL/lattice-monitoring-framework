@@ -96,6 +96,8 @@ public enum ProbeAttributeType {
 	    return CHAR;
 	} else if (Short.class.isInstance(obj)) {
 	    return SHORT;
+        } else if (obj instanceof byte[]) {
+            return BYTES;
 	} else if (Table.class.isInstance(obj)) {
 	    return TABLE;
 	} else if (MMap.class.isInstance(obj)) {

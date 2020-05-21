@@ -27,4 +27,11 @@ public class TableProbeAttribute extends AbstractProbeAttribute implements Probe
 	this.definition = definition;
     }
 
+    /**
+     * Get the TableHeader
+     */
+    public TableHeader getDefinition() {
+        return definition;
+    }
+
 }
