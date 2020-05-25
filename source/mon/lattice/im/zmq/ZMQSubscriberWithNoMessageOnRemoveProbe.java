@@ -16,13 +16,13 @@ import mon.lattice.im.IMSubscriberNode;
  using ZMQ.
 **/
 
-public class ZMQSubscriberWithAggregation extends AbstractZMQSubscriber implements IMSubscriberNode, Runnable {
+public class ZMQSubscriberWithNoMessageOnRemoveProbe extends AbstractZMQSubscriber implements IMSubscriberNode, Runnable {
     
     /**
      * Construct a ZMQSubscriber given a remote host, a remote 
      * port where connecting to and a message filter.
      */
-    public ZMQSubscriberWithAggregation(String remHost, int remPort, String filter) {
+    public ZMQSubscriberWithNoMessageOnRemoveProbe(String remHost, int remPort, String filter) {
         super(remHost, remPort, filter, ZMQ.context(1));
     } 
     
@@ -30,7 +30,7 @@ public class ZMQSubscriberWithAggregation extends AbstractZMQSubscriber implemen
      * Construct a ZMQInformationConsumer given a remote host, a remote 
      * port where connecting to, a message filter and an existing ZMQ.Context.
      */
-    public ZMQSubscriberWithAggregation(String remHost, int remPort, String filter, ZMQ.Context context) {
+    public ZMQSubscriberWithNoMessageOnRemoveProbe(String remHost, int remPort, String filter, ZMQ.Context context) {
 	super(remHost, remPort, filter, context);
     }
     
@@ -39,7 +39,7 @@ public class ZMQSubscriberWithAggregation extends AbstractZMQSubscriber implemen
      * Construct a ZMQInformationConsumer given a remote host, a remote 
      * port where connecting to, a message filter and an existing ZMQ.Context.
      */
-    public ZMQSubscriberWithAggregation(String internalURI, String filter, ZMQ.Context context) {
+    public ZMQSubscriberWithNoMessageOnRemoveProbe(String internalURI, String filter, ZMQ.Context context) {
 	super(internalURI, filter, context);
     }
     
@@ -49,7 +49,7 @@ public class ZMQSubscriberWithAggregation extends AbstractZMQSubscriber implemen
      * Construct a ZMQSubscriber given a local port where connecting to 
      * and a message filter.
      */
-    public ZMQSubscriberWithAggregation(int port, String filter) {
+    public ZMQSubscriberWithNoMessageOnRemoveProbe(int port, String filter) {
         super(port, filter);
     }
     
@@ -59,7 +59,7 @@ public class ZMQSubscriberWithAggregation extends AbstractZMQSubscriber implemen
      * a message filter and an existing ZMQ.Context.
      */
     
-    public ZMQSubscriberWithAggregation(int port, String filter, ZMQ.Context context) {
+    public ZMQSubscriberWithNoMessageOnRemoveProbe(int port, String filter, ZMQ.Context context) {
 	super(port, filter, context);
     }
     
@@ -92,12 +92,19 @@ public class ZMQSubscriberWithAggregation extends AbstractZMQSubscriber implemen
                         sendMessage(new AnnounceMessage(entityID, EntityType.DATASOURCE));
                     }
                     else if (operation.equals("remove")) {
+                        JSONObject dataSource = dataSources.get(entityID);
+                        JSONArray dsProbes = dataSource.getJSONArray("probes");
+                        
+                        for (int i=0; i<dsProbes.length(); i++) {
+                            ID probeID = ID.fromString(dsProbes.getString(i));
+                            probes.remove(probeID);
+                            sendMessage(new DeannounceMessage(entityID, EntityType.PROBE));
+                            probeAttributes.remove(probeID);
+                        }
+                        
                         dataSources.remove(entityID);
                         sendMessage(new DeannounceMessage(entityID, EntityType.DATASOURCE));
                         
-                        JSONArray embeddedProbes = msgObj.getJSONArray("probes");
-                        for (int i=0; i < embeddedProbes.length(); i++)
-                            messageHandler(embeddedProbes.getString(i));
                     }
                     
                     LOGGER.trace("datasource map:\n");
@@ -108,17 +115,19 @@ public class ZMQSubscriberWithAggregation extends AbstractZMQSubscriber implemen
                         
                 case "probe":
                     if (operation.equals("add")) {    
-                        probes.put(entityID, msgObj.getJSONObject("info"));
+                        JSONObject probeInfo = msgObj.getJSONObject("info");
+                        probes.put(entityID, probeInfo);
                         sendMessage(new AnnounceMessage(entityID, EntityType.PROBE));
-                    }
-                    else if (operation.equals("remove")) {
-                        probes.remove(entityID);
-                        sendMessage(new DeannounceMessage(entityID, EntityType.PROBE));
-                    }
-                    
-                    JSONArray embeddedAttributes = msgObj.getJSONArray("attributes");
-                    for (int i=0; i < embeddedAttributes.length(); i++)
-                        messageHandler(embeddedAttributes.getString(i));
+                        
+                        ID dataSourceID = ID.fromString(probeInfo.getString("datasource"));
+                        JSONObject dataSource = dataSources.get(dataSourceID);
+                        dataSource.append("probes", entityID.toString());
+                        
+                        JSONArray embeddedAttributes = msgObj.getJSONArray("attributes");
+                        for (int i=0; i < embeddedAttributes.length(); i++)
+                            messageHandler(embeddedAttributes.getString(i));
+                        
+                    }          
                     
                     LOGGER.trace("probe map:\n");
                     for (ID id: probes.keySet())
@@ -143,16 +152,6 @@ public class ZMQSubscriberWithAggregation extends AbstractZMQSubscriber implemen
                             probeAttributes.put(probeID, attributes);
                         }
                         
-                    }
-                    
-                    else if (operation.equals("remove")) {
-                        attributes = probeAttributes.get(probeID);
-                        if (attributes == null)
-                            break;
-                        if (attributes.has(field))
-                            attributes.remove(field);
-                        if (!attributes.keys().hasNext())
-                            probeAttributes.remove(probeID);
                     }
                     
                     LOGGER.trace("probeattribute map:\n");

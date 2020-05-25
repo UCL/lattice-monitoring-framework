@@ -14,15 +14,15 @@ import us.monoid.json.JSONArray;
  attributes on the InfoPlane using ZMQ.
 **/
 
-public class ZMQPublisherWithAggregation extends AbstractZMQPublisher {
+public class ZMQPublisherWithNoMessageOnRemoveProbe extends AbstractZMQPublisher {
     
-    public ZMQPublisherWithAggregation(String remHost, int remPort) {
+    public ZMQPublisherWithNoMessageOnRemoveProbe(String remHost, int remPort) {
         super(remHost, remPort);
     }
     
     
     @Override
-    public ZMQPublisherWithAggregation addProbe(Probe aProbe) throws IOException {
+    public ZMQPublisherWithNoMessageOnRemoveProbe addProbe(Probe aProbe) throws IOException {
         DataSource ds = (DataSource) aProbe.getProbeManager();
         JSONObject infoObj = new JSONObject();
         try {
@@ -54,43 +54,8 @@ public class ZMQPublisherWithAggregation extends AbstractZMQPublisher {
      * Add data for a ProbeAttribute.
      */
     @Override
-    public ZMQPublisherWithAggregation addProbeAttribute(Probe aProbe, ProbeAttribute attr) throws IOException {
+    public ZMQPublisherWithNoMessageOnRemoveProbe addProbeAttribute(Probe aProbe, ProbeAttribute attr) throws IOException {
         JSONObject infoObj = setAddProbeAttributeInfo(aProbe, attr);
-        sendInfo("info.probeattribute", infoObj.toString());
-        return this;
-    }
-    
-    
-
-    @Override
-    public ZMQPublisherWithAggregation removeProbe(Probe aProbe) throws IOException {
-        JSONObject infoObj = new JSONObject();
-        try {
-            JSONObject probeInfo = new JSONObject();
-            probeInfo.put("id", aProbe.getID().toString());
-            infoObj.put("entity", "probe");
-            infoObj.put("operation", "remove"); // FIXME: could use an ENUM
-            infoObj.put("info", probeInfo);
-            
-            JSONArray attributes = new JSONArray();
-            Collection<ProbeAttribute> attrs = aProbe.getAttributes();
-            for (ProbeAttribute attr : attrs) {
-                attributes.put(setRemoveProbeAttributeInfo(aProbe, attr));
-            }
-            infoObj.put("attributes", attributes);
-            
-        } catch (JSONException e) {
-            LOGGER.error("Error" + e.getMessage());
-        }
-        
-        sendInfo("info.probe", infoObj.toString());
-        return this;
-        
-    }
-
-    @Override
-    public ZMQPublisherWithAggregation removeProbeAttribute(Probe aProbe, ProbeAttribute attr) throws IOException {
-        JSONObject infoObj = setRemoveProbeAttributeInfo(aProbe, attr);
         sendInfo("info.probeattribute", infoObj.toString());
         return this;
     }
@@ -115,26 +80,37 @@ public class ZMQPublisherWithAggregation extends AbstractZMQPublisher {
         }
         return infoObj;
     }
-        
     
-    private JSONObject setRemoveProbeAttributeInfo(Probe aProbe, ProbeAttribute attr) {
+    
+    
+    @Override
+    public ZMQPublisherWithNoMessageOnRemoveProbe removeDataSource(DataSource ds) throws IOException {
         JSONObject infoObj = new JSONObject();
         try {
-            JSONObject probeAttrsInfo = new JSONObject();
-            probeAttrsInfo.put("probe", aProbe.getID().toString());
-            probeAttrsInfo.put("field", attr.getField());
-            infoObj.put("entity", "probeattribute");
+            JSONObject dsInfo = new JSONObject();
+            dsInfo.put("id", ds.getID().toString());
+            infoObj.put("entity", "datasource");
             infoObj.put("operation", "remove"); // FIXME: could use an ENUM
-            infoObj.put("info", probeAttrsInfo);
+            infoObj.put("info", dsInfo);
         } catch (JSONException e) {
             LOGGER.error("Error" + e.getMessage());
         }
-        return infoObj;
-    }    
+        sendInfo("info.datasource", infoObj.toString());
+        return this;
+    }
+    
+    
+
+    @Override
+    public ZMQPublisherWithNoMessageOnRemoveProbe removeProbe(Probe aProbe) throws IOException {
+        return this;
         
-    
-    
-    
+    }
+
+    @Override
+    public ZMQPublisherWithNoMessageOnRemoveProbe removeProbeAttribute(Probe aProbe, ProbeAttribute attr) throws IOException {
+        return this;
+    }
 
     
 }
