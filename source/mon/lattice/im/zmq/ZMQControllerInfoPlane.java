@@ -45,7 +45,7 @@ public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements Info
         this();
 	port = localPort;
         zmqProxy = new ZMQProxy(port);
-        zmqSubscriber = new ZMQSubscriberWithAggregation(zmqProxy.getInternalURI(), "info.", zmqProxy.getContext());
+        zmqSubscriber = new ZMQSubscriberWithNoMessageOnRemoveProbe(zmqProxy.getInternalURI(), "info.", zmqProxy.getContext());
         zmqSubscriber.addAnnounceEventListener(listener);
     }
     

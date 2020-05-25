@@ -36,8 +36,7 @@ public class ZMQDataSourceInfoPlane extends AbstractZMQInfoPlane implements Info
     public ZMQDataSourceInfoPlane(String remoteHostname, int remotePort) {
 	remoteHost = remoteHostname;
 	this.remotePort = remotePort;
-
-	zmqPublisher = new ZMQPublisherWithAggregation(remoteHost, this.remotePort);
+        zmqPublisher = new ZMQPublisherWithNoMessageOnRemoveProbe(remoteHost, this.remotePort);
     }
      
      
