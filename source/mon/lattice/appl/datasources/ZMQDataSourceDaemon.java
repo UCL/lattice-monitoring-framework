@@ -84,20 +84,24 @@ public class ZMQDataSourceDaemon extends Daemon {
         LOGGER.info("Connecting to the Control Plane: " + ctrlPair.getHostName() + ":" + ctrlPair.getPort());
         
 	// set up the planes
-        dataSource.setDataPlane(new ZMQDataPlaneProducer(dataConsumerPair.getAddress().getHostAddress(), dataConsumerPair.getPort()));
+        dataSource.setDataPlane(new ZMQDataPlaneProducer(dataConsumerPair));
         
         // ZMQ Info Plane
         dataSource.setInfoPlane(new ZMQDataSourceInfoPlane(remoteInfoHost, remoteInfoPort));
             
         // ZMQ Control Plane   
         dataSource.setControlPlane(new ZMQDataSourceControlPlaneXDRConsumer(ctrlPair));
-        
-	if (!dataSource.connect()) {
-            LOGGER.error("Error while connecting to the Planes");
-            System.exit(1); //terminating as there was an error while connecting to the planes
-        }
-        
-        LOGGER.info("Connected to the Info Plane using: " + dataSource.getInfoPlane().getInfoRootHostname() + ":" + remoteInfoPort);
+    }
+
+    @Override
+    protected boolean connect() throws IOException {
+        boolean connected = dataSource.connect();
+        if (connected) {
+            LOGGER.info("Connected to the Info Plane using: " + dataSource.getInfoPlane().getInfoRootHostname() + ":" + remoteInfoPort);
+            return connected;
+        } else {
+            throw new IOException("Error while connecting to the Planes");
+        } 
     }
     
     
@@ -171,10 +175,11 @@ public class ZMQDataSourceDaemon extends Daemon {
                                                             controllerHost, 
                                                             controllerPort);
             dataSourceDaemon.init();
+            dataSourceDaemon.connect();
             
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.err.println("Error while starting the Data Source " + ex.getMessage());
+        } catch (IOException ex) {
+            LOGGER.error("Error while starting the Data Source " + ex.getMessage());
+            System.exit(1); //terminating as there was an error while connecting to the planes
 	}
     }
 }

@@ -13,6 +13,7 @@ import mon.lattice.core.TypeException;
 import mon.lattice.core.ID;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
+import java.net.InetSocketAddress;
 
 /**
  * A UDPDataPlaneProducerNoNames is a DataPlane implementation
@@ -22,11 +23,16 @@ import java.io.DataOutput;
  */
 public class ZMQDataPlaneProducer extends AbstractZMQDataPlaneProducer implements DataPlane, DataSourceDelegateInteracter, TransmittingData {
     /**
-     * Construct a UDPDataPlaneProducerNoNames
+     * Construct a ZMQDataPlaneProducer
      */
     public ZMQDataPlaneProducer(String remoteHost, int remotePort) {
         super(remoteHost, remotePort);
     }
+    
+    public ZMQDataPlaneProducer(InetSocketAddress inetSockAddr) {
+        super(inetSockAddr.getAddress().getHostAddress(), inetSockAddr.getPort());
+    }
+    
 
     /**
      * Send a message onto the address.

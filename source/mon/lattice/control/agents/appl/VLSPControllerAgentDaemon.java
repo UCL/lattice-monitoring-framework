@@ -54,7 +54,13 @@ public class VLSPControllerAgentDaemon extends Daemon {
         initLogger();
         
         controllerAgent = new VLSPControllerAgent(entityID, controlHostAddress, controlHostPort, remoteInfoHost, remoteInfoPort, VLSPMonitoringAddress, VLSPMonitoringPort);
+    }
+
+    
+    @Override
+    protected boolean connect() throws IOException {
         controllerAgent.init();
+        return true; // no exceptions then
     }
     
     
