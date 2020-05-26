@@ -25,6 +25,8 @@ public abstract class Daemon extends Thread {
     
     protected abstract void init() throws IOException;
     
+    protected abstract boolean connect() throws IOException;
+    
     protected void attachShutDownHook() {
         Runtime.getRuntime().addShutdownHook(this);
     }
