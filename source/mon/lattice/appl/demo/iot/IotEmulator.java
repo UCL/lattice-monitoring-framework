@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mon.lattice.appl.demo.iot;
 
 import java.io.FileInputStream;
@@ -45,11 +40,6 @@ public class IotEmulator {
     Integer valueMax;
     Integer dsNumber;
 
-    Integer bufferSize;
-    String reporterAddress;
-    String reporterPort;
-    String reporterURI;
-
     
     public IotEmulator(Properties configuration) {
         this.configuration = configuration;
@@ -74,11 +64,7 @@ public class IotEmulator {
         valueMin = Integer.valueOf(configuration.getProperty("probe.value.min", "10"));
         valueMax = Integer.valueOf(configuration.getProperty("probe.value.max", "40"));
         topologies = Integer.valueOf(configuration.getProperty("topologies.number", "1"));
-        bufferSize = Integer.valueOf(configuration.getProperty("rep.buffersize"));
         dsNumber = Integer.valueOf(configuration.getProperty("ds.number"));
-        reporterAddress = configuration.getProperty("rep.address");
-        reporterPort = configuration.getProperty("rep.port");
-        reporterURI = configuration.getProperty("rep.uri");
     }
     
     
@@ -89,8 +75,6 @@ public class IotEmulator {
         System.out.println("Number of Probes/Sensors per Data Source: " + nSensors);
         System.out.println("Probes/Sensors rate: " + rate);
         System.out.println("Probes/Sensors random activation interval: " + waitMin + "-" + waitMax);
-        System.out.println("Reporter buffer size: " + bufferSize);
-        System.out.println("Reporter destination URL: " + "http://" + reporterAddress + ":" + reporterPort + "/" + reporterURI);
         System.out.println("Number of concurrent generators: " + topologies);
         System.out.println();
     }
@@ -166,17 +150,13 @@ public class IotEmulator {
                 IotTopology t = new IotTopology(id,
                                                 iot.userID,
                                                 iot.hostID,
-                                                    iot.dsNumber,
+                                                iot.dsNumber,
                                                 iot.nSensors,
                                                 iot.rate,
                                                 iot.waitMin,
                                                 iot.waitMax,
                                                 iot.valueMin,
                                                 iot.valueMax,
-                                                iot.bufferSize,
-                                                iot.reporterAddress,
-                                                iot.reporterPort,
-                                                iot.reporterURI,
                                                 iot.controllerAddress,
                                                 iot.controllerPort
                                                 );

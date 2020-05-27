@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.Timestamp;
 import java.io.*;
+import mon.lattice.core.ID;
 import mon.lattice.core.ProbeValueWithName;
 import us.monoid.web.Resty;
 import us.monoid.json.JSONObject;
@@ -22,21 +23,25 @@ public class BufferedRestReporter extends AbstractReporter {
     /**
      * In a BufferReporter, report() groups and sends the Measurement to a specific function.
      */
-    String bufferSize;
+    Integer bufferSize;
     String uri;
+    String callbackURI;
 
     Resty resty = new Resty();
     JSONArray array = new JSONArray();
     private Logger LOGGER = LoggerFactory.getLogger(BufferedRestReporter.class);
     
-    public BufferedRestReporter(String reporterName, String bufferSize, String ip, String port, String method) {
+    public BufferedRestReporter(String reporterName, String bufferSize, String ip, String port, String method, String callbackHost, String callbackPort, String callbackMethod) {
         super(reporterName); 
-        this.bufferSize = bufferSize;
+        this.bufferSize = Integer.valueOf(bufferSize);
         this.uri = "http://" + ip + ":" + port + method;
+        this.callbackURI = "http://" + callbackHost + ":" + callbackPort + callbackMethod;
+        
+        resty.withHeader("X-Callback-Url", callbackURI);
     }
 
    private void addToBuffer(Measurement m) {
-	    if (array.length() <= Integer.parseInt(this.bufferSize))
+	    if (array.length() <= bufferSize)
 		array.put(processMeasurement(m));
             
             else {
@@ -44,7 +49,9 @@ public class BufferedRestReporter extends AbstractReporter {
                     LOGGER.debug("builder result: " + array.toString());
                     
                     try {
-                            Content payload = new Content("application/json", array.toString().getBytes());     
+                            Content payload = new Content("application/json", array.toString().getBytes()); 
+                            String requestID = ID.generate() + ":" + System.currentTimeMillis();
+                            resty.withHeader("X-Call-Id", requestID);
                             resty.json(uri, payload);
                     } catch (IOException e) {
                             LOGGER.error("Error while sending Measurement: " + e.getMessage());
@@ -79,7 +86,10 @@ public class BufferedRestReporter extends AbstractReporter {
     
     @Override
     public void report(Measurement m) {
+        long tStart = System.currentTimeMillis();
 	LOGGER.debug("Received measurement: " + m.toString());
-    addToBuffer(m);
+        addToBuffer(m);
+        long tReporting = System.currentTimeMillis() - tStart;
+        LOGGER.debug("time: " + tReporting);
     }
 }

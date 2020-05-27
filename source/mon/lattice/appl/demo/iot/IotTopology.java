@@ -36,10 +36,17 @@ public class IotTopology {
     Integer valueMin;
     Integer valueMax;
 
-    Integer bufferSize;
+    Integer reporterBufferSize;
+    Integer reporterResponseTime;
+    String reporterClassName;
     String reporterAddress;
     String reporterPort;
     String reporterURI;
+    
+    String reporterCallbackHost;
+    String reporterCallbackPort;
+    String reporterCallbackURI;
+    
     Integer topologies;
 
     String dataConsumerID;
@@ -68,10 +75,6 @@ public class IotTopology {
                        int waitMax,
                        int valueMin,
                        int valueMax,
-                       int bufferSize,
-                       String reporterAddress,
-                       String reporterPort,
-                       String reporterURI,
                        String controllerAddress,
                        int controllerPort) throws IOException
        {
@@ -85,10 +88,6 @@ public class IotTopology {
         this.waitMax = waitMax;
         this.valueMin = valueMin;
         this.valueMax = valueMax;
-        this.bufferSize = bufferSize;
-        this.reporterAddress = reporterAddress;
-        this.reporterPort = reporterPort;
-        this.reporterURI = reporterURI;
         this.controllerAddress = controllerAddress;
         this.restClient = new RestClient(controllerAddress, controllerPort);
        }
@@ -101,6 +100,19 @@ public class IotTopology {
         dcDataplaneAddress = configuration.getProperty("host.address");
         dsClassName = configuration.getProperty("ds.class");
         dcClassName = configuration.getProperty("dc.class");
+        reporterClassName = configuration.getProperty("rep.class");
+        
+        if (reporterClassName.contains("BufferedRestReporter")) {
+            reporterAddress = configuration.getProperty("rep.address");
+            reporterPort = configuration.getProperty("rep.port");
+            reporterURI = configuration.getProperty("rep.uri");
+            reporterBufferSize = Integer.valueOf(configuration.getProperty("rep.buffersize"));
+            reporterCallbackHost = configuration.getProperty("rep.callback.host");
+            reporterCallbackPort = configuration.getProperty("rep.callback.port");
+            reporterCallbackURI = configuration.getProperty("rep.callback.uri");
+            
+        } else if (reporterClassName.contains("VoidReporter"))
+            reporterResponseTime = Integer.valueOf(configuration.getProperty("rep.response"));
         
         // in order to allocate a different Data Consumer reporterPort for each topology 
         // we add the topology ID to the value read from the conf file
@@ -171,8 +183,6 @@ public class IotTopology {
     
             if (!out.getBoolean("success"))
                 throw new Exception("Error while stopping Data Source: " + dsID + out.getString("msg"));
-            
-            //dataSourceIDs.remove(dsID);
         }
         catch (JSONException e) {
             throw new Exception("Error while unloading Data Source: " + e.getMessage());
@@ -224,25 +234,37 @@ public class IotTopology {
     
     
     private String loadReporter(String reporterName) {
-        String reporterClassName = "mon.lattice.appl.reporters.BufferedRestReporter";
-        
         JSONObject out;
         
         try {
-
-            out = restClient.loadReporter(dataConsumerID, reporterClassName, 
-                                        reporterName + "+" +
-                                        bufferSize + "+" +
-                                        reporterAddress + "+" +
-                                        reporterPort + "+" +
-                                        reporterURI
-                                        );
+            
+            if (reporterClassName.contains("BufferedRestReporter"))
+                out = restClient.loadReporter(dataConsumerID, reporterClassName, 
+                                                                reporterName + "+" +
+                                                                reporterBufferSize + "+" +
+                                                                reporterAddress + "+" +
+                                                                reporterPort + "+" +
+                                                                reporterURI + "+" +
+                                                                reporterCallbackHost + "+" +
+                                                                reporterCallbackPort + "+" +
+                                                                reporterCallbackURI
+                                                                );
+            
+            else if (reporterClassName.contains("VoidReporter"))
+                out = restClient.loadReporter(dataConsumerID, reporterClassName, 
+                                            reporterName + "+" +
+                                            reporterResponseTime
+                                            );
+            
+            else
+                throw new IOException("Reporter class not valid");
+                
             
             reporterID = out.getString("createdReporterID"); 
         }
 
-        catch (JSONException je) {
-            System.err.println("Error while activating Reporter: " + reporterName);
+        catch (JSONException | IOException e) {
+            System.err.println("Error while activating Reporter " + reporterName + ": " + e.getMessage());
         } 
         return reporterID;
     }
@@ -260,7 +282,7 @@ public class IotTopology {
             dsHostSessionID = restClient.createSession(hostID, userID).getString("ID");
             
             startDataConsumer();
-            loadReporter("buffered-reporter-" + topologyId);
+            loadReporter("reporter-" + topologyId);
             
             for (int i=0; i<dsNumber; i++)
                 startDataSource();
