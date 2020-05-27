@@ -3,7 +3,6 @@ package mon.lattice.appl.datasources;
 import mon.lattice.appl.Daemon;
 import mon.lattice.core.DefaultControllableDataSource;
 import mon.lattice.control.zmq.ZMQDataSourceControlPlaneXDRConsumer;
-import mon.lattice.distribution.zmq.ZMQDataPlaneProducer;
 import mon.lattice.core.ControllableDataSource;
 import mon.lattice.core.ID;
 import mon.lattice.im.zmq.ZMQDataSourceInfoPlane;
@@ -11,14 +10,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Scanner;
 
 /**
- * This DataSource in a basic control point for probes that uses a Control Plane and an Info Plane and 
- * logs out/err to a file rather than standard streams.
+ * This DataSource in a basic control point for probes that uses a ZMQ Control Plane and an Info Plane and 
+ * logs out/err to a file rather than standard streams. 
+ * The data plane implementation is left to the sub classes.
  **/
 
-public class ZMQDataSourceDaemon extends Daemon {
+public abstract class AbstractZMQDataSourceDaemon extends Daemon {
     protected ControllableDataSource dataSource;
     
     String dataSourceName;
@@ -43,7 +42,7 @@ public class ZMQDataSourceDaemon extends Daemon {
      * @throws UnknownHostException
      **/
     
-    public ZMQDataSourceDaemon(
+    public AbstractZMQDataSourceDaemon(
                            String myID,
                            String myDSName, 
                            String dataConsumerName, 
@@ -70,7 +69,7 @@ public class ZMQDataSourceDaemon extends Daemon {
     @Override
     public void init() throws IOException {
         entityType = "data-source-";
-        classMetadata = ZMQDataSourceDaemon.class;
+        classMetadata = AbstractZMQDataSourceDaemon.class;
         
         attachShutDownHook();
         initLogger();
@@ -82,9 +81,6 @@ public class ZMQDataSourceDaemon extends Daemon {
         LOGGER.info("Using Data Source name: " + dataSourceName);
         LOGGER.info("Sending measurements to Data Consumer: " + dataConsumerPair.getHostName() + ":" + dataConsumerPair.getPort());
         LOGGER.info("Connecting to the Control Plane: " + ctrlPair.getHostName() + ":" + ctrlPair.getPort());
-        
-	// set up the planes
-        dataSource.setDataPlane(new ZMQDataPlaneProducer(dataConsumerPair));
         
         // ZMQ Info Plane
         dataSource.setInfoPlane(new ZMQDataSourceInfoPlane(remoteInfoHost, remoteInfoPort));
@@ -114,72 +110,5 @@ public class ZMQDataSourceDaemon extends Daemon {
         } catch (Exception e) {
             LOGGER.error("Something went wrong while disconnecting from the planes " + e.getMessage());
           }
-    }
-    
-    
-    public static void main(String [] args) {
-        try {
-            String dsID = ID.generate().toString();
-            String dsName = null;
-            String dataConsumerAddr = null;
-            int dataConsumerPort = 22997;
-            String infoHost = null;
-            int infoRemotePort= 6699;
-            String controllerHost = null;
-            int controllerPort = 5555;
-            
-            Scanner sc;
-                    
-            switch (args.length) {
-                case 0:
-                    // use existing settings
-                    String loopBack = InetAddress.getLoopbackAddress().getHostName();
-                    dsName = dataConsumerAddr = controllerHost = loopBack;
-                    infoHost = InetAddress.getLocalHost().getHostName();
-                    break;
-                case 5:
-                    dataConsumerAddr = args[0];
-                    sc = new Scanner(args[1]);
-                    dataConsumerPort = sc.nextInt();
-                    infoHost = controllerHost = args[2];
-                    sc = new Scanner(args[3]);
-                    infoRemotePort = sc.nextInt();
-                    sc= new Scanner(args[4]);
-                    controllerPort = sc.nextInt();
-                    dsName = InetAddress.getLocalHost().getHostName();
-                    break;
-                case 6:
-                    dsID = args[0];
-                    dataConsumerAddr = args[1];
-                    sc = new Scanner(args[2]);
-                    dataConsumerPort = sc.nextInt();
-                    infoHost = controllerHost = args[3];
-                    sc = new Scanner(args[4]);
-                    infoRemotePort = sc.nextInt();
-                    sc= new Scanner(args[5]);
-                    controllerPort = sc.nextInt();
-                    dsName = InetAddress.getLocalHost().getHostName();
-                    break;
-                default:
-                    System.err.println("use: ZMQDataSourceDaemon [UUID] dcAddress dcPort infoHost infoPort controllerHost controllerPort");
-                    System.exit(1);
-            }
-            
-            ZMQDataSourceDaemon dataSourceDaemon = new ZMQDataSourceDaemon(
-                                                            dsID,
-                                                            dsName, 
-                                                            dataConsumerAddr, 
-                                                            dataConsumerPort, 
-                                                            infoHost, 
-                                                            infoRemotePort,
-                                                            controllerHost, 
-                                                            controllerPort);
-            dataSourceDaemon.init();
-            dataSourceDaemon.connect();
-            
-        } catch (IOException ex) {
-            LOGGER.error("Error while starting the Data Source " + ex.getMessage());
-            System.exit(1); //terminating as there was an error while connecting to the planes
-	}
     }
 }

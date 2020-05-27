@@ -13,7 +13,7 @@ import mon.lattice.core.ID;
 import mon.lattice.distribution.ws.WSDataPlaneProducerWithNames;
 
 
-public class ZMQDataSourceDaemonWithWS extends ZMQDataSourceDaemon {
+public class ZMQDataSourceDaemonWithWS extends AbstractZMQDataSourceDaemon {
 
     public ZMQDataSourceDaemonWithWS(String myID, String myDSName, String dataConsumerName, int dataConsumerPort, String infoPlaneRootName, int infoPlaneRootPort, String controlHostAddress, int controlHostPort) throws UnknownHostException {
         super(myID, myDSName, dataConsumerName, dataConsumerPort, infoPlaneRootName, infoPlaneRootPort, controlHostAddress, controlHostPort);
@@ -91,5 +91,4 @@ public class ZMQDataSourceDaemonWithWS extends ZMQDataSourceDaemon {
             System.exit(1); //terminating as there was an error while connecting to the planes
 	}
     }
-    
 }

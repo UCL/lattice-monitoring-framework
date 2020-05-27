@@ -25,94 +25,20 @@ import java.util.Scanner;
 import mon.lattice.appl.Daemon;
 
 
-public class ZMQControllableDataConsumerDaemon extends Daemon {
-    DefaultControllableDataConsumer consumer;
-    
-    String dataConsumerName = "controllable-DC";
-    
-    int dataPort;
-    
-    InetSocketAddress ctrlPair;
-    
-    String remoteInfoHost;
-    int remoteInfoPort;
-    
-    
-    public ZMQControllableDataConsumerDaemon(String myID,
-                                          int dataPort, 
-                                          String infoPlaneRootName,   
-                                          int infoPlaneRootPort,
-                                          String controlAddr,
-                                          int controlPort
-                                          ) throws UnknownHostException {
-    
-        super.entityID = myID;
-        this.dataPort = dataPort;
-        
-        this.ctrlPair = new InetSocketAddress(InetAddress.getByName(controlAddr), controlPort);
-        
-        this.remoteInfoHost = infoPlaneRootName;
-        this.remoteInfoPort = infoPlaneRootPort;
+public class ZMQControllableDataConsumerDaemon extends AbstractZMQControllableDataConsumerDaemon {
+
+    public ZMQControllableDataConsumerDaemon(String myID, int dataPort, String infoPlaneRootName, int infoPlaneRootPort, String controlAddr, int controlPort) throws UnknownHostException {
+        super(myID, dataPort, infoPlaneRootName, infoPlaneRootPort, controlAddr, controlPort);
     }
-    
-    
+
     @Override
     public void init() throws IOException {
-        entityType = "data-consumer-";
-        classMetadata = ZMQControllableDataConsumerDaemon.class;
-        attachShutDownHook();
-        initLogger();
-        
-        consumer = new DefaultControllableDataConsumer(dataConsumerName, ID.fromString(entityID));
-        
-        LOGGER.info("Data Consumer ID: " + consumer.getID());
-        LOGGER.info("Process ID: " + consumer.getMyPID());
-        LOGGER.info("Connecting to the Info Plane using: " +  remoteInfoHost + ":" + remoteInfoPort);
-        LOGGER.info("Connecting to the Control Plane using: " + ctrlPair.getHostName() + ":" + ctrlPair.getPort());
-        
-        // set up data plane listening on *:port
+        super.init();
         consumer.setDataPlane(new ZMQDataPlaneConsumer(dataPort));
-        
-        InfoPlane infoPlane = new ZMQDataConsumerInfoPlane(remoteInfoHost, remoteInfoPort);
-        
-        
-        ((DataConsumerInteracter) infoPlane).setDataConsumer(consumer);
-        consumer.setInfoPlane(infoPlane);
-        
-        ControlPlane controlPlane;
-        controlPlane = new ZMQDataConsumerControlPlaneXDRConsumer(ctrlPair);
-        
-        ((DataConsumerInteracter) controlPlane).setDataConsumer(consumer);
-        consumer.setControlPlane(controlPlane);
     }
     
     
-    @Override
-    protected boolean connect() throws IOException {
-        boolean connected = consumer.connect();
-        if (connected) {
-            LOGGER.info("Connected to the Info Plane using: " + consumer.getInfoPlane().getInfoRootHostname() + ":" + remoteInfoPort);
-            return connected;
-        } else {
-            throw new IOException("Error while connecting to the Planes");
-        } 
-    }
-    
-    
-   
-    @Override
-    public void run() {
-        LOGGER.info("Disconnecting from the planes before shutting down");
-        try {
-            // performs deannounce and then disconnect for each plane
-            consumer.disconnect(); 
-        } catch (Exception e) {
-            LOGGER.error("Something went wrong while Disconnecting from the planes " + e.getMessage());
-          }
-    }
-    
-    
-    public static void main(String [] args) {
+    public static void main(String[] args) {
         try {
             String dcID = ID.generate().toString();
             int dataPort = 22997;
@@ -166,8 +92,9 @@ public class ZMQControllableDataConsumerDaemon extends Daemon {
             LOGGER.error("Error while starting the Data Consumer " + ex.getMessage());
             System.exit(1); //terminating as there was an error while connecting to the planes
         } 
-
     }
+    
+
 }
 
 

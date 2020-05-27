@@ -13,7 +13,7 @@ import mon.lattice.core.ID;
 import mon.lattice.distribution.ws.WSDataPlaneConsumerWithNames;
 
 
-public class ZMQControllableDataConsumerDaemonWithWS extends ZMQControllableDataConsumerDaemon {
+public class ZMQControllableDataConsumerDaemonWithWS extends AbstractZMQControllableDataConsumerDaemon {
 
     public ZMQControllableDataConsumerDaemonWithWS(String myID, int dataPort, String infoPlaneRootName, int infoPlaneRootPort, String controlAddr, int controlPort) throws UnknownHostException {
         super(myID, dataPort, infoPlaneRootName, infoPlaneRootPort, controlAddr, controlPort);
