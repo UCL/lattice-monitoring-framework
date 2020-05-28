@@ -102,7 +102,8 @@ public class IotTopology {
         dcClassName = configuration.getProperty("dc.class");
         reporterClassName = configuration.getProperty("rep.class");
         
-        if (reporterClassName.contains("BufferedRestReporter")) {
+        
+        if (reporterClassName.contains("BufferedRestReporterWithCallback")) {
             reporterAddress = configuration.getProperty("rep.address");
             reporterPort = configuration.getProperty("rep.port");
             reporterURI = configuration.getProperty("rep.uri");
@@ -110,6 +111,12 @@ public class IotTopology {
             reporterCallbackHost = configuration.getProperty("rep.callback.host");
             reporterCallbackPort = configuration.getProperty("rep.callback.port");
             reporterCallbackURI = configuration.getProperty("rep.callback.uri");
+            
+        } else if (reporterClassName.contains("BufferedRestReporter")) {
+            reporterAddress = configuration.getProperty("rep.address");
+            reporterPort = configuration.getProperty("rep.port");
+            reporterURI = configuration.getProperty("rep.uri");
+            reporterBufferSize = Integer.valueOf(configuration.getProperty("rep.buffersize"));
             
         } else if (reporterClassName.contains("VoidReporter"))
             reporterResponseTime = Integer.valueOf(configuration.getProperty("rep.response"));
@@ -236,9 +243,9 @@ public class IotTopology {
     private String loadReporter(String reporterName) {
         JSONObject out;
         
-        try {
+        try { 
             
-            if (reporterClassName.contains("BufferedRestReporter"))
+            if (reporterClassName.contains("BufferedRestReporterWithCallback"))
                 out = restClient.loadReporter(dataConsumerID, reporterClassName, 
                                                                 reporterName + "+" +
                                                                 reporterBufferSize + "+" +
@@ -250,6 +257,15 @@ public class IotTopology {
                                                                 reporterCallbackURI
                                                                 );
             
+            else if (reporterClassName.contains("BufferedRestReporter"))
+                out = restClient.loadReporter(dataConsumerID, reporterClassName, 
+                                                                reporterName + "+" +
+                                                                reporterBufferSize + "+" +
+                                                                reporterAddress + "+" +
+                                                                reporterPort + "+" +
+                                                                reporterURI
+                                                                );
+            
             else if (reporterClassName.contains("VoidReporter"))
                 out = restClient.loadReporter(dataConsumerID, reporterClassName, 
                                             reporterName + "+" +
@@ -257,7 +273,7 @@ public class IotTopology {
                                             );
             
             else
-                throw new IOException("Reporter class not valid");
+                throw new IOException("Reporter class not supported");
                 
             
             reporterID = out.getString("createdReporterID"); 
@@ -287,6 +303,7 @@ public class IotTopology {
             for (int i=0; i<dsNumber; i++)
                 startDataSource();
                 
+            // should create multiple thread here
             for (String dsID : dataSourceIDs) {
                 System.out.println("Topology " + topologyId + ": Loading Probes / Sensors");
                 

@@ -1,21 +1,21 @@
-//author: Alina
+//author: Alina and Francesco
 
 package mon.lattice.appl.reporters;
 
+import java.io.IOException;
 import mon.lattice.core.AbstractReporter;
 import mon.lattice.core.Measurement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.Timestamp;
-import java.io.*;
-import mon.lattice.core.ID;
 import mon.lattice.core.ProbeValueWithName;
 import us.monoid.web.Resty;
 import us.monoid.json.JSONObject;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.web.Content;
+import us.monoid.web.JSONResource;
 /**
  * A BufferReporter groups and sends the Measurements to a specific function.
  */
@@ -25,36 +25,41 @@ public class BufferedRestReporter extends AbstractReporter {
      */
     Integer bufferSize;
     String uri;
-    String callbackURI;
 
     Resty resty = new Resty();
     JSONArray array = new JSONArray();
     private Logger LOGGER = LoggerFactory.getLogger(BufferedRestReporter.class);
     
-    public BufferedRestReporter(String reporterName, String bufferSize, String ip, String port, String method, String callbackHost, String callbackPort, String callbackMethod) {
+    
+    public BufferedRestReporter(String reporterName, String bufferSize, String ip, String port, String method) {
         super(reporterName); 
         this.bufferSize = Integer.valueOf(bufferSize);
         this.uri = "http://" + ip + ":" + port + method;
-        this.callbackURI = "http://" + callbackHost + ":" + callbackPort + callbackMethod;
-        
-        resty.withHeader("X-Callback-Url", callbackURI);
     }
+    
+    
+   protected void sendRequest() throws IOException, JSONException {
+        Content payload = new Content("application/json", array.toString().getBytes());
+        long tStart = System.currentTimeMillis();
+        JSONArray result = resty.json(uri, payload).array();
+        long tReporting = System.currentTimeMillis() - tStart;
+        LOGGER.info("time (msec): " + tReporting);
+        LOGGER.info("result: " + result.toString());
+   }
+    
 
-   private void addToBuffer(Measurement m) {
+   protected void addToBuffer(Measurement m) {
 	    if (array.length() <= bufferSize)
 		array.put(processMeasurement(m));
             
             else {
-                    // Send the grouped data and reinitiaze the buffer and counter
+                    // Send the grouped data and reinitialise the buffer and the counter
                     LOGGER.debug("builder result: " + array.toString());
                     
                     try {
-                            Content payload = new Content("application/json", array.toString().getBytes()); 
-                            String requestID = ID.generate() + ":" + System.currentTimeMillis();
-                            resty.withHeader("X-Call-Id", requestID);
-                            resty.json(uri, payload);
-                    } catch (IOException e) {
-                            LOGGER.error("Error while sending Measurement: " + e.getMessage());
+                        sendRequest();
+                    } catch (IOException | JSONException e) {
+                            LOGGER.error("IOException Error while sending Measurement: " + e.getMessage());
                     } finally {
                             array = new JSONArray();
                             array.put(processMeasurement(m));
@@ -62,7 +67,7 @@ public class BufferedRestReporter extends AbstractReporter {
 		}
 	}
 
-   private JSONObject processMeasurement(Measurement m)
+   protected JSONObject processMeasurement(Measurement m)
         {
         Timestamp t = m.getTimestamp();
         JSONObject obj = new JSONObject();
@@ -84,12 +89,11 @@ public class BufferedRestReporter extends AbstractReporter {
         return obj;
 	}
     
+   
     @Override
     public void report(Measurement m) {
-        long tStart = System.currentTimeMillis();
+        
 	LOGGER.debug("Received measurement: " + m.toString());
         addToBuffer(m);
-        long tReporting = System.currentTimeMillis() - tStart;
-        LOGGER.debug("time: " + tReporting);
     }
 }

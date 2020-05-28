@@ -143,6 +143,8 @@ public class IotEmulator {
             iot.generateEntityIDs();
             iot.initialise();
             
+            long tStart = System.currentTimeMillis();
+            
             // creating requested sensors topologies
             for (int id=1; id <= iot.topologies; id++) {
                 System.out.println("*** Creating Topology " + id + " ***");
@@ -172,7 +174,9 @@ public class IotEmulator {
             for (IotTopology t : iotList)
                 t.currentThread.join();
             
-            System.out.print("\n*** Deployment Completed ***\n");
+            long tEnd = System.currentTimeMillis();
+            
+            System.out.print("\n*** Deployment Completed in " + (tEnd - tStart)/1000 + " secs ***\n");
             System.out.print("\nPress a key to stop the emulation");
             System.in.read();
         }
