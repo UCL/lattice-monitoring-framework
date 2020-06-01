@@ -1,6 +1,6 @@
 //author: Alina and Francesco
 
-package mon.lattice.appl.reporters;
+package mon.lattice.appl.demo.iot;
 
 import java.io.IOException;
 import mon.lattice.core.AbstractReporter;

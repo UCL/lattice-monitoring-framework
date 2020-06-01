@@ -112,6 +112,7 @@ public class IotEmulator {
     public static void main(String[] args) {
         IotEmulator iot = null;
         List<IotTopology> iotList = new ArrayList<>();
+        long tStart, tEnd;
         
         boolean errorStatus = false;
         
@@ -143,7 +144,7 @@ public class IotEmulator {
             iot.generateEntityIDs();
             iot.initialise();
             
-            long tStart = System.currentTimeMillis();
+            tStart = System.currentTimeMillis();
             
             // creating requested sensors topologies
             for (int id=1; id <= iot.topologies; id++) {
@@ -174,7 +175,7 @@ public class IotEmulator {
             for (IotTopology t : iotList)
                 t.currentThread.join();
             
-            long tEnd = System.currentTimeMillis();
+            tEnd = System.currentTimeMillis();
             
             System.out.print("\n*** Deployment Completed in " + (tEnd - tStart)/1000 + " secs ***\n");
             System.out.print("\nPress a key to stop the emulation");
@@ -188,12 +189,26 @@ public class IotEmulator {
         
         finally {
             // stopping the emulation
+            tStart = System.currentTimeMillis();
+            
             for (IotTopology t : iotList) {
                 t.stopDeployment();
             }
             
             if (iot != null) 
                 iot.cleanup();
+            
+            try {
+                for (IotTopology t : iotList)
+                    t.currentThread.join();
+            } catch (InterruptedException ie) {
+                System.err.println("Interrupted while waiting for the Undeployment to be completed: " + ie.getMessage());
+                System.exit(2);
+            }
+            
+            tEnd = System.currentTimeMillis();
+            
+            System.out.print("\n*** Undeployment Completed in " + (tEnd - tStart) + " millisecs ***\n");
             
         }
     if (errorStatus)

@@ -6,7 +6,6 @@ package mon.lattice.appl.dataconsumers;
  */
 
 import mon.lattice.control.zmq.ZMQDataConsumerControlPlaneXDRConsumer;
-import mon.lattice.distribution.zmq.ZMQDataPlaneConsumer;
 import mon.lattice.im.zmq.ZMQDataConsumerInfoPlane;
 import mon.lattice.core.DataConsumerInteracter;
 import mon.lattice.core.ID;
@@ -16,7 +15,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Scanner;
 import mon.lattice.appl.Daemon;
 
 
