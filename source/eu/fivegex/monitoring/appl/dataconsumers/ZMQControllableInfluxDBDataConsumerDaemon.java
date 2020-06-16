@@ -3,14 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mon.lattice.appl.dataconsumers;
+package eu.fivegex.monitoring.appl.dataconsumers;
 
 /**
  *
  * @author uceeftu
  */
 
-import mon.lattice.appl.reporters.InfluxDBReporter;
+import eu.fivegex.monitoring.appl.reporters.InfluxDBReporter;
 import mon.lattice.appl.reporters.LoggerReporter;
 import mon.lattice.control.zmq.ZMQDataConsumerControlPlaneXDRConsumer;
 import mon.lattice.distribution.zmq.ZMQDataPlaneConsumer;
@@ -27,6 +27,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import mon.lattice.appl.dataconsumers.DefaultControllableDataConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

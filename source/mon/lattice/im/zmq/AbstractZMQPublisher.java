@@ -7,7 +7,7 @@ package mon.lattice.im.zmq;
 
 import java.io.IOException;
 import java.util.Collection;
-import mon.lattice.appl.datasources.DockerDataSource;
+import eu.fivegex.monitoring.appl.datasources.DockerDataSource;
 import mon.lattice.control.agents.ControllerAgent;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.ControllableDataSource;

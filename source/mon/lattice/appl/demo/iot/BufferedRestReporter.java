@@ -15,7 +15,6 @@ import us.monoid.json.JSONObject;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.web.Content;
-import us.monoid.web.JSONResource;
 /**
  * A BufferReporter groups and sends the Measurements to a specific function.
  */
@@ -39,6 +38,7 @@ public class BufferedRestReporter extends AbstractReporter {
     
     
    protected void sendRequest() throws IOException, JSONException {
+        LOGGER.info(array.toString());
         Content payload = new Content("application/json", array.toString().getBytes());
         long tStart = System.currentTimeMillis();
         JSONArray result = resty.json(uri, payload).array();

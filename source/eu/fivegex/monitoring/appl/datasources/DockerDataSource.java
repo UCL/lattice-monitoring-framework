@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mon.lattice.appl.datasources;
+package eu.fivegex.monitoring.appl.datasources;
 
 /**
  *

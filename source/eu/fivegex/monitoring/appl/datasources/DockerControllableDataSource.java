@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mon.lattice.appl.datasources;
+package eu.fivegex.monitoring.appl.datasources;
 
+import mon.lattice.appl.datasources.BasicDataSource;
 import mon.lattice.control.ProbeLoader;
 import mon.lattice.core.ControllableDataSource;
 import mon.lattice.core.ID;
