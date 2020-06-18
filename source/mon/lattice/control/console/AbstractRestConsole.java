@@ -5,7 +5,6 @@
  */
 package mon.lattice.control.console;
 
-import cc.clayman.console.ManagementConsole;
 import cc.clayman.console.RequestHandler;
 import org.simpleframework.http.core.Container;
 import org.simpleframework.http.core.ContainerServer;
@@ -27,7 +26,7 @@ import us.monoid.json.*;
  * A Console listens for REST requests
  * for doing component management.
  */
-public abstract class AbstractRestConsole implements Container, ManagementConsole {
+public abstract class AbstractRestConsole implements Container, ManagementConsoleWithPoolSize {
 
     private static Logger LOGGER = LoggerFactory.getLogger(RestConsole.class);
     // the port this element is listening on
@@ -74,6 +73,25 @@ public abstract class AbstractRestConsole implements Container, ManagementConsol
         // initialise the socket
         try {
             server = new ContainerServer(this);
+            connection = new SocketConnection(server);
+            address = new InetSocketAddress(port);
+
+            connection.connect(address);
+
+            LOGGER.info("Listening on port " + port);
+            return true;
+
+        } catch (IOException ioe) {
+            LOGGER.error("Cannot listen on port " + port);
+            return false;
+        }
+
+    }
+    
+        public boolean start(int threads) {
+        // initialise the socket
+        try {
+            server = new ContainerServer(this, threads);
             connection = new SocketConnection(server);
             address = new InetSocketAddress(port);
 

@@ -5,8 +5,8 @@
  */
 package mon.lattice.control.controller.json;
 
-import cc.clayman.console.ManagementConsole;
 import mon.lattice.control.console.JSONControllerManagementConsole;
+import mon.lattice.control.console.ManagementConsoleWithPoolSize;
 import mon.lattice.control.console.RestConsoleInterface;
 import mon.lattice.management.ssh.AuthType;
 import mon.lattice.management.ManagementException;
@@ -36,7 +36,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
     protected String dcClassName;
     
     protected int restConsolePort;
-    protected ManagementConsole JSONManagementConsole = null;
+    protected ManagementConsoleWithPoolSize JSONManagementConsole = null;
     
     
     
@@ -59,7 +59,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
     public void initRESTConsole() {
         restConsolePort = Integer.parseInt(pr.getProperty("restconsole.localport"));
         JSONManagementConsole=new JSONControllerManagementConsole(this, restConsolePort);
-        JSONManagementConsole.start();  
+        JSONManagementConsole.start(poolSize);  
     }
     
     

@@ -21,7 +21,7 @@ import us.monoid.json.JSONArray;
  */
 public abstract class AbstractJSONController extends AbstractController<JSONObject> implements ControlInterface<JSONObject> {
     protected int controlLocalPort;
-    protected int transmitterPoolSize;
+    protected int poolSize;
     protected int infoPlanePort;
     
     

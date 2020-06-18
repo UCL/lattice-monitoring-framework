@@ -41,7 +41,7 @@ public class SimpleJSONController extends AbstractJSONController {
         controlLocalPort = Integer.parseInt(pr.getProperty("control.localport"));
         infoPlanePort = Integer.parseInt(pr.getProperty("info.localport"));
         
-        transmitterPoolSize = Integer.parseInt(pr.getProperty("control.poolsize"));
+        poolSize = Integer.parseInt(pr.getProperty("control.poolsize"));
         
         // ZMQController is the root of the infoPlane - other nodes use it to perform bootstrap
         InfoPlane infoPlane = new ZMQControllerInfoPlane(infoPlanePort);
@@ -52,7 +52,7 @@ public class SimpleJSONController extends AbstractJSONController {
 	setInfoPlane(infoPlane);
         
         // create a ZMQ control plane producer
-        ControlPlane controlPlane = new ZMQControlPlaneXDRProducer(transmitterPoolSize, controlLocalPort);
+        ControlPlane controlPlane = new ZMQControlPlaneXDRProducer(poolSize, controlLocalPort);
         
         // setting a reference to the InfoPlaneDelegate on the Control Plane
         ((InfoPlaneDelegateInteracter) controlPlane).setInfoPlaneDelegate(controlInformationManager);

@@ -57,6 +57,23 @@ public abstract class RestConsole extends AbstractRestConsole {
         }
         
         
+    @Override
+	public boolean start(int threads) {
+        // check the UnknownCommand exists
+        Command unknown = commandMap.get("__UNKNOWN__");
+        
+        
+        if (unknown == null) {
+            LoggerFactory.getLogger(RestConsole.class).error("Unknown Command is null");
+            return false;
+        }
+
+
+        return super.start(threads);
+        }    
+        
+        
+        
     /**
      * Register a new command with the ManagementConsole.
      */

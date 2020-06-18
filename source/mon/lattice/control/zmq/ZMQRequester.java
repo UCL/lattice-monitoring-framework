@@ -1,46 +1,39 @@
 package mon.lattice.control.zmq;
 
-import mon.lattice.distribution.ExposedByteArrayInputStream;
 import mon.lattice.distribution.Transmitting;
 import mon.lattice.control.Transmitter;
 import mon.lattice.control.SynchronousTransmitting;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import static mon.lattice.control.zmq.AbstractZMQControlPlaneProducer.LOGGER;
+import mon.lattice.core.ID;
 import org.zeromq.ZMQ;
 
 /**
- * This is a UDP transmitter for monitoring messages
+ * This is a UDP sender for monitoring messages
  */
-public final class ZMQRequester implements Transmitter {
-    /*
-     * The transmitting that interacts with a DataSourceDelegate.
-     */
-    Transmitting transmitting = null;
-
+public abstract class ZMQRequester implements SynchronousTransmitting, Transmitter {
     
     ZMQ.Context context;
-    ZMQ.Socket transmitter;
+    ZMQ.Socket sender;
     
     String identity;
     
     
     /**
-    * Construct a transmitter from an existing ZMQ Context
+    * Construct a sender from an existing ZMQ Context
     */
-    public ZMQRequester(Transmitting transmitting, ZMQ.Context ctx) throws IOException {
-        this.transmitting=transmitting;
+    
+    public ZMQRequester(ZMQ.Context ctx) throws IOException {
         context = ctx;
-        transmitter = context.socket(ZMQ.REQ);
-        
-        identity = Thread.currentThread().getName();
-        transmitter.setIdentity(identity.getBytes(ZMQ.CHARSET));
+        sender = context.socket(ZMQ.REQ);
+        identity = ID.generate().toString();
+        sender.setIdentity(identity.getBytes(ZMQ.CHARSET));
     }
     
     
     @Override
     public void setTransmitting(Transmitting transmitting) {
-        this.transmitting=transmitting;
+
     }
         
 
@@ -49,9 +42,9 @@ public final class ZMQRequester implements Transmitter {
      */
     @Override
     public void connect()  throws IOException {
-        transmitter.setLinger(0);
-        transmitter.setHWM(0);
-	transmitter.connect("inproc://frontend");
+        sender.setLinger(0);
+        sender.setHWM(0);
+	sender.connect("inproc://frontend");
     }
 
     /**
@@ -59,38 +52,14 @@ public final class ZMQRequester implements Transmitter {
      */
     @Override
     public void end() throws IOException {
-	transmitter.close();
+	sender.close();
         context.term();
     }
     
     
-    public Object transmitAndWaitReply(ByteArrayOutputStream byteStream, ZMQControlMetaData MessageMetaData, int seqNo) throws IOException {
-        String destination = MessageMetaData.getDestination();
-        //System.out.println(" Sending: '" + "Request " + seqNo + "'" + " to " + destination);
-        
-        transmitter.sendMore(destination);
-        transmitter.sendMore("");
-        transmitter.send(byteStream.toByteArray());
-        
-        if (transmitting != null) {
-            transmitting.transmitted(seqNo);
-            
-            // we block this thread until a reply message is received (timeout 5 secs)
-            transmitter.setReceiveTimeOut(5000);
-            
-            // worker identity
-            String sourceWorker = transmitter.recvStr();
-            transmitter.recvStr(); // empty frame
-            // actual reply
-            byte [] reply = transmitter.recv();
-            
-            if (transmitting instanceof SynchronousTransmitting) {
-                ByteArrayInputStream theBytes = new ExposedByteArrayInputStream(reply, 0, reply.length);
-                ZMQControlMetaData metaData = new ZMQControlMetaData(sourceWorker, reply.length);
-                return ((SynchronousTransmitting)transmitting).receivedReply(theBytes, metaData, seqNo);
-            }
-        }
-        
-        return null;
-    }   
+    @Override
+    public boolean transmitted(int id) {
+        LOGGER.info("just transmitted Control Message with seqNo: " + id);
+        return true;
+    }
 }

@@ -54,7 +54,7 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
         controlLocalPort = Integer.parseInt(pr.getProperty("control.localport"));
         infoPlanePort = Integer.parseInt(pr.getProperty("info.localport"));
         
-        transmitterPoolSize = Integer.parseInt(pr.getProperty("control.poolsize"));
+        poolSize = Integer.parseInt(pr.getProperty("control.poolsize"));
         
         // ZMQController is the root of the infoPlane - other nodes use it to perform bootstrap
         InfoPlane infoPlane = new ZMQControllerInfoPlane(infoPlanePort);
@@ -65,7 +65,7 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
 	setInfoPlane(infoPlane);
         
         // create a ZMQ control plane producer
-        ControlPlane controlPlane = new ZMQControlPlaneXDRProducerWithControlAgents(transmitterPoolSize, controlLocalPort);
+        ControlPlane controlPlane = new ZMQControlPlaneXDRProducerWithControlAgents(poolSize, controlLocalPort);
         
         // setting a reference to the InfoPlaneDelegate on the Control Plane
         ((InfoPlaneDelegateInteracter) controlPlane).setInfoPlaneDelegate(controlInformationManager);

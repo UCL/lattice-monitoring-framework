@@ -12,6 +12,7 @@ import mon.lattice.control.ControlPlaneConsumerException;
 import mon.lattice.control.ControlServiceException;
 import mon.lattice.control.zmq.ZMQControlMetaData;
 import mon.lattice.control.zmq.ZMQControlPlaneXDRProducer;
+import mon.lattice.control.zmq.ZMQXDRRequester;
 import mon.lattice.core.ID;
 import mon.lattice.core.Rational;
 import mon.lattice.core.plane.ControlOperation;
@@ -58,7 +59,15 @@ public class ZMQControlPlaneXDRProducerWithControlAgents extends ZMQControlPlane
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getControllerAgentAddressFromID(controllerAgentID);
             
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            result = (Boolean) synchronousTransmit(m, mData);
+            
+            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
+            result = (Boolean) connection.synchronousTransmit(m, mData);
+            controlTransmittersPool.releaseConnection(connection);
+            
+        } 
+          catch (InterruptedException iex) {
+            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
+            throw new ControlServiceException(iex);     
             
         } catch (IOException | ControllerAgentNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing set Monitoring Reporting Endpoint command " + ex.getMessage());
