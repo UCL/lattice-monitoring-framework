@@ -102,7 +102,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
                 controlTransmittersPool.releaseConnection(connection);
                 
                 // should wait until the info plane message for that probe is received
-                infoPlaneDelegate.addProbe(probeID, 10000);
+                infoPlaneDelegate.waitForProbe(probeID, 10000);
             }  
         } 
           catch (InterruptedException iex) {

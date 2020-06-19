@@ -10,18 +10,26 @@ import mon.lattice.im.delegate.DSNotFoundException;
 import mon.lattice.im.delegate.InfoPlaneDelegate;
 import mon.lattice.core.ID;
 import java.io.File;
+import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import mon.lattice.im.delegate.ControlEndPointMetaData;
 import mon.lattice.management.ControllerAgentInfo;
 import mon.lattice.management.Host;
 import mon.lattice.management.HostException;
 import mon.lattice.management.User;
 import mon.lattice.management.UserException;
 import mon.lattice.im.delegate.ControllerAgentNotFoundException;
+import mon.lattice.im.delegate.SocketControlEndPointMetaData;
+import mon.lattice.im.delegate.ZMQControlEndPointMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import mon.lattice.management.ManagementService;
 import mon.lattice.management.SessionException;
+import us.monoid.json.JSONArray;
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
 
 /**
  *
@@ -33,13 +41,10 @@ public class SSHManager implements ManagementService {
     final Map<ID, SSHSession> sessions;
     
     final Map<ID, DataSourceInfo> dataSources;
-    //final Map<ID, Host> dataSourcesHosts;
     
     final Map<ID, DataConsumerInfo> dataConsumers;
-    //final Map<ID, Host> dataConsumersHosts;
     
     final Map<ID, ControllerAgentInfo> controllerAgents;
-    //final Map<ID, Host> controllerAgentsHosts;
     
     final InfoPlaneDelegate infoPlaneDelegate;
     
@@ -57,10 +62,6 @@ public class SSHManager implements ManagementService {
         this.dataSources = new ConcurrentHashMap<>();
         this.dataConsumers = new ConcurrentHashMap<>();
         this.controllerAgents = new ConcurrentHashMap<>();
-        
-        //this.dataSourcesHosts = new ConcurrentHashMap<>(); 
-        //this.dataConsumersHosts = new ConcurrentHashMap<>();
-        //this.controllerAgentsHosts = new ConcurrentHashMap();
         
         this.infoPlaneDelegate = info;
         
@@ -151,15 +152,16 @@ public class SSHManager implements ManagementService {
         
             // we are supposed to wait here until either the announce message sent by the DS 
             // is received from the Announcelistener thread or the timeout is reached (5 secs)
-            infoPlaneDelegate.addDataSource(dataSource, host, 5000);
+            infoPlaneDelegate.waitForDataSource(dataSource, host, 5000);
 
-            // if there is no Exception before we can now try to get the Data Source PID
+            // if there is no Exception we can now try to get the Data Source PID
             dataSource.setpID(infoPlaneDelegate.getDSPIDFromID(dataSource.getId()));
 
             dataSource.setRunning();
             dataSource.setStartedTime();
             
             host.addDataSource(dataSource.getId());
+            dataSource.setHost(host);
 
             dataSources.put(dataSource.getId(), dataSource);
             LOGGER.info("Started Data Source: " + dataSource.getId());
@@ -186,7 +188,7 @@ public class SSHManager implements ManagementService {
 
             // we are supposed to wait here until either the announce message sent by the DC 
             // is received from the Announcelistener thread or the timeout is reached (5 secs)
-            infoPlaneDelegate.addDataConsumer(dataConsumer, host, 5000);
+            infoPlaneDelegate.waitForDataConsumer(dataConsumer, host, 5000);
 
             // if there is no Exception before we can now try to get the Data Consumer PID
             dataConsumer.setpID(infoPlaneDelegate.getDCPIDFromID(dataConsumer.getId()));
@@ -195,6 +197,7 @@ public class SSHManager implements ManagementService {
             dataConsumer.setStartedTime();
             
             host.addDataConsumer(dataConsumer.getId());
+            dataConsumer.setHost(host);
 
             dataConsumers.put(dataConsumer.getId(), dataConsumer);
             LOGGER.info("Started Data Consumer: " + dataConsumer.getId());
@@ -223,7 +226,7 @@ public class SSHManager implements ManagementService {
             
             // we are supposed to wait here until either the announce message sent by the Controller Agent 
             // is received from the Announcelistener thread or the timeout is reached (5 secs)
-            infoPlaneDelegate.addControllerAgent(controllerAgent, host, 5000);
+            infoPlaneDelegate.waitForControllerAgent(controllerAgent, host, 5000);
 
             // if there is no Exception before we can now try to get the Controller Agent PID
             controllerAgent.setpID(infoPlaneDelegate.getControllerAgentPIDFromID(controllerAgent.getId()));
@@ -232,6 +235,7 @@ public class SSHManager implements ManagementService {
             controllerAgent.setStartedTime();
             
             host.addControllerAgent(controllerAgent.getId());
+            controllerAgent.setHost(host);
 
             controllerAgents.put(controllerAgent.getId(), controllerAgent);
             LOGGER.info("Started Controller Agent: " + controllerAgent.getId());
@@ -328,7 +332,7 @@ public class SSHManager implements ManagementService {
             session.stopEntity(dataConsumer);
             host.removeDataConsumer(dataConsumerID);
             LOGGER.info("Stopped Data Consumer: " + dataConsumerID);
-            return (dataSources.remove(dataConsumerID) != null);
+            return (dataConsumers.remove(dataConsumerID) != null);
         } catch (SessionException e) {
             throw new ManagementException(e);
         }
@@ -356,6 +360,133 @@ public class SSHManager implements ManagementService {
             throw new ManagementException(e);
         }
     }
+    
+    
+    @Override
+    public JSONArray getDataSources() throws JSONException {
+        JSONArray obj = new JSONArray();
+        for (ID id : dataSources.keySet()) {
+            JSONObject dsAddr = new JSONObject();
+            JSONObject dataSourceInfo = new JSONObject();
+            try {
+                ControlEndPointMetaData dsInfo = infoPlaneDelegate.getDSAddressFromID(id);
+                if (dsInfo instanceof ZMQControlEndPointMetaData)
+                    dsAddr.put("type", ((ZMQControlEndPointMetaData)dsInfo).getType());
+                else if (dsInfo instanceof SocketControlEndPointMetaData) {
+                    dsAddr.put("host", ((SocketControlEndPointMetaData)dsInfo).getHost().getHostAddress());
+                    dsAddr.put("port", ((SocketControlEndPointMetaData)dsInfo).getPort());
+                }
+                dataSourceInfo.put("id", id.toString());
+                dataSourceInfo.put("info", dsAddr);
+                
+                DataSourceInfo dataSource = dataSources.get(id);
+                
+                if (dataSource != null) {
+                    Host resource = dataSource.getHost();
+                    
+                    JSONObject deployment = new JSONObject();
+                    deployment.put("type", "ssh");
+                    deployment.put("InetSocketAddress", resource.getAddress());
+                    Date date = new Date(dataSource.getStartedTime());
+                    deployment.put("date", date.toInstant().toString());
+                    dataSourceInfo.put("deployment", deployment);
+                }
+                
+            } catch (IOException ioex) {
+                throw new JSONException(ioex);
+            }
+              catch (DSNotFoundException ex) {
+                LOGGER.error(ex.getMessage());
+              }
+            obj.put(dataSourceInfo);
+        }
+        return obj;
+    }
+    
+    
+    @Override
+    public JSONArray getDataConsumers() throws JSONException {
+        JSONArray obj = new JSONArray();
+        for (ID id: dataConsumers.keySet()) {
+            JSONObject dcAddr = new JSONObject();
+            JSONObject dataConsumerInfo = new JSONObject();
+            try {
+                ControlEndPointMetaData dcInfo = infoPlaneDelegate.getDCAddressFromID(id);
+                if (dcInfo instanceof ZMQControlEndPointMetaData)
+                    dcAddr.put("type", ((ZMQControlEndPointMetaData)dcInfo).getType());
+                else if (dcInfo instanceof SocketControlEndPointMetaData) {
+                    dcAddr.put("host", ((SocketControlEndPointMetaData)dcInfo).getHost().getHostAddress());
+                    dcAddr.put("port", ((SocketControlEndPointMetaData)dcInfo).getPort());
+                }
+                dataConsumerInfo.put("id", id.toString());
+                dataConsumerInfo.put("info", dcAddr);
+                
+                DataConsumerInfo dataConsumer = dataConsumers.get(id);
+                
+                if (dataConsumer != null) {
+                    Host resource = dataConsumer.getHost();
+                    
+                    JSONObject deployment = new JSONObject();
+                    deployment.put("type", "ssh");
+                    deployment.put("InetSocketAddress", resource.getAddress());
+                    Date date = new Date(dataConsumer.getStartedTime());
+                    deployment.put("date", date.toInstant().toString());
+                    dataConsumerInfo.put("deployment", deployment);
+                }
+                
+            } catch (IOException ioex) {
+                throw new JSONException(ioex);
+              }
+              catch (DCNotFoundException ex) {
+                LOGGER.error(ex.getMessage());
+              }
+            obj.put(dataConsumerInfo);
+            }
+        return obj;
+    }
+
+    @Override
+    public JSONArray getControllerAgents() throws JSONException {
+        JSONArray obj = new JSONArray();
+        for (ID id: controllerAgents.keySet()) {
+            JSONObject controllerAgentAddr = new JSONObject();
+            JSONObject controllerAgentInfo = new JSONObject();
+            try {
+                ControlEndPointMetaData controllerAgentEndPointInfo = infoPlaneDelegate.getControllerAgentAddressFromID(id);
+                if (controllerAgentEndPointInfo instanceof ZMQControlEndPointMetaData)
+                    controllerAgentAddr.put("type", ((ZMQControlEndPointMetaData)controllerAgentEndPointInfo).getType());
+                else if (controllerAgentEndPointInfo instanceof SocketControlEndPointMetaData) {
+                    controllerAgentAddr.put("host", ((SocketControlEndPointMetaData)controllerAgentEndPointInfo).getHost().getHostAddress());
+                    controllerAgentAddr.put("port", ((SocketControlEndPointMetaData)controllerAgentEndPointInfo).getPort());
+                }
+                controllerAgentInfo.put("id", id.toString());
+                controllerAgentInfo.put("info", controllerAgentAddr);
+                
+                ControllerAgentInfo controllerAgent = controllerAgents.get(id);
+                
+                if (controllerAgent != null) {
+                    Host resource = controllerAgent.getHost();
+                    
+                    JSONObject deployment = new JSONObject();
+                    deployment.put("type", "ssh");
+                    deployment.put("InetSocketAddress", resource.getAddress());
+                    Date date = new Date(controllerAgent.getStartedTime());
+                    deployment.put("date", date.toInstant().toString());
+                    controllerAgentInfo.put("deployment", deployment);
+                }
+                
+            } catch (IOException ioex) {
+                throw new JSONException(ioex);
+              }
+              catch (ControllerAgentNotFoundException ex) {
+                LOGGER.error(ex.getMessage());
+              }
+            obj.put(controllerAgentInfo);
+            }
+        return obj;
+    }
+    
+    
 
     
 }

@@ -19,6 +19,7 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import mon.lattice.management.ManagementInterface;
 import mon.lattice.control.agents.ControlAgentsInterface;
+import mon.lattice.control.controller.json.AbstractJSONRestController;
 
 /**
  *
@@ -35,8 +36,11 @@ class ControllerAgentRestHandler extends BasicRequestHandler {
     
      @Override
     public boolean handle(Request request, Response response) {
-        // get Controller
-        controllerInstance = (ControlAgentsInterface<JSONObject>) getManagementConsole().getAssociated();
+        Object controllerObject = getManagementConsole().getAssociated();
+        
+        if (controllerObject instanceof ControlAgentsInterface)
+            controllerInstance = (ControlAgentsInterface<JSONObject>) controllerObject;
+        
         deploymentControllerInstance = (ManagementInterface<JSONObject>) getManagementConsole().getAssociated();
         
         LOGGER.debug("-------- REQUEST RECEIVED --------\n" + request.getMethod() + " " +  request.getTarget());
@@ -133,6 +137,17 @@ class ControllerAgentRestHandler extends BasicRequestHandler {
         boolean success = true;
         String failMessage = null;
         JSONObject jsobj = null;
+        
+        if (this.controllerInstance == null) {
+            response.setCode(302);
+            PrintStream out = response.getPrintStream();  
+            jsobj = new JSONObject();
+            jsobj.put("operation", "setForwarder");
+            jsobj.put("success", false);
+            jsobj.put("msg", "Not supported by this controller " + this.getClass().getName());
+            out.println(jsobj.toString());
+            return;
+        }
         
         if (segments[1].matches("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")) {
             agentID = segments[1];
@@ -288,7 +303,7 @@ class ControllerAgentRestHandler extends BasicRequestHandler {
         String failMessage = null;
         JSONObject jsobj = null;
         
-        jsobj = controllerInstance.getControllerAgents();
+        jsobj = deploymentControllerInstance.getControllerAgents();
 
         if (!jsobj.getBoolean("success")) {
             failMessage = (String)jsobj.get("msg");

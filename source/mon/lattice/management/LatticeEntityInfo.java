@@ -21,6 +21,7 @@ public abstract class LatticeEntityInfo {
     String entityClassName;
     String arguments;
     List<String> argumentsAsList = new ArrayList<>();
+    Host host;
     
     ID id;
     int pID;
@@ -66,7 +67,14 @@ public abstract class LatticeEntityInfo {
     public EntityType getEntityType() {
         return entityType;
     }
-    
+
+    public Host getHost() {
+        return host;
+    }
+
+    public void setHost(Host host) {
+        this.host = host;
+    }
     
     public void setRunning() {
         this.running = true;

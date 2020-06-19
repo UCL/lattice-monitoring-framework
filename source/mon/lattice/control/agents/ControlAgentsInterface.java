@@ -17,6 +17,4 @@ public interface ControlAgentsInterface <ReturnType> {
     ReturnType getConnectionRate() throws Exception;
     
     ReturnType setMonitoringReportingEndpoint(String id, String destinationAddress, String destinationPort) throws Exception;
-    
-    ReturnType getControllerAgents() throws Exception;   
 }

@@ -18,6 +18,7 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import mon.lattice.management.ManagementService;
 import mon.lattice.management.ManagementInterface;
+import us.monoid.json.JSONArray;
 
 /**
  * Extends the AbstractController and implements
@@ -367,6 +368,43 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
         }
         return result;
     }
+    
+    
+    @Override
+    public JSONObject getDataSources() throws JSONException {
+        JSONObject result = new JSONObject();
+        
+        result.put("operation", "getDataSources");
+        
+        try {
+            JSONArray dataSources = this.deploymentManager.getDataSources();
+            result.put("datasources", dataSources);
+            result.put("success", true);
+        } catch (JSONException ex) {
+            result.put("success", false);
+            result.put("msg", "JSONException while performing getDataSources operation: " + ex.getMessage());
+          }
+        return result;  
+    }
+    
+    
+    @Override
+    public JSONObject getDataConsumers() throws JSONException {
+        JSONObject result = new JSONObject();
+        
+        result.put("operation", "getDataConsumers");
+        
+        try {
+            JSONArray dataConsumers = this.deploymentManager.getDataConsumers();
+            result.put("dataconsumers", dataConsumers);
+            result.put("success", true);
+        } catch (JSONException ex) {
+            result.put("success", false);
+            result.put("msg", "JSONException while performing getDataConsumers operation: " + ex.getMessage());
+          }
+        return result;  
+    }
+    
 
     @Override
     public JSONObject startControllerAgent(String className, String args, String sessionID) throws Exception {
@@ -385,5 +423,16 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
         result.put("msg", "Not supported by this controller " + this.getClass().getName());
         return result;
     }
+
+    @Override
+    public JSONObject getControllerAgents() throws Exception {
+        JSONObject result = new JSONObject();
+        result.put("operation", "getControllerAgents");
+        result.put("success", false);
+        result.put("msg", "Not supported by this controller " + this.getClass().getName());
+        return result;
+    }
+    
+    
 
 }

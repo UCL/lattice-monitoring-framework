@@ -16,11 +16,11 @@ import mon.lattice.core.ID;
  * @author uceeftu
  */
 public interface InfoPlaneDelegateProducer {
-    void addDataSource(DataSourceInfo dataSource, Host resource, int timeout) throws InterruptedException, DSNotFoundException;
+    void waitForDataSource(DataSourceInfo dataSource, Host resource, int timeout) throws InterruptedException, DSNotFoundException;
 
-    void addDataConsumer(DataConsumerInfo dataConsumer, Host resource, int timeout) throws InterruptedException, DCNotFoundException;
+    void waitForDataConsumer(DataConsumerInfo dataConsumer, Host resource, int timeout) throws InterruptedException, DCNotFoundException;
     
-    void addControllerAgent(ControllerAgentInfo controllerAgent, Host resource, int timeout) throws InterruptedException, ControllerAgentNotFoundException; 
+    void waitForControllerAgent(ControllerAgentInfo controllerAgent, Host resource, int timeout) throws InterruptedException, ControllerAgentNotFoundException; 
     
-    void addProbe(ID probeID, int timeout) throws InterruptedException, ProbeNotFoundException; 
+    void waitForProbe(ID probeID, int timeout) throws InterruptedException, ProbeNotFoundException; 
 }

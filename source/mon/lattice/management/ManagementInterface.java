@@ -35,5 +35,11 @@ public interface ManagementInterface<ReturnType> {
     
     ReturnType stopControllerAgent(String caID, String sessionID) throws Exception;
     
+    ReturnType getDataSources() throws Exception;
+    
+    ReturnType getDataConsumers() throws Exception;  
+    
+    ReturnType getControllerAgents() throws Exception;  
+    
     public void init();
 }

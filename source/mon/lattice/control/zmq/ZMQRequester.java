@@ -59,7 +59,7 @@ public abstract class ZMQRequester implements SynchronousTransmitting, Transmitt
     
     @Override
     public boolean transmitted(int id) {
-        LOGGER.info("just transmitted Control Message with seqNo: " + id);
+        LOGGER.debug("just transmitted Control Message with seqNo: " + id);
         return true;
     }
 }

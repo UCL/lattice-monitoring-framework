@@ -328,41 +328,4 @@ public abstract class AbstractJSONController extends AbstractController<JSONObje
         }
         return result;
     }
-    
-    
-    
-    @Override
-    public JSONObject getDataSources() throws JSONException {
-        JSONObject result = new JSONObject();
-        
-        result.put("operation", "getDataSources");
-        
-        try {
-            JSONArray dataSources = this.controlInformationManager.getDataSources();
-            result.put("datasources", dataSources);
-            result.put("success", true);
-        } catch (JSONException ex) {
-            result.put("success", false);
-            result.put("msg", "JSONException while performing getDataSources operation: " + ex.getMessage());
-          }
-        return result;  
-    }
-    
-    
-    @Override
-    public JSONObject getDataConsumers() throws JSONException {
-        JSONObject result = new JSONObject();
-        
-        result.put("operation", "getDataConsumers");
-        
-        try {
-            JSONArray dataConsumers = this.controlInformationManager.getDataConsumers();
-            result.put("dataconsumers", dataConsumers);
-            result.put("success", true);
-        } catch (JSONException ex) {
-            result.put("success", false);
-            result.put("msg", "JSONException while performing getDataConsumers operation: " + ex.getMessage());
-          }
-        return result;  
-    }
 }
