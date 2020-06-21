@@ -38,7 +38,7 @@ public class BufferedRestReporter extends AbstractReporter {
     
     
    protected void sendRequest() throws IOException, JSONException {
-        LOGGER.info(array.toString());
+        LOGGER.debug(array.toString());
         Content payload = new Content("application/json", array.toString().getBytes());
         long tStart = System.currentTimeMillis();
         JSONArray result = resty.json(uri, payload).array();
