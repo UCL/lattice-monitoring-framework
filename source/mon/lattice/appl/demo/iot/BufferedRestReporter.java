@@ -44,7 +44,7 @@ public class BufferedRestReporter extends AbstractReporter {
         JSONArray result = resty.json(uri, payload).array();
         long tReporting = System.currentTimeMillis() - tStart;
         LOGGER.info("time (msec): " + tReporting);
-        LOGGER.info("result: " + result.toString());
+        LOGGER.debug("result: " + result.toString());
    }
     
 
