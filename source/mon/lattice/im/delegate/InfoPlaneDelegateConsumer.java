@@ -8,7 +8,6 @@ package mon.lattice.im.delegate;
 import java.io.IOException;
 import mon.lattice.core.ID;
 import us.monoid.json.JSONArray;
-import us.monoid.json.JSONException;
 
 /**
  *
@@ -22,12 +21,6 @@ public interface InfoPlaneDelegateConsumer {
     public boolean containsControllerAgent(ID id);
     
     public boolean containsProbe(ID id);
-    
-    public JSONArray getDataSources() throws JSONException;
-    
-    public JSONArray getDataConsumers() throws JSONException;
-    
-    public JSONArray getControllerAgents() throws JSONException;
     
     public ControlEndPointMetaData getDSAddressFromProbeID(ID probe) throws ProbeNotFoundException, DSNotFoundException, IOException;
     

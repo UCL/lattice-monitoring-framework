@@ -16,7 +16,7 @@ import us.monoid.json.JSONObject;
  *
  * @author uceeftu
  */
-public final class JSONControllerManagementConsole extends RestConsole{
+public final class JSONControllerManagementConsole extends RestConsole {
     public JSONControllerManagementConsole(ControlInterface<JSONObject> controller, int port) {
 
         setAssociated(controller);

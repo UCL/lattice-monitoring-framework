@@ -1,4 +1,4 @@
-package mon.lattice.appl.reporters;
+package eu.fivegex.monitoring.appl.reporters;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -8,6 +8,7 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import mon.lattice.appl.reporters.ReporterException;
 import mon.lattice.core.AbstractReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ProbeValue;

@@ -1,4 +1,4 @@
-package mon.lattice.appl.datasources;
+package eu.fivegex.monitoring.appl.datasources;
 
 import mon.lattice.core.DefaultControllableDataSource;
 import mon.lattice.control.udp.UDPDataSourceControlPlaneXDRConsumer;

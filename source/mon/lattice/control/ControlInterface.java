@@ -36,8 +36,4 @@ public interface ControlInterface<ReturnType> {
     ReturnType loadReporter(String id, String reporterClassName, String reporterArgs) throws Exception;
     
     ReturnType unloadReporter(String id) throws Exception;
-    
-    ReturnType getDataSources() throws Exception;
-    
-    ReturnType getDataConsumers() throws Exception;   
 }

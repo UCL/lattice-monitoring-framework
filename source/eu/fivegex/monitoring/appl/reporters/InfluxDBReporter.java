@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mon.lattice.appl.reporters;
+package eu.fivegex.monitoring.appl.reporters;
 
 import mon.lattice.core.AbstractReporter;
 import mon.lattice.core.Measurement;

@@ -322,6 +322,20 @@ public class RestClient implements ControlInterface<JSONObject>, ManagementInter
             throw new JSONException("getDataConsumers FAILED" + " IOException: " + ioe.getMessage());
         }
     }
+    
+    
+    // GET http://localhost:6666/controlleragent/
+    @Override
+    public JSONObject getControllerAgents() throws JSONException {
+        try {
+            String uri = vimURI + "/controlleragent/";
+            JSONObject jsobj = rest.json(uri).toObject();
+            return jsobj;
+        } catch (IOException ioe) {
+            throw new JSONException("getControllerAgents FAILED" + " IOException: " + ioe.getMessage());
+        }
+    }
+    
 
     @Override
     public JSONObject getProbeDataRate(String probeID) throws JSONException {

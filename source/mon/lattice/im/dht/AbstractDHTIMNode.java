@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import mon.lattice.appl.dataconsumers.DefaultControllableDataConsumer;
-import mon.lattice.appl.datasources.DockerDataSource;
+import eu.fivegex.monitoring.appl.datasources.DockerDataSource;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.ControllableDataSource;
 import mon.lattice.core.ControllableReporter;

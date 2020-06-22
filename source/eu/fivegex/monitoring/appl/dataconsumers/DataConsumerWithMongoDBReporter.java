@@ -2,7 +2,7 @@
 // Author: Poe
 // Date: Sept 2016
 
-package mon.lattice.appl.dataconsumers;
+package eu.fivegex.monitoring.appl.dataconsumers;
 
 
 import mon.lattice.appl.reporters.ReporterException;

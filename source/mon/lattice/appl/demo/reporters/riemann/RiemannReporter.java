@@ -1,4 +1,4 @@
-package mon.lattice.appl.reporters.riemann;
+package mon.lattice.appl.demo.reporters.riemann;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -6,9 +6,9 @@ package mon.lattice.appl.reporters.riemann;
  * and open the template in the editor.
  */
 
-import mon.lattice.appl.reporters.riemann.Proto.Attribute;
-import mon.lattice.appl.reporters.riemann.Proto.Event;
-import mon.lattice.appl.reporters.riemann.Proto.Msg;
+import mon.lattice.appl.demo.reporters.riemann.Proto.Attribute;
+import mon.lattice.appl.demo.reporters.riemann.Proto.Event;
+import mon.lattice.appl.demo.reporters.riemann.Proto.Msg;
 import mon.lattice.core.AbstractReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ProbeValue;

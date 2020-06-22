@@ -21,7 +21,7 @@ import us.monoid.json.JSONArray;
  */
 public abstract class AbstractJSONController extends AbstractController<JSONObject> implements ControlInterface<JSONObject> {
     protected int controlLocalPort;
-    protected int transmitterPoolSize;
+    protected int poolSize;
     protected int infoPlanePort;
     
     
@@ -327,42 +327,5 @@ public abstract class AbstractJSONController extends AbstractController<JSONObje
             result.put("msg", "ControlServiceException while performing unloadReporter operation: " + ex.getMessage());
         }
         return result;
-    }
-    
-    
-    
-    @Override
-    public JSONObject getDataSources() throws JSONException {
-        JSONObject result = new JSONObject();
-        
-        result.put("operation", "getDataSources");
-        
-        try {
-            JSONArray dataSources = this.controlInformationManager.getDataSources();
-            result.put("datasources", dataSources);
-            result.put("success", true);
-        } catch (JSONException ex) {
-            result.put("success", false);
-            result.put("msg", "JSONException while performing getDataSources operation: " + ex.getMessage());
-          }
-        return result;  
-    }
-    
-    
-    @Override
-    public JSONObject getDataConsumers() throws JSONException {
-        JSONObject result = new JSONObject();
-        
-        result.put("operation", "getDataConsumers");
-        
-        try {
-            JSONArray dataConsumers = this.controlInformationManager.getDataConsumers();
-            result.put("dataconsumers", dataConsumers);
-            result.put("success", true);
-        } catch (JSONException ex) {
-            result.put("success", false);
-            result.put("msg", "JSONException while performing getDataConsumers operation: " + ex.getMessage());
-          }
-        return result;  
     }
 }

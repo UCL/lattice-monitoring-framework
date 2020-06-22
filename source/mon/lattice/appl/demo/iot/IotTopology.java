@@ -213,7 +213,7 @@ public class IotTopology {
     
     
     private void loadSensor(String dataSourceID, String probeName, List<String> probes)  {
-        String probeClassName = "mon.lattice.appl.demo.SensorEmulatorProbe";
+        String probeClassName = "mon.lattice.appl.demo.iot.SensorEmulatorProbe";
         String probeAttributeName = "temperature";
         
         Integer value = ThreadLocalRandom.current().nextInt(valueMin, valueMax);

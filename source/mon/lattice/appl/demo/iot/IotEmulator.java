@@ -113,6 +113,7 @@ public class IotEmulator {
         IotEmulator iot = null;
         List<IotTopology> iotList = new ArrayList<>();
         long tStart, tEnd;
+        int sleepFor = 0;
         
         boolean errorStatus = false;
         
@@ -121,14 +122,17 @@ public class IotEmulator {
             String propertiesFile = null;
             
             switch (args.length) {
-                case 0:
-                    propertiesFile = System.getProperty("user.home") + "/iot.properties";
-                    break;
                 case 1:
-                    propertiesFile = args[0];
+                    propertiesFile = System.getProperty("user.home") + "/iot.properties";
+                    sleepFor = Integer.valueOf(args[0]);
                     break;
+                case 2:
+                    propertiesFile = args[0];
+                    sleepFor = Integer.valueOf(args[1]);
+                    break;
+                    
                 default:
-                    System.out.println("Please use: java IotEmulator [file.properties]");
+                    System.out.println("Please use: java IotEmulator [file.properties] sleepFor");
                     System.exit(1);
             }
             
@@ -178,8 +182,15 @@ public class IotEmulator {
             tEnd = System.currentTimeMillis();
             
             System.out.print("\n*** Deployment Completed in " + (tEnd - tStart)/1000 + " secs ***\n");
-            System.out.print("\nPress a key to stop the emulation");
-            System.in.read();
+            
+            if (sleepFor == 0) {
+                System.out.print("\nPress a key to stop the emulation");
+                System.in.read();
+            }
+            else {
+                System.out.print("\nSleeping for " + sleepFor + " minutes");
+                Thread.sleep(60*1000*sleepFor); // sleepFor minutes
+            }
         }
         
         catch (Exception e) {

@@ -1,12 +1,12 @@
 // MongoDBConsumer.java
 // 
 
-package mon.lattice.appl.dataconsumers;
+package eu.fivegex.monitoring.appl.dataconsumers;
 
 import mon.lattice.core.MeasurementReceiver;
 import mon.lattice.core.Reporter;
 import mon.lattice.core.AbstractDataConsumer;
-import mon.lattice.appl.reporters.MongoDBReporter;
+import eu.fivegex.monitoring.appl.reporters.MongoDBReporter;
 import mon.lattice.appl.reporters.PrintReporter;
 import mon.lattice.appl.reporters.ReporterException;
 

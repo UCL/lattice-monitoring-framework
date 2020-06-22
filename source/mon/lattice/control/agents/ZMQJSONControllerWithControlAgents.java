@@ -13,9 +13,7 @@ import mon.lattice.control.ControlServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import mon.lattice.control.controller.json.ZMQController;
-import mon.lattice.management.ControllerAgentInfo;
 import mon.lattice.management.ManagementException;
-import mon.lattice.management.ssh.SSHSession;
 import mon.lattice.core.ID;
 import mon.lattice.core.Rational;
 import mon.lattice.core.plane.ControlPlane;
@@ -54,7 +52,7 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
         controlLocalPort = Integer.parseInt(pr.getProperty("control.localport"));
         infoPlanePort = Integer.parseInt(pr.getProperty("info.localport"));
         
-        transmitterPoolSize = Integer.parseInt(pr.getProperty("control.poolsize"));
+        poolSize = Integer.parseInt(pr.getProperty("control.poolsize"));
         
         // ZMQController is the root of the infoPlane - other nodes use it to perform bootstrap
         InfoPlane infoPlane = new ZMQControllerInfoPlane(infoPlanePort);
@@ -65,7 +63,7 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
 	setInfoPlane(infoPlane);
         
         // create a ZMQ control plane producer
-        ControlPlane controlPlane = new ZMQControlPlaneXDRProducerWithControlAgents(transmitterPoolSize, controlLocalPort);
+        ControlPlane controlPlane = new ZMQControlPlaneXDRProducerWithControlAgents(poolSize, controlLocalPort);
         
         // setting a reference to the InfoPlaneDelegate on the Control Plane
         ((InfoPlaneDelegateInteracter) controlPlane).setInfoPlaneDelegate(controlInformationManager);
@@ -177,7 +175,7 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
         result.put("operation", "getControllerAgents");
         
         try {
-            JSONArray controllerAgents = this.controlInformationManager.getControllerAgents();
+            JSONArray controllerAgents = this.deploymentManager.getControllerAgents();
             result.put("controlleragents", controllerAgents);
             result.put("success", true);
         } catch (JSONException ex) {

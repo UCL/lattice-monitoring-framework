@@ -7,6 +7,8 @@ package mon.lattice.management;
 
 import mon.lattice.management.ssh.AuthType;
 import mon.lattice.core.ID;
+import us.monoid.json.JSONArray;
+import us.monoid.json.JSONException;
 
 /**
  *
@@ -37,4 +39,10 @@ public interface ManagementService {
     public ID startControllerAgent(String className, String args, ID sessionID) throws ManagementException;
     
     public boolean stopControllerAgent(ID caID, ID sessionID) throws ManagementException;
+    
+    public JSONArray getDataSources() throws JSONException;
+    
+    public JSONArray getDataConsumers() throws JSONException;
+    
+    public JSONArray getControllerAgents() throws JSONException;
 }
