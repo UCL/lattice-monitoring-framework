@@ -1,9 +1,7 @@
 package mon.lattice.distribution.zmq;
 
-import mon.lattice.xdr.XDRDataOutputStream;
 import mon.lattice.distribution.TransmittingData;
-import mon.lattice.distribution.MeasurementEncoderWithNames;
-import mon.lattice.distribution.MeasurementEncoder;
+import mon.lattice.distribution.DataPlaneMessageXDREncoder;
 import mon.lattice.core.plane.MeasurementMessage;
 import mon.lattice.core.plane.DataPlaneMessage;
 import mon.lattice.core.plane.DataPlane;
@@ -12,7 +10,6 @@ import mon.lattice.core.ProbeMeasurement;
 import mon.lattice.core.TypeException;
 import mon.lattice.core.ID;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutput;
 import java.net.InetSocketAddress;
 
 /**
@@ -48,42 +45,14 @@ public class ZMQDataPlaneProducer extends AbstractZMQDataPlaneProducer implement
 	try {
 	    // convert the object to a byte []
 	    ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-	    DataOutput dataOutput = new XDRDataOutputStream(byteStream);
 
-	    // write the DataSource id
-            ID dataSourceID = dsp.getDataSource().getID();
-	    dataOutput.writeLong(dataSourceID.getMostSignificantBits());
-	    dataOutput.writeLong(dataSourceID.getLeastSignificantBits());
-
-	    // write type
-	    dataOutput.writeInt(dsp.getType().getValue());
-
-	    //System.err.println("DSP type = " + dsp.getType().getValue());
-
-	    // write seqNo
-	    int seqNo = dsp.getSeqNo();
-	    dataOutput.writeInt(seqNo);
-
-	    // write object
-	    switch (dsp.getType()) {
-
-	    case ANNOUNCE:
-		System.err.println("ANNOUNCE not implemented yet!");
-		break;
-
-	    case MEASUREMENT:
-		// extract Measurement from message object
-		ProbeMeasurement measurement = ((MeasurementMessage)dsp).getMeasurement();
-		// encode the measurement, ready for transmission
-		MeasurementEncoder encoder = new MeasurementEncoderWithNames(measurement);
-		encoder.encode(dataOutput);
-
-		break;
-	    }
-
+            DataPlaneMessageXDREncoder encoder = new DataPlaneMessageXDREncoder(byteStream);
+            encoder.encode(dsp);
 	    //System.err.println("DP: " + dsp + " AS " + byteStream);
 
 	    // now tell the publisher to transmit this byteStream
+            int seqNo = dsp.getSeqNo();
+            
 	    publisher.transmit(byteStream, seqNo);
 
 	    return 1;

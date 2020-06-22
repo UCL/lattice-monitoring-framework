@@ -83,6 +83,12 @@ public class ReceivingWebSocket extends WebSocketServer {
     public void onMessage( WebSocket conn, ByteBuffer message ) {
         //broadcast( message.array() );
         //System.err.println("Message: " + conn + " --> " + message );
+        //byte[] arr = message.array();
+        //System.err.println(arr.length);
+        //for (int b=0; b < arr.length; b++) {
+        //    System.err.print(String.format("%02d ",arr[b]&0xFF));
+        //}
+        //System.err.println();
         readQueue.add(message);
     }
 

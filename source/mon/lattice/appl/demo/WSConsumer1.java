@@ -26,7 +26,7 @@ public class WSConsumer1 {
 	consumer = new BasicConsumer();
 
 	// set up an IP address for data
-	InetSocketAddress address = new InetSocketAddress(dataPort);
+	InetSocketAddress address = new InetSocketAddress(addr, dataPort);
 
 	// set up data plane
 	consumer.setDataPlane(new WSDataPlaneConsumerWithNames(address));

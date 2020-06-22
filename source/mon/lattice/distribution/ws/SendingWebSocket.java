@@ -31,7 +31,7 @@ public class SendingWebSocket extends WebSocketClient {
     @Override
     public void onOpen( ServerHandshake handshakedata ) {
         //send("Hello, it is me. Mario :)");
-        //System.err.println( "Opened connection: handshake: " + handshakedata);
+        System.err.println( "SendingWebSocket: Opened connection: handshake: " + handshakedata);
         // if you plan to refuse connection based on ip or httpfields overload: onWebsocketHandshakeReceivedAsClient
     }
 
@@ -43,11 +43,12 @@ public class SendingWebSocket extends WebSocketClient {
     @Override
     public void onClose( int code, String reason, boolean remote ) {
         // The codecodes are documented in class org.java_websocket.framing.CloseFrame
-        //System.err.println( "Connection closed by " + ( remote ? "remote peer" : "us" ) + " Code: " + code + " Reason: " + reason );
+        System.err.println( "SendingWebSocket: Connection closed by " + ( remote ? "remote peer" : "us" ) + " Code: " + code + " Reason: " + reason );
     }
 
     @Override
     public void onError( Exception ex ) {
+        System.err.println( "SendingWebSocket: Error: " + ex);
         ex.printStackTrace();
         // if the error is fatal then onClose will be called additionally
     }

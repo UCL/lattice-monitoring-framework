@@ -1,4 +1,4 @@
-// WSDataPlaneProducerWithNames.java
+// WSDataPlaneProducerJSON.java
 // Author: Stuart Clayman
 // Email: s.clayman@ucl.ac.uk
 // Date: May 2020
@@ -6,7 +6,9 @@
 package mon.lattice.distribution.ws;
 
 import mon.lattice.distribution.TransmittingData;
-import mon.lattice.distribution.DataPlaneMessageXDREncoder;
+import mon.lattice.distribution.MeasurementEncoderWithNames;
+import mon.lattice.distribution.MeasurementEncoder;
+import mon.lattice.distribution.DataPlaneMessageJSONEncoder;
 import mon.lattice.core.plane.MeasurementMessage;
 import mon.lattice.core.plane.DataPlaneMessage;
 import mon.lattice.core.plane.DataPlane;
@@ -21,39 +23,33 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 /**
- * A WSDataPlaneProducerWithNames is a DataPlane implementation
- * that sends Measurements by WS.
- * It is also a DataSourceDelegateInteracter so it can, if needed,
- * talk to the DataSource object it gets bound to.
+ * A WSDataPlaneProducerJSON is a DataPlane implementation
+ * that sends Measurements by WebSocket using JSON encoded messages.
  */
-public class WSDataPlaneProducerWithNames extends AbstractWSDataPlaneProducer implements DataPlane, DataSourceDelegateInteracter, TransmittingData {
+public class WSDataPlaneProducerJSON extends AbstractWSDataPlaneProducer implements DataPlane, DataSourceDelegateInteracter, TransmittingData {
     /**
-     * Construct a WSDataPlaneProducerWithNames
+     * Construct a WSDataPlaneProducerJSON
      */
-    public WSDataPlaneProducerWithNames(InetSocketAddress addr) {
+    public WSDataPlaneProducerJSON(InetSocketAddress addr) {
         super(addr);
     }
 
     /**
      * Send a message onto the address.
-     * The message is XDR encoded and it's structure is:
-     * +---------------------------------------------------------------------+
-     * | data source id (2 X long) | msg type (int) | seq no (int) | payload |
-     * +---------------------------------------------------------------------+
+     * The message is JSON encoded and it's structure is:
      */
     public int transmit(DataPlaneMessage dsp) throws Exception { 
 	// convert DataPlaneMessage into a ByteArrayOutputStream
 	// then transmit it
 
-        //System.out.println("WSDataPlaneProducerWithNames.transmit " + dsp.toString());
+        //System.out.println("WSDataPlaneProducerJSON.transmit " + dsp.toString());
         
 	try {
 	    // convert the object to a byte []
 	    ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
-            DataPlaneMessageXDREncoder encoder = new DataPlaneMessageXDREncoder(byteStream);
+            DataPlaneMessageJSONEncoder encoder = new DataPlaneMessageJSONEncoder(byteStream);
             encoder.encode(dsp);
-
 	    //System.err.println("DP: " + dsp + " AS " + byteStream);
 
 	    // now tell the multicaster to transmit this byteStream

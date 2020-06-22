@@ -44,8 +44,6 @@ public class WSTransmitter {
     URI uri;
 
     
-    static int PACKET_SIZE = 65535; // was 1500;
-    
     /**
      * Construct a transmitter for a particular IP address
      */
@@ -60,8 +58,7 @@ public class WSTransmitter {
     }
 
     /**
-     * Set up the socket for the given addr/port,
-     * and also a pre-prepared Datagrapacket.
+     * Set up the socket for the given addr/port.
      */
     void setUpSocket() throws IOException {
         try {
@@ -69,7 +66,7 @@ public class WSTransmitter {
             this.uri = new URI("ws",  null, address.getHostAddress(), port, null, null, null);
 
             System.out.println("uri = " + uri);
-        //} catch (MalformedURLException mue) {
+
         } catch (URISyntaxException use) {
             throw new IOException(use.getMessage());
         }

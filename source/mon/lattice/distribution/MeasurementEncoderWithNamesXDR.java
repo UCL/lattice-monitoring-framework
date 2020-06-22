@@ -17,7 +17,7 @@ import mon.lattice.core.ProducerMeasurement;
 import mon.lattice.core.TypeException;
 import mon.lattice.core.ID;
 
-public class MeasurementEncoderWithNames extends MeasurementEncoder {
+public class MeasurementEncoderWithNamesXDR extends MeasurementEncoderXDR {
 
 
     /**
@@ -74,7 +74,7 @@ public class MeasurementEncoderWithNames extends MeasurementEncoder {
 		
         // added by TOF
         // encode probe name
-        out.writeUTF(((ProducerMeasurement)measurement).getProbe().getName());
+        out.writeUTF(getProbeName());
 
         // write attributes
 		
@@ -98,8 +98,7 @@ public class MeasurementEncoderWithNames extends MeasurementEncoder {
             out.writeInt(field);
 		    
             // write the attribute name
-            ProbeAttribute attribute = probe.getAttribute(field);
-            String name = attribute.getName();
+            String name = getAttributeName(attr, field);
 		    
             // then write the type
             Object value = attr.getValue();
@@ -123,9 +122,24 @@ public class MeasurementEncoderWithNames extends MeasurementEncoder {
     }
 
     /**
+     * Get the probe name
+     */
+    protected String getProbeName() {
+        return ((ProducerMeasurement)measurement).getProbe().getName();
+    }
+
+    /**
+     * Get an attribute name
+     */
+    protected String getAttributeName(ProbeValue attr, int field) {
+        ProbeAttribute attribute = ((ProducerMeasurement)measurement).getProbe().getAttribute(field);
+        return attribute.getName();
+    }
+
+    /**
      * Construct a MeasurementEncoderWithNames for a Measurement.
      */
-    public MeasurementEncoderWithNames(Measurement m) {
+    public MeasurementEncoderWithNamesXDR(Measurement m) {
         super(m);
     }
 	

@@ -1,4 +1,4 @@
-// MeasurementEncoder.java
+// MeasurementEncoderXDR.java
 // Author: Stuart Clayman
 // Email: sclayman@ee.ucl.ac.uk
 // Date: Oct 2008
@@ -26,9 +26,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * Convert a measurement to a byte array.
+ * Convert a measurement to a byte array in XDR format.
  */
-public class MeasurementEncoder {
+public class MeasurementEncoderXDR {
     // The Measurement
     Measurement measurement;
 
@@ -36,9 +36,9 @@ public class MeasurementEncoder {
     DataOutput out;
 
     /**
-     * Construct a MeasurementEncoder for a Measurement.
+     * Construct a MeasurementEncoderXDR for a Measurement.
      */
-    public MeasurementEncoder(Measurement m) {
+    public MeasurementEncoderXDR(Measurement m) {
 	measurement = m;
     }
 
@@ -67,7 +67,7 @@ public class MeasurementEncoder {
 	this.out = out;
 
 	/* write measurement */
-	//System.err.println("MeasurementEncoder: in encode()");
+	//System.err.println("MeasurementEncoderXDR: in encode()");
 
 	// write seq no
 	out.writeLong(measurement.getSequenceNo());

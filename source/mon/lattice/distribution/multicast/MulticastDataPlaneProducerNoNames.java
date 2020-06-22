@@ -5,9 +5,8 @@
 
 package mon.lattice.distribution.multicast;
 
-import mon.lattice.xdr.XDRDataOutputStream;
 import mon.lattice.distribution.TransmittingData;
-import mon.lattice.distribution.MeasurementEncoder;
+import mon.lattice.distribution.DataPlaneMessageXDREncoder;
 import mon.lattice.core.plane.MeasurementMessage;
 import mon.lattice.core.plane.DataPlaneMessage;
 import mon.lattice.core.plane.DataPlane;
@@ -18,8 +17,6 @@ import mon.lattice.core.ProbeMeasurement;
 import mon.lattice.core.TypeException;
 import mon.lattice.core.ID;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.DataOutput;
 import java.io.IOException;
 
 /**
@@ -51,40 +48,14 @@ public class MulticastDataPlaneProducerNoNames extends AbstractMulticastDataPlan
 	try {
 	    // convert the object to a byte []
 	    ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-	    DataOutput dataOutput = new XDRDataOutputStream(byteStream);
 
-	    // write the DataSource id
-            ID dataSourceID = dpm.getDataSource().getID();
-	    dataOutput.writeLong(dataSourceID.getMostSignificantBits());
-	    dataOutput.writeLong(dataSourceID.getLeastSignificantBits());
-
-	    // write message type
-	    dataOutput.writeInt(dpm.getType().getValue());
-
-	    // write DataSource seqNo
-	    int seqNo = dpm.getSeqNo();
-	    dataOutput.writeInt(seqNo);
-
-	    // write the message object
-	    switch (dpm.getType()) {
-
-	    case ANNOUNCE:
-		System.err.println("ANNOUNCE not implemented yet!");
-		break;
-
-	    case MEASUREMENT:
-		// extract Measurement from message object
-		ProbeMeasurement measurement = ((MeasurementMessage)dpm).getMeasurement();
-		// encode the measurement, ready for transmission
-		MeasurementEncoder encoder = new MeasurementEncoder(measurement);
-		encoder.encode(dataOutput);
-
-		break;
-	    }
-
+            DataPlaneMessageXDREncoder encoder = new DataPlaneMessageXDREncoder(byteStream);
+            encoder.encode(dpm);
 	    //System.err.println("DP: " + dpm + " AS " + byteStream);
 
 	    // now tell the multicaster to transmit this byteStream
+            int seqNo = dpm.getSeqNo();
+            
 	    mcastTransmitter.transmit(byteStream, seqNo);
 
 	    return 1;
