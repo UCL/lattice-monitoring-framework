@@ -9,8 +9,6 @@ import mon.lattice.core.ID;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ConsumerMeasurement;
 import mon.lattice.core.plane.MessageType;
-import mon.lattice.distribution.ConsumerMeasurementWithMetadataAndProbeName;
-import mon.lattice.distribution.ConsumerMeasurementWithMetaData;
 import us.monoid.json.JSONObject;
 import us.monoid.json.JSONException;
 import mon.lattice.core.TypeException;

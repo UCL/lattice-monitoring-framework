@@ -7,30 +7,8 @@ package mon.lattice.distribution;
 
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ConsumerMeasurement;
-import mon.lattice.distribution.ConsumerMeasurementWithMetadataAndProbeName;
-import mon.lattice.core.Probe;
-import mon.lattice.core.ProbeAttribute;
-import mon.lattice.core.ProbeAttributeType;
-import mon.lattice.core.TypeException;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.ProbeValueWithName;
-import mon.lattice.core.ID;
-import mon.lattice.core.data.table.TableAttribute;
-import mon.lattice.core.data.table.TableHeader;
-import mon.lattice.core.data.table.TableRow;
-import mon.lattice.core.data.table.Table;
-import mon.lattice.core.data.table.TableValue;
-import mon.lattice.core.data.map.MMap;
-import mon.lattice.core.data.map.MMapValue;
-import mon.lattice.core.data.list.MListValue;
-import mon.lattice.core.data.list.MList;
-import java.util.Map;
-import java.util.Set;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import us.monoid.json.JSONObject;
-import us.monoid.json.JSONArray;
-import us.monoid.json.JSONException;
 
 /**
  * Convert a ConsumerMeasurement to a JSON representation.

@@ -7,7 +7,6 @@ package mon.lattice.distribution;
 
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ProducerMeasurement;
-import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.ProbeAttributeType;
 import mon.lattice.core.TypeException;
@@ -24,8 +23,6 @@ import mon.lattice.core.data.list.MListValue;
 import mon.lattice.core.data.list.MList;
 import java.util.Map;
 import java.util.Set;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import us.monoid.json.JSONObject;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;

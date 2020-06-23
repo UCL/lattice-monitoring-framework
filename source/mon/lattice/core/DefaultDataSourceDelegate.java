@@ -11,7 +11,6 @@ import mon.lattice.core.plane.DataPlane;
 import mon.lattice.control.ProbeLoader;
 import mon.lattice.control.ProbeLoaderException;
 import java.io.Serializable;
-import mon.lattice.core.plane.ProducerInfoPlane;
 import mon.lattice.control.agents.ControllerAgent;
 import mon.lattice.core.plane.InfoPlane;
 

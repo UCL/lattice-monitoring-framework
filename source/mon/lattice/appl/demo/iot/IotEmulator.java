@@ -122,6 +122,10 @@ public class IotEmulator {
             String propertiesFile = null;
             
             switch (args.length) {
+                case 0:
+                    propertiesFile = System.getProperty("user.home") + "/iot.properties";
+                    sleepFor = 0;
+                    break;
                 case 1:
                     propertiesFile = System.getProperty("user.home") + "/iot.properties";
                     sleepFor = Integer.valueOf(args[0]);

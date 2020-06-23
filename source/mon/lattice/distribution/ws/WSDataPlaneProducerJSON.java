@@ -6,20 +6,12 @@
 package mon.lattice.distribution.ws;
 
 import mon.lattice.distribution.TransmittingData;
-import mon.lattice.distribution.MeasurementEncoderWithNames;
-import mon.lattice.distribution.MeasurementEncoder;
 import mon.lattice.distribution.DataPlaneMessageJSONEncoder;
-import mon.lattice.core.plane.MeasurementMessage;
 import mon.lattice.core.plane.DataPlaneMessage;
 import mon.lattice.core.plane.DataPlane;
-import mon.lattice.core.Measurement;
-import mon.lattice.core.DataSourceDelegate;
 import mon.lattice.core.DataSourceDelegateInteracter;
-import mon.lattice.core.ProbeMeasurement;
 import mon.lattice.core.TypeException;
-import mon.lattice.core.ID;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 
 /**
