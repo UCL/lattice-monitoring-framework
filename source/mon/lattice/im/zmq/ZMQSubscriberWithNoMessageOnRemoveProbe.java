@@ -9,6 +9,8 @@ import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import mon.lattice.im.IMSubscriberNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An ZMQSubscriber is responsible for receiving information about  
@@ -17,6 +19,8 @@ import mon.lattice.im.IMSubscriberNode;
 **/
 
 public class ZMQSubscriberWithNoMessageOnRemoveProbe extends AbstractZMQSubscriber implements IMSubscriberNode, Runnable {
+    
+    static Logger LOGGER = LoggerFactory.getLogger(ZMQSubscriberWithNoMessageOnRemoveProbe.class);
     
     /**
      * Construct a ZMQSubscriber given a remote host, a remote 

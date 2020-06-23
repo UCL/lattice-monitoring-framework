@@ -828,9 +828,9 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
 		m = (ProbeMeasurement)measurementQueue.take();
 		//System.err.println("-" + m.getProbeID() + "." + m.getSequenceNo());
 	    } catch (InterruptedException ie) {
-		//System.err.println("InterruptedException Can't take Measurement " + m + " from queue");
 		// loop round
-		continue;
+		//continue;
+                return;
 	    }
     
 	    // now send it
@@ -842,6 +842,12 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
 
                     sendSuccess(msg);
                 }
+            }   
+            catch (InterruptedException ie) {
+		// loop round
+		//continue;
+                return;
+	        
             } catch (Exception ex) {
                 sendFailure(msg, ex);
             }

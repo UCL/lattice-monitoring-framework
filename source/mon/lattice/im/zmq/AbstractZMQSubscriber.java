@@ -44,9 +44,9 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     
     AnnounceEventListener listener;
     
-    Thread thread = new Thread(this, "zmq-info-subscriber");;
+    Thread thread = new Thread(this, "zmq-info-subscriber");
     
-    static Logger LOGGER = LoggerFactory.getLogger(AbstractZMQSubscriber.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(AbstractZMQSubscriber.class);
 
     
     /**
@@ -154,8 +154,6 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     @Override
     public boolean disconnect() {
         threadRunning = false;
-        subscriberSocket.close();
-        context.term();
         return true;
     }
 
@@ -302,6 +300,8 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
                 subscriberSocket.close();
                 LOGGER.debug(e.getMessage());
             }
+        subscriberSocket.close();
+        context.term();
     }
     
     

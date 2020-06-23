@@ -65,7 +65,7 @@ public class ZMQDataSubscriber implements Runnable {
         
         context = ctx;
         subscriberSocket = context.socket(ZMQ.SUB);
-        subscriberSocket.setRcvHWM(0);
+        //subscriberSocket.setRcvHWM(0);
     }
     
     
@@ -95,7 +95,6 @@ public class ZMQDataSubscriber implements Runnable {
     
     public void end() throws InterruptedException {
         threadRunning = false;
-        context.term();
     }
     
     protected boolean receive() {
@@ -165,6 +164,7 @@ public class ZMQDataSubscriber implements Runnable {
 	    }
 	}
         subscriberSocket.close();
+        context.term();
     }
     
 }
