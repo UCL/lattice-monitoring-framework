@@ -19,17 +19,17 @@ import us.monoid.web.Content;
 /**
  * A BufferReporter groups and sends the Measurements to a specific function.
  */
-public class BufferedRestReporterWithCallback extends BufferedRestReporter {
+public class BufferedJSONRestReporterWithCallback extends BufferedJSONRestReporter {
     /**
      * In a BufferReporter, report() groups and sends the Measurement to a specific function.
      */
 
     String callbackURI;
     
-    private Logger LOGGER = LoggerFactory.getLogger(BufferedRestReporterWithCallback.class);
+    private Logger LOGGER = LoggerFactory.getLogger(BufferedJSONRestReporterWithCallback.class);
     
     
-    public BufferedRestReporterWithCallback(String reporterName, String bufferSize, String ip, String port, String method, String callbackHost, String callbackPort, String callbackMethod) {
+    public BufferedJSONRestReporterWithCallback(String reporterName, String bufferSize, String ip, String port, String method, String callbackHost, String callbackPort, String callbackMethod) {
         super(reporterName, bufferSize, ip, port, method);
         this.callbackURI = "http://" + callbackHost + ":" + callbackPort + callbackMethod;
         resty.withHeader("X-Callback-Url", callbackURI);
