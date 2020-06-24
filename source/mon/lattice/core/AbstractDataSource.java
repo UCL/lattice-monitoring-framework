@@ -15,7 +15,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,8 +80,9 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
     /*
      * The End ?
      */
-    boolean theEnd = false;
-    Object monitor = new Object();
+    //boolean theEnd = false;
+    //Object monitor = new Object();
+    CountDownLatch latch = new CountDownLatch(1);
     
     
     private Logger LOGGER = LoggerFactory.getLogger(AbstractDataSource.class);
@@ -135,24 +138,9 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
 	    myThread.interrupt();
             
             LOGGER.info("Waiting for the thread to terminate");
-            try {
-                myThread.join();
-            } catch (InterruptedException ie) {
-                return;
-            }
+            waitFor();
 	}
     }
-
-    
-    /**
-     * Add a new probe from its ProbeLoader object
-     */
-    /*
-    public ID addProbe(ProbeLoader p) {  
-        addProbe(p.getProbe());
-        return p.getProbe().getID();
-    }  
-    */
     
     
     /**
@@ -841,7 +829,7 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
 		//System.err.println("-" + m.getProbeID() + "." + m.getSequenceNo());
 	    } catch (InterruptedException ie) {
                 LOGGER.info("Caught Interrupted Exeception (queue)");
-                return;
+                break;
 	    }
     
 	    // now send it
@@ -856,7 +844,7 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
             }   
             catch (InterruptedException ie) {
                 LOGGER.info("Caught Interrupted Exeception (sendData)");
-                return;
+                break;
 	        
             } catch (Exception ex) {
                 sendFailure(msg, ex);
@@ -866,41 +854,26 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
  	// code to run at end of thread
 	endThreadBody();
 
-        //theEnd();
-	//System.out.println("exit thread loop for " + getName());
+        theEnd();
    }
 
     /**
      * Wait for this thread
      */
     private void waitFor() {
-          try {
-            synchronized(monitor) {
-                theEnd = true;
-                monitor.wait();
-            }
-          } catch (InterruptedException ie) {
-          }
+        try {
+            latch.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.error("Interrupted while waiting");
+        }
     }
+    
     
     /**
      * Notify this thread
      */
     private void theEnd() {
-        // hang around until the other thread does waitFor()
-        while (!theEnd) {
-            try {
-                Thread.sleep(100);
-            } catch (Exception e) {
-            
-            }
-        }
-
-        // now notify it
-        synchronized(monitor) {
-            monitor.notify();
-        }
-        
+        latch.countDown();
     }
 
 
