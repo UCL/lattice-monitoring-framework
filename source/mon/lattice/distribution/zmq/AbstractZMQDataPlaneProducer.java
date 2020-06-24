@@ -62,17 +62,14 @@ public abstract class AbstractZMQDataPlaneProducer implements DataPlane, DataSou
 
     }
 
-//     public boolean connect() {
-// 	return producer.connect();
-//     }
+
 
     /**
      * Disconnect from a delivery mechansim.
      */
-    public synchronized boolean disconnect() {
+    public boolean disconnect() {
 	try {
 	    publisher.end();
-	    publisher = null;
 	    return true;
 	} catch (IOException ieo) {
 	    publisher = null;
@@ -80,9 +77,6 @@ public abstract class AbstractZMQDataPlaneProducer implements DataPlane, DataSou
 	}
     }
 
-//     public boolean disconnect() {
-// 	return producer.disconnect();
-//     }
 
     /**
      * Announce that the plane is up and running
@@ -122,7 +116,7 @@ public abstract class AbstractZMQDataPlaneProducer implements DataPlane, DataSou
     /**
      * Send a message.
      */
-    public synchronized int sendData(DataPlaneMessage dpm) throws Exception {
+    public int sendData(DataPlaneMessage dpm) throws Exception {
         if (publisher != null) {
             return transmit(dpm);
         } else {

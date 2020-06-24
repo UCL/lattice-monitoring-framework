@@ -53,9 +53,8 @@ public class ZMQDataPlaneProducer extends AbstractZMQDataPlaneProducer implement
 	    // now tell the publisher to transmit this byteStream
             int seqNo = dsp.getSeqNo();
             
-	    publisher.transmit(byteStream, seqNo);
-
-	    return 1;
+            int transmitted = publisher.transmit(byteStream, seqNo);
+	    return transmitted;
 	} catch (TypeException te) {
 	    te.printStackTrace(System.err);
 	    return 0;
