@@ -11,6 +11,7 @@ import us.monoid.json.JSONObject;
 import mon.lattice.im.IMSubscriberNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zeromq.ZContext;
 
 /**
  * An ZMQSubscriber is responsible for receiving information about  
@@ -27,23 +28,23 @@ public class ZMQSubscriberWithNoMessageOnRemoveProbe extends AbstractZMQSubscrib
      * port where connecting to and a message filter.
      */
     public ZMQSubscriberWithNoMessageOnRemoveProbe(String remHost, int remPort, String filter) {
-        super(remHost, remPort, filter, ZMQ.context(1));
+        super(remHost, remPort, filter, new ZContext(1));
     } 
     
     /**
      * Construct a ZMQInformationConsumer given a remote host, a remote 
-     * port where connecting to, a message filter and an existing ZMQ.Context.
+     * port where connecting to, a message filter and an existing ZContext.
      */
-    public ZMQSubscriberWithNoMessageOnRemoveProbe(String remHost, int remPort, String filter, ZMQ.Context context) {
+    public ZMQSubscriberWithNoMessageOnRemoveProbe(String remHost, int remPort, String filter, ZContext context) {
 	super(remHost, remPort, filter, context);
     }
     
     
     /**
      * Construct a ZMQInformationConsumer given a remote host, a remote 
-     * port where connecting to, a message filter and an existing ZMQ.Context.
+     * port where connecting to, a message filter and an existing ZContext.
      */
-    public ZMQSubscriberWithNoMessageOnRemoveProbe(String internalURI, String filter, ZMQ.Context context) {
+    public ZMQSubscriberWithNoMessageOnRemoveProbe(String internalURI, String filter, ZContext context) {
 	super(internalURI, filter, context);
     }
     
@@ -60,10 +61,10 @@ public class ZMQSubscriberWithNoMessageOnRemoveProbe extends AbstractZMQSubscrib
     
     /**
      * Construct a ZMQSubscriber given a local port where connecting to, 
-     * a message filter and an existing ZMQ.Context.
+     * a message filter and an existing ZContext.
      */
     
-    public ZMQSubscriberWithNoMessageOnRemoveProbe(int port, String filter, ZMQ.Context context) {
+    public ZMQSubscriberWithNoMessageOnRemoveProbe(int port, String filter, ZContext context) {
 	super(port, filter, context);
     }
     

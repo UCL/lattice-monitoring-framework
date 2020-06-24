@@ -103,7 +103,7 @@ public class IotTopology {
         reporterClassName = configuration.getProperty("rep.class");
         
         
-        if (reporterClassName.contains("BufferedRestReporterWithCallback")) {
+        if (reporterClassName.contains("RestReporterWithCallback")) {
             reporterAddress = configuration.getProperty("rep.address");
             reporterPort = configuration.getProperty("rep.port");
             reporterURI = configuration.getProperty("rep.uri");
@@ -112,7 +112,7 @@ public class IotTopology {
             reporterCallbackPort = configuration.getProperty("rep.callback.port");
             reporterCallbackURI = configuration.getProperty("rep.callback.uri");
             
-        } else if (reporterClassName.contains("BufferedRestReporter")) {
+        } else if (reporterClassName.contains("RestReporter")) {
             reporterAddress = configuration.getProperty("rep.address");
             reporterPort = configuration.getProperty("rep.port");
             reporterURI = configuration.getProperty("rep.uri");
@@ -245,7 +245,7 @@ public class IotTopology {
         
         try { 
             
-            if (reporterClassName.contains("BufferedRestReporterWithCallback"))
+            if (reporterClassName.contains("RestReporterWithCallback"))
                 out = restClient.loadReporter(dataConsumerID, reporterClassName, 
                                                                 reporterName + "+" +
                                                                 reporterBufferSize + "+" +
@@ -257,7 +257,7 @@ public class IotTopology {
                                                                 reporterCallbackURI
                                                                 );
             
-            else if (reporterClassName.contains("BufferedRestReporter"))
+            else if (reporterClassName.contains("RestReporter"))
                 out = restClient.loadReporter(dataConsumerID, reporterClassName, 
                                                                 reporterName + "+" +
                                                                 reporterBufferSize + "+" +

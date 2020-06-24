@@ -14,6 +14,8 @@ import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import mon.lattice.im.IMSubscriberNode;
+import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 
 /**
  * An ZMQSubscriber is responsible for receiving information about  
@@ -25,7 +27,7 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     int remotePort = 0;
     int localPort = 0;
     
-    ZMQ.Context context;
+    ZContext context;
     ZMQ.Socket subscriberSocket;
     
     String internalURI;
@@ -54,33 +56,33 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
      * port where connecting to and a message filter.
      */
     public AbstractZMQSubscriber(String remHost, int remPort, String filter) {
-        this(remHost, remPort, filter, ZMQ.context(1));
+        this(remHost, remPort, filter, new ZContext(1));
     } 
     
     /**
      * Construct a ZMQInformationConsumer given a remote host, a remote 
-     * port where connecting to, a message filter and an existing ZMQ.Context.
+     * port where connecting to, a message filter and an existing ZContext.
      */
-    public AbstractZMQSubscriber(String remHost, int remPort, String filter, ZMQ.Context context) {
+    public AbstractZMQSubscriber(String remHost, int remPort, String filter, ZContext context) {
 	remoteHost = remHost;
 	remotePort = remPort;
         messageFilter = filter;
         
         this.context = context;
-        subscriberSocket = this.context.socket(ZMQ.SUB);
+        subscriberSocket = context.createSocket(SocketType.SUB);
     }
     
     
     /**
      * Construct a ZMQInformationConsumer given a remote host, a remote 
-     * port where connecting to, a message filter and an existing ZMQ.Context.
+     * port where connecting to, a message filter and an existing ZContext.
      */
-    public AbstractZMQSubscriber(String internalURI, String filter, ZMQ.Context context) {
+    public AbstractZMQSubscriber(String internalURI, String filter, ZContext context) {
 	this.internalURI = internalURI;
         messageFilter = filter;
         
         this.context = context;
-        subscriberSocket = this.context.socket(ZMQ.SUB);
+        subscriberSocket = context.createSocket(SocketType.SUB);
     }
     
     
@@ -90,21 +92,21 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
      * and a message filter.
      */
     public AbstractZMQSubscriber(int port, String filter) {
-        this(port, filter, ZMQ.context(1));
+        this(port, filter, new ZContext(1));
     }
     
     
     /**
      * Construct a ZMQSubscriber given a local port where connecting to, 
-     * a message filter and an existing ZMQ.Context.
+     * a message filter and an existing ZContext.
      */
     
-    public AbstractZMQSubscriber(int port, String filter, ZMQ.Context context) {
+    public AbstractZMQSubscriber(int port, String filter, ZContext context) {
 	localPort = port;
         messageFilter = filter; 
         
         this.context = context;
-        subscriberSocket = this.context.socket(ZMQ.SUB);
+        subscriberSocket = context.createSocket(SocketType.SUB);
     }
     
 
@@ -301,7 +303,7 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
                 LOGGER.debug(e.getMessage());
             }
         subscriberSocket.close();
-        context.term();
+        context.destroy();
     }
     
     

@@ -20,12 +20,12 @@ import mon.lattice.distribution.ExposedByteArrayInputStream;
 import mon.lattice.distribution.MetaData;
 import mon.lattice.xdr.XDRDataInputStream;
 import mon.lattice.xdr.XDRDataOutputStream;
-import org.zeromq.ZMQ;
+import org.zeromq.ZContext;
 
 
 public class ZMQXDRRequester extends ZMQRequester {
 
-    public ZMQXDRRequester(ZMQ.Context ctx) throws IOException {
+    public ZMQXDRRequester(ZContext ctx) throws IOException {
         super(ctx);
     }
 

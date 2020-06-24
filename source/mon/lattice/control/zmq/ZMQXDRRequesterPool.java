@@ -7,7 +7,7 @@ package mon.lattice.control.zmq;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.zeromq.ZMQ;
+import org.zeromq.ZContext;
 
 /**
  *
@@ -16,11 +16,11 @@ import org.zeromq.ZMQ;
 public final class ZMQXDRRequesterPool {
     int maxSize;
     LinkedBlockingQueue<ZMQXDRRequester> socketQueue;
-    ZMQ.Context context;
+    ZContext context;
     
     //private final static Logger LOGGER = LoggerFactory.getLogger(ZMQXDRRequesterPool.class);
 
-    public ZMQXDRRequesterPool(int size, ZMQ.Context ctx) throws IOException {
+    public ZMQXDRRequesterPool(int size, ZContext ctx) throws IOException {
         this.maxSize = size;
         this.socketQueue = new LinkedBlockingQueue(maxSize);
         this.context = ctx;

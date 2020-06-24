@@ -6,6 +6,8 @@ import mon.lattice.control.SynchronousTransmitting;
 import java.io.IOException;
 import static mon.lattice.control.zmq.AbstractZMQControlPlaneProducer.LOGGER;
 import mon.lattice.core.ID;
+import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 /**
@@ -13,7 +15,7 @@ import org.zeromq.ZMQ;
  */
 public abstract class ZMQRequester implements SynchronousTransmitting, Transmitter {
     
-    ZMQ.Context context;
+    ZContext context;
     ZMQ.Socket sender;
     
     String identity;
@@ -23,9 +25,9 @@ public abstract class ZMQRequester implements SynchronousTransmitting, Transmitt
     * Construct a sender from an existing ZMQ Context
     */
     
-    public ZMQRequester(ZMQ.Context ctx) throws IOException {
+    public ZMQRequester(ZContext ctx) throws IOException {
         context = ctx;
-        sender = context.socket(ZMQ.REQ);
+        sender = context.createSocket(SocketType.REQ);
         identity = ID.generate().toString();
         sender.setIdentity(identity.getBytes(ZMQ.CHARSET));
     }
@@ -53,7 +55,7 @@ public abstract class ZMQRequester implements SynchronousTransmitting, Transmitt
     @Override
     public void end() throws IOException {
 	sender.close();
-        context.term();
+        context.destroy();
     }
     
     

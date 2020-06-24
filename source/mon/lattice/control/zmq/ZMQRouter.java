@@ -7,6 +7,8 @@ package mon.lattice.control.zmq;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 /**
@@ -14,7 +16,7 @@ import org.zeromq.ZMQ;
  * @author uceeftu
  */
 public class ZMQRouter implements Runnable {
-    ZMQ.Context context;
+    ZContext context;
     ZMQ.Socket frontend;
     ZMQ.Socket backend;
     
@@ -26,9 +28,9 @@ public class ZMQRouter implements Runnable {
 
     public ZMQRouter(int port) {
         backendPort = port;
-        context = ZMQ.context(1);
-        frontend = context.socket(ZMQ.ROUTER);
-        backend = context.socket(ZMQ.ROUTER);
+        context = new ZContext(1);
+        frontend = context.createSocket(SocketType.ROUTER);
+        backend = context.createSocket(SocketType.ROUTER);
     }
     
     public void bind() {
@@ -44,7 +46,7 @@ public class ZMQRouter implements Runnable {
         router.start();
     }
     
-    public ZMQ.Context getContext() {
+    public ZContext getContext() {
         return this.context;
     }
     
@@ -52,16 +54,16 @@ public class ZMQRouter implements Runnable {
     public void disconnect() {
         frontend.close();
         backend.close();
-        context.term();
+        context.destroy();
     }
 
     @Override
     public void run() {
+        ZMQ.Poller items = context.createPoller(2);
+        items.register(backend, ZMQ.Poller.POLLIN);
+        items.register(frontend, ZMQ.Poller.POLLIN);
+        
         while (!Thread.currentThread().isInterrupted()) {
-            ZMQ.Poller items = new ZMQ.Poller (2);
-            items.register(backend, ZMQ.Poller.POLLIN);
-            items.register(frontend, ZMQ.Poller.POLLIN);
-            
             if (items.poll() < 0)
                 break;
             

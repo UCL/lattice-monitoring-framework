@@ -22,6 +22,8 @@ import mon.lattice.im.IMBasicNode;
 import mon.lattice.im.IMPublisherNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
@@ -34,7 +36,7 @@ public abstract class AbstractZMQPublisher extends AbstractIMNode implements IMP
     
     static Logger LOGGER = LoggerFactory.getLogger(AbstractZMQPublisher.class);
     int remotePort = 0;
-    ZMQ.Context context;
+    ZContext context;
     ZMQ.Socket publisherSocket;
 
     
@@ -42,8 +44,8 @@ public abstract class AbstractZMQPublisher extends AbstractIMNode implements IMP
 	remoteHost = remHost;
 	remotePort = remPort;
         
-        context = ZMQ.context(1);
-        publisherSocket = context.socket(ZMQ.PUB);
+        context = new ZContext(1);
+        publisherSocket = context.createSocket(SocketType.PUB);
     }
 
     /**
@@ -72,14 +74,14 @@ public abstract class AbstractZMQPublisher extends AbstractIMNode implements IMP
     }
 
     public void destroyZMQContext() {
-        context.term();
+        context.destroy();
     }
 
     public String getRootHostname() {
         return this.remoteHost;
     }
 
-    public ZMQ.Context getContext() {
+    public ZContext getContext() {
         return context;
     }
 
