@@ -1,4 +1,4 @@
-// MeasurementDecoder.java
+// MeasurementDecoderXDR.java
 // Author: Stuart Clayman
 // Email: sclayman@ee.ucl.ac.uk
 // Date: Oct 2008
@@ -32,14 +32,14 @@ import java.io.IOException;
 /**
  * Convert to a byte array to a measurement.
  */
-public class MeasurementDecoder {
+public class MeasurementDecoderXDR {
     // The input
     DataInput in;
 
     /**
-     * Construct a MeasurementDecoder.
+     * Construct a MeasurementDecoderXDR.
      */
-    public MeasurementDecoder() {
+    public MeasurementDecoderXDR() {
     }
 
     /**
@@ -83,6 +83,8 @@ public class MeasurementDecoder {
 	long probeIDMSB = in.readLong();
 	long probeIDLSB = in.readLong();
 	
+        ID probeID = new ID(probeIDMSB, probeIDLSB);
+		
 	//read measurement type
 	String mType = in.readUTF();
 
@@ -95,19 +97,20 @@ public class MeasurementDecoder {
 	// read the service ID of the probe
 	long serviceIDMSB = in.readLong();
 	long serviceIDLSB = in.readLong();
+
+        ID serviceID = new ID(serviceIDMSB, serviceIDLSB);
 	
 	// read the group ID of the probe
 	long groupIDMSB = in.readLong();
 	long groupIDLSB = in.readLong();
-	
+
+        ID groupID = new ID(groupIDMSB, groupIDLSB);
 
         // check if names are sent
         if (hasNames) {
             String name = in.readUTF();
         }
 
-        ID probeID = new ID(probeIDMSB, probeIDLSB);
-		
         //System.err.print(probeID + ": " + mType + " @ " + ts + ". ");
 
 	// read attributes
@@ -152,7 +155,7 @@ public class MeasurementDecoder {
 
 	// System.err.println();
 
-	return new ConsumerMeasurementWithMetaData(seqNo, probeID, mType, ts, mDelta, new ID(serviceIDMSB, serviceIDLSB), new ID(groupIDMSB, groupIDLSB), attrValues);
+	return new ConsumerMeasurementWithMetaData(seqNo, probeID, mType, ts, mDelta, serviceID, groupID, attrValues);
     }
 
     /**

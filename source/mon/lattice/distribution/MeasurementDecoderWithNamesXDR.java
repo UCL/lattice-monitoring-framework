@@ -1,4 +1,4 @@
-// MeasurementDecoderWithNames.java
+// MeasurementDecoderWithNamesXDR.java
 // Author: Fabrizio Pastore
 // Date: Feb 2010
 
@@ -22,7 +22,7 @@ import mon.lattice.core.TypeException;
  * @author Fabrizio Pastore
  *
  */
-public class MeasurementDecoderWithNames extends MeasurementDecoder {
+public class MeasurementDecoderWithNamesXDR extends MeasurementDecoderXDR {
 
 
     /**
@@ -68,6 +68,8 @@ public class MeasurementDecoderWithNames extends MeasurementDecoder {
 	long probeIDMSB = in.readLong();
 	long probeIDLSB = in.readLong();
 	
+        ID probeID = new ID(probeIDMSB, probeIDLSB);
+		
         //read measurement type
         String mType = in.readUTF();
 
@@ -81,10 +83,14 @@ public class MeasurementDecoderWithNames extends MeasurementDecoder {
 	long serviceIDMSB = in.readLong();
 	long serviceIDLSB = in.readLong();
 		
+        ID serviceID = new ID(serviceIDMSB, serviceIDLSB);
+
         // read the group ID of the probe
 	long groupIDMSB = in.readLong();
 	long groupIDLSB = in.readLong();
 		
+        ID groupID = new ID(groupIDMSB, groupIDLSB);
+
         // added by TOF
         // decode probe name
         String probeName = null;
@@ -95,8 +101,6 @@ public class MeasurementDecoderWithNames extends MeasurementDecoder {
         } else {
             probeName = "";
         }
-		
-        ID probeID = new ID(probeIDMSB, probeIDLSB);
 		
         // System.err.print(probeID + ": " + mType + " @ " + ts + ". ");
 
@@ -147,7 +151,7 @@ public class MeasurementDecoderWithNames extends MeasurementDecoder {
         }
 
         // System.err.println();
-	return new ConsumerMeasurementWithMetadataAndProbeName(seqNo, probeID, mType, ts, mDelta, new ID(serviceIDMSB, serviceIDLSB), new ID(groupIDMSB, groupIDLSB), attrValues, probeName);
+	return new ConsumerMeasurementWithMetadataAndProbeName(seqNo, probeID, mType, ts, mDelta, serviceID, groupID, attrValues, probeName);
 		
     }
 	

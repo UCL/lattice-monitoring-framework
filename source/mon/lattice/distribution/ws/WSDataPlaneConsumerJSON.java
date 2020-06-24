@@ -1,80 +1,82 @@
-// MulticastDataPlaneConsumerNoNames.java
+// WSDataPlaneConsumerJSON.java
 // Author: Stuart Clayman
-// Email: sclayman@ee.ucl.ac.uk
-// Date: Feb 2010
+// Email: s.clayman@ucl.ac.uk
+// Date: June 2020
 
-package mon.lattice.distribution.multicast;
+package mon.lattice.distribution.ws;
 
+import mon.lattice.distribution.MeasurementDecoderJSON;
 import mon.lattice.distribution.ConsumerMeasurementWithMetaData;
 import mon.lattice.distribution.MessageMetaData;
 import mon.lattice.distribution.MetaData;
 import mon.lattice.distribution.Receiving;
-import mon.lattice.xdr.XDRDataInputStream;
-import mon.lattice.distribution.MeasurementDecoderXDR;
 import mon.lattice.core.plane.MessageType;
 import mon.lattice.core.plane.DataPlane;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.MeasurementReporting;
-import mon.lattice.core.MeasurementReceiver;
-import mon.lattice.core.ConsumerMeasurement;
 import mon.lattice.core.ID;
 import mon.lattice.core.TypeException;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.HashMap;
+import java.net.InetSocketAddress;
+import us.monoid.json.JSONObject;
+import us.monoid.json.JSONArray;
+import us.monoid.json.JSONException;
 
-/**
- * A MulticastDataPlaneConsumerNoNames is a DataPlane implementation
- * that receives Measurements by multicast.
- */
-public class MulticastDataPlaneConsumerNoNames extends AbstractMulticastDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
+public class WSDataPlaneConsumerJSON extends AbstractWSDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
+
+    // debug
+    int lastSize = 1;
+
 
     /**
-     * Construct a MulticastDataPlaneConsumerNoNames
+     * Construct a WSDataPlaneConsumerJSON.
      */
-    public MulticastDataPlaneConsumerNoNames(MulticastAddress addr) {
+    public WSDataPlaneConsumerJSON(InetSocketAddress addr) {
         super(addr);
     }
 
+    public WSDataPlaneConsumerJSON(int port) {
+        super(port);
+    }
+
     /**
-     * This method is called just after a packet
+     * This method is called just after a message
      * has been received from some underlying transport
-     * at a particular multicast address.
-     * The expected message is XDR encoded and it's structure is:
-     * +---------------------------------------------------------------------+
-     * | data source id (2 X long) | msg type (int) | seq no (int) | payload |
-     * +---------------------------------------------------------------------+
+     * at a particular address.
+     * 
      */
     public void received(ByteArrayInputStream bis, MetaData metaData) throws  IOException, TypeException {
 
-	//System.out.println("DC: Received " + metaData);
-
+        // {"attrCount":1,"attributes":[{"fieldNo":0,"name":"elapsedTime","type":"FLOAT","value":16.60585}],"dataSourceID":"3911619c-5dad-4c08-94ac-0c0713718e75","dataSourceSeqNo":8,"groupID":"2","hasNames":true,"measurementClass":"Measurement","messageType":"MEASUREMENT","probeID":"f646d57d-1630-43fe-9df9-5df11836eb11","probeName":"MacBook-Pro-2.local.elapsedTime","probeSeqNo":7,"serviceID":"12345","tDelta":2001,"timestamp":1592505174167}
 	try {
-	    DataInput dataIn = new XDRDataInputStream(bis);
+            // convert the ByteArrayInputStream into a JSON object
+            int avail = bis.available();
+            byte[] bytes = new byte[avail];
+            bis.read(bytes, 0, avail);
+            String str = new String(bytes);
 
-	    //System.err.println("DC: datainputstream available = " + dataIn.available());
+            JSONObject json = new JSONObject(str);
+
 
 	    // get the DataSource id
-            long dataSourceIDMSB = dataIn.readLong();
-            long dataSourceIDLSB = dataIn.readLong();
-	    ID dataSourceID = new ID(dataSourceIDMSB, dataSourceIDLSB);
+            String dataSourceIDStr = json.getString("dataSourceID");
+	    ID dataSourceID = ID.fromString(dataSourceIDStr);
 
-	    // get message type
-	    int type = dataIn.readInt();
+	    // check message type
+	    String type = json.getString("messageType");
 
-	    // convert int to MessageType object
-	    MessageType mType = MessageType.lookup(type);
+	    MessageType mType = MessageType.valueOf(type);
 
-	    // check type
+	    // delegate read to right object
 	    if (mType == null) {
 		//System.err.println("type = " + type);
 		return;
 	    }
 
-	    // get DataSource seq no
-	    int seq = dataIn.readInt();
+	    // get seq no
+	    int seq = json.getInt("dataSourceSeqNo");
 
 	    /*
 	     * Check the DataSource seq no.
@@ -98,6 +100,15 @@ public class MulticastDataPlaneConsumerNoNames extends AbstractMulticastDataPlan
 		seqNoMap.put(dataSourceID, seq);
 	    }
 
+            if (seqNoMap.size() != lastSize) {
+                System.err.println(getClass().getSimpleName() + ":" +
+                               " Thread: " + Thread.currentThread().getName() +
+                               " MeasurementReceiver: " + measurementReceiver.getClass().getSimpleName() +
+                               " added key: " + dataSourceID +
+                               " HashMap size: " + seqNoMap.size());
+                lastSize = seqNoMap.size();
+            }
+            
 	    //System.err.println("Received " + type + ". mType " + mType + ". seq " + seq);
 
 	    // Message meta data
@@ -112,8 +123,8 @@ public class MulticastDataPlaneConsumerNoNames extends AbstractMulticastDataPlan
 
 	    case MEASUREMENT:
 		// decode the bytes into a measurement object
-		MeasurementDecoderXDR decoder = new MeasurementDecoderXDR();
-		Measurement measurement = decoder.decode(dataIn);
+		MeasurementDecoderJSON decoder = new MeasurementDecoderJSON();
+		Measurement measurement = decoder.decode(json);
 
 		if (measurement instanceof ConsumerMeasurementWithMetaData) {
 		    // add the meta data into the Measurement
@@ -130,12 +141,15 @@ public class MulticastDataPlaneConsumerNoNames extends AbstractMulticastDataPlan
 	    }
 
 
-	} catch (IOException ioe) {
+	} catch (JSONException ioe) {
+            ioe.printStackTrace();
 	    System.err.println("DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
-	    throw ioe;
+	    throw new IOException(ioe.getMessage());
 	} catch (Exception e) {
+            e.printStackTrace();
 	    System.err.println("DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
             throw new TypeException(e.getMessage());
-	}
+        }
     }
+
 }

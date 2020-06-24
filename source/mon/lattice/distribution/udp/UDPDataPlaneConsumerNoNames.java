@@ -10,7 +10,7 @@ import mon.lattice.distribution.MessageMetaData;
 import mon.lattice.distribution.MetaData;
 import mon.lattice.distribution.Receiving;
 import mon.lattice.xdr.XDRDataInputStream;
-import mon.lattice.distribution.MeasurementDecoder;
+import mon.lattice.distribution.MeasurementDecoderXDR;
 import mon.lattice.core.plane.MessageType;
 import mon.lattice.core.plane.DataPlane;
 import mon.lattice.core.Measurement;
@@ -108,7 +108,7 @@ public class UDPDataPlaneConsumerNoNames extends AbstractUDPDataPlaneConsumer im
 
 	    case MEASUREMENT:
 		// decode the bytes into a measurement object
-		MeasurementDecoder decoder = new MeasurementDecoder();
+		MeasurementDecoderXDR decoder = new MeasurementDecoderXDR();
 		Measurement measurement = decoder.decode(dataIn);
 
 		if (measurement instanceof ConsumerMeasurementWithMetaData) {
