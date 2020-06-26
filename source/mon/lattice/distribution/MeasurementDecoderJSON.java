@@ -39,13 +39,15 @@ import us.monoid.json.JSONException;
 public class MeasurementDecoderJSON {
     JSONObject json;
 
+    public static boolean debug = false;
+
     /**
      *  Decode a Measurement from a JSON object.
      */    
     public Measurement decode(JSONObject json) throws JSONException, TypeException {
         // {"attrCount":1,"attributes":[{"fieldNo":0,"name":"elapsedTime","type":"FLOAT","value":16.60585}],"dataSourceID":"3911619c-5dad-4c08-94ac-0c0713718e75","dataSourceSeqNo":8,"groupID":"2","hasNames":true,"measurementClass":"Measurement","messageType":"MEASUREMENT","probeID":"f646d57d-1630-43fe-9df9-5df11836eb11","probeName":"MacBook-Pro-2.local.elapsedTime","probeSeqNo":7,"serviceID":"12345","tDelta":2001,"timestamp":1592505174167}
 
-        System.err.println("MeasurementDecoderJSON: json = " + json);
+        if (debug) System.err.println("MeasurementDecoderJSON: json = " + json);
 
 
         this.json = json;

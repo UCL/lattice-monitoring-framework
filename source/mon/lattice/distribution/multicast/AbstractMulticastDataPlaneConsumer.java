@@ -174,4 +174,12 @@ public abstract class AbstractMulticastDataPlaneConsumer implements DataPlane, M
     }
 
 
+    /**
+     * Get the Map that holds last seqNo from each DataSource that has been seen.
+     */
+    HashMap<ID, Integer> getSeqNoMap() {
+        return seqNoMap;
+    }
+
+
 }

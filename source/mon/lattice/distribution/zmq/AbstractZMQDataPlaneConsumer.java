@@ -183,4 +183,11 @@ public abstract class AbstractZMQDataPlaneConsumer implements DataPlane, Measure
     }
 
 
+    /**
+     * Get the Map that holds last seqNo from each DataSource that has been seen.
+     */
+    HashMap<ID, Integer> getSeqNoMap() {
+        return seqNoMap;
+    }
+
 }
