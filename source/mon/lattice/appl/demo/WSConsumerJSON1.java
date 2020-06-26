@@ -33,21 +33,33 @@ public class WSConsumerJSON1 {
 
 	consumer.connect();
 
+
+        // Can use this for some testing
+        /*
+        try {
+            Thread.sleep(15000);
+        } catch (Exception e) {
+        }
+        
+        System.err.println("disconnecting...");
+        consumer.disconnect();
+        */
     }
 
     public static void main(String [] args) {
 	if (args.length == 0) {
+	    System.err.println("WSConsumeJSON1 listening on localhost/22997");
 	    new WSConsumerJSON1("localhost", 22997);
-	    System.err.println("WSConsume1 listening on localhost/22997");
 	} else if (args.length == 2) {
 	    String addr = args[0];
 
 	    Scanner sc = new Scanner(args[1]);
 	    int port = sc.nextInt();
 
+	    System.err.println("WSConsumerJSON1 listening on " + addr + "/" + port);
+
 	    new WSConsumerJSON1(addr, port);
 
-	    System.err.println("WSConsumerJSON1 listening on " + addr + "/" + port);
 	} else {
 	    System.err.println("usage: WSConsume1 localhost port");
 	    System.exit(1);

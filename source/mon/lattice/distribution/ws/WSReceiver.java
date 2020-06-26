@@ -149,7 +149,12 @@ public class WSReceiver implements Runnable {
         threadRunning = false;
 
         try {
+            // stop the WebSocket
             socket.stop();
+
+            // interrupt the read()
+            myThread.interrupt();
+            
         } catch (InterruptedException ie) {
             throw new IOException("Socket stop: " + ie.getMessage());
         }
