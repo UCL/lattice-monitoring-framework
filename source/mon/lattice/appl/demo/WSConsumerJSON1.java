@@ -33,17 +33,13 @@ public class WSConsumerJSON1 {
 
 	consumer.connect();
 
-
-        // Can use this for some testing
-        /*
-        try {
-            Thread.sleep(15000);
-        } catch (Exception e) {
-        }
-        
-        System.err.println("disconnecting...");
-        consumer.disconnect();
-        */
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    System.out.println("Shutting down ...");
+                    //some cleaning up code...
+                    consumer.disconnect();
+                }
+            });
     }
 
     public static void main(String [] args) {
