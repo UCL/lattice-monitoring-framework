@@ -89,11 +89,11 @@ public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriber
                 case "datasource":  
                     if (operation.equals("add")) {
                         dataSources.put(entityID, msgObj.getJSONObject("info"));
-                        sendMessage(new AnnounceMessage(entityID, EntityType.DATASOURCE));
+                        sendMessageToListener(new AnnounceMessage(entityID, EntityType.DATASOURCE));
                     }
                     else if (operation.equals("remove")) {
                         dataSources.remove(entityID);
-                        sendMessage(new DeannounceMessage(entityID, EntityType.DATASOURCE));
+                        sendMessageToListener(new DeannounceMessage(entityID, EntityType.DATASOURCE));
                     }
                     
                     LOGGER.trace("datasource map:\n");
@@ -105,11 +105,11 @@ public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriber
                 case "probe":
                     if (operation.equals("add")) {
                         probes.put(entityID, msgObj.getJSONObject("info"));
-                        sendMessage(new AnnounceMessage(entityID, EntityType.PROBE));
+                        sendMessageToListener(new AnnounceMessage(entityID, EntityType.PROBE));
                     }
                     else if (operation.equals("remove")) {
                         probes.remove(entityID);
-                        sendMessage(new DeannounceMessage(entityID, EntityType.PROBE));
+                        sendMessageToListener(new DeannounceMessage(entityID, EntityType.PROBE));
                     }
                     
                     
@@ -158,11 +158,11 @@ public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriber
                 case "dataconsumer":  
                     if (operation.equals("add")) {
                         dataConsumers.put(entityID, msgObj.getJSONObject("info"));
-                        sendMessage(new AnnounceMessage(entityID, EntityType.DATACONSUMER));
+                        sendMessageToListener(new AnnounceMessage(entityID, EntityType.DATACONSUMER));
                     }
                     else if (operation.equals("remove")) {
                         dataConsumers.remove(entityID);
-                        sendMessage(new DeannounceMessage(entityID, EntityType.DATACONSUMER));
+                        sendMessageToListener(new DeannounceMessage(entityID, EntityType.DATACONSUMER));
                     }
                     break;
                         
@@ -184,11 +184,11 @@ public class ZMQSubscriber extends AbstractZMQSubscriber implements IMSubscriber
                 case "controlleragent":
                     if (operation.equals("add")) {
                         controllerAgents.put(entityID, msgObj.getJSONObject("info"));
-                        sendMessage(new AnnounceMessage(entityID, EntityType.CONTROLLERAGENT));
+                        sendMessageToListener(new AnnounceMessage(entityID, EntityType.CONTROLLERAGENT));
                     }
                     else if (operation.equals("remove")) {
                         controllerAgents.remove(entityID);
-                        sendMessage(new DeannounceMessage(entityID, EntityType.CONTROLLERAGENT));
+                        sendMessageToListener(new DeannounceMessage(entityID, EntityType.CONTROLLERAGENT));
                     }
             }
             

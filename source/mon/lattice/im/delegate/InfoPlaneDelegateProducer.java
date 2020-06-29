@@ -8,7 +8,6 @@ package mon.lattice.im.delegate;
 import mon.lattice.management.ControllerAgentInfo;
 import mon.lattice.management.DataConsumerInfo;
 import mon.lattice.management.DataSourceInfo;
-import mon.lattice.management.Host;
 import mon.lattice.core.ID;
 
 /**
@@ -16,11 +15,19 @@ import mon.lattice.core.ID;
  * @author uceeftu
  */
 public interface InfoPlaneDelegateProducer {
-    void waitForDataSource(DataSourceInfo dataSource, Host resource, int timeout) throws InterruptedException, DSNotFoundException;
+    void waitForAddedDataSource(DataSourceInfo dataSource, int timeout) throws InterruptedException;
 
-    void waitForDataConsumer(DataConsumerInfo dataConsumer, Host resource, int timeout) throws InterruptedException, DCNotFoundException;
+    void waitForAddedDataConsumer(DataConsumerInfo dataConsumer, int timeout) throws InterruptedException;
     
-    void waitForControllerAgent(ControllerAgentInfo controllerAgent, Host resource, int timeout) throws InterruptedException, ControllerAgentNotFoundException; 
+    void waitForAddedControllerAgent(ControllerAgentInfo controllerAgent, int timeout) throws InterruptedException; 
     
-    void waitForProbe(ID probeID, int timeout) throws InterruptedException, ProbeNotFoundException; 
+    void waitForAddedProbe(ID probeID, int timeout) throws InterruptedException; 
+    
+    void waitForRemovedDataSource(DataSourceInfo dataSource, int timeout) throws InterruptedException;
+
+    void waitForRemovedDataConsumer(DataConsumerInfo dataConsumer, int timeout) throws InterruptedException;
+    
+    void waitForRemovedControllerAgent(ControllerAgentInfo controllerAgent, int timeout) throws InterruptedException; 
+    
+    void waitForRemovedProbe(ID probeID, int timeout) throws InterruptedException; 
 }

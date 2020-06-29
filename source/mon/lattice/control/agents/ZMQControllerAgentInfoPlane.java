@@ -14,7 +14,6 @@ import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.Reporter;
 import mon.lattice.core.plane.InfoPlane;
-import mon.lattice.im.zmq.ZMQPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +21,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author uceeftu
  */
-public class ZMQInfoPlaneWithControlAgents implements InfoPlane, ControllerAgentInteracter {
+public class ZMQControllerAgentInfoPlane implements InfoPlane, ControllerAgentInteracter {
     
     // The hostname of the Subscriber.
     String remoteHost;
@@ -30,18 +29,18 @@ public class ZMQInfoPlaneWithControlAgents implements InfoPlane, ControllerAgent
     // The port of the Subscriber
     int remotePort;
     
-    ZMQPublisher zmqPublisher;
+    ZMQControllerAgentPublisher zmqPublisher;
     
     ControllerAgent controllerAgent;
     
-    static Logger LOGGER = LoggerFactory.getLogger(ZMQInfoPlaneWithControlAgents.class);
+    static Logger LOGGER = LoggerFactory.getLogger(ZMQControllerAgentInfoPlane.class);
     
 
-    public ZMQInfoPlaneWithControlAgents(String remoteHostname, int remotePort) {
+    public ZMQControllerAgentInfoPlane(String remoteHostname, int remotePort) {
 	remoteHost = remoteHostname;
 	this.remotePort = remotePort;
 
-	zmqPublisher = new ZMQPublisher(remoteHost, this.remotePort);
+	zmqPublisher = new ZMQControllerAgentPublisher(remoteHost, this.remotePort);
     }
      
      

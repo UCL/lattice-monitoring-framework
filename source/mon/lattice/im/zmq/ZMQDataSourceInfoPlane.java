@@ -22,7 +22,7 @@ public class ZMQDataSourceInfoPlane extends AbstractZMQInfoPlane implements Info
     DataSourceDelegate dataSourceDelegate;
     
     // The hostname of the Subscriber.
-    String remoteHost;
+    String remoteHostname;
 
     // The port of the Subscriber
     int remotePort;
@@ -34,9 +34,9 @@ public class ZMQDataSourceInfoPlane extends AbstractZMQInfoPlane implements Info
      */
     
     public ZMQDataSourceInfoPlane(String remoteHostname, int remotePort) {
-	remoteHost = remoteHostname;
+	this.remoteHostname = remoteHostname;
 	this.remotePort = remotePort;
-        zmqPublisher = new ZMQPublisherWithNoMessageOnRemoveProbe(remoteHost, this.remotePort);
+        zmqPublisher = new ZMQDataSourcePublisher(this.remoteHostname, this.remotePort);
     }
      
      

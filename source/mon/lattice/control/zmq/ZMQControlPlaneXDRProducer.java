@@ -72,16 +72,12 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
                 probeID = (ID) requester.synchronousTransmit(m, mData);
                 
                 // should wait until the info plane message for that probe is received
-                infoPlaneDelegate.waitForProbe(probeID, 5000);
+                infoPlaneDelegate.waitForAddedProbe(probeID, 5000);
             }  
         }
           catch (InterruptedException e) {
             LOGGER.error("Interrupted while loading probe: " + e.getMessage());
             throw new ControlServiceException(e);
-          }
-          catch (ProbeNotFoundException pex) {
-            LOGGER.error("The probe information was not received on the info plane: " + pex.getMessage());
-            throw new ControlServiceException(pex);  
           }
           catch (IOException | DSNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing load probe command: " + ex.getMessage());
@@ -101,7 +97,13 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             result = (Boolean) requester.synchronousTransmit(m, mData);
+            
+            infoPlaneDelegate.waitForRemovedProbe(probeID, 5000);
         }
+        catch (InterruptedException e) {
+            LOGGER.error("Interrupted while unloading probe: " + e.getMessage());
+            throw new ControlServiceException(e);
+          }
         catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing unload probe command " + ex.getMessage());
             throw new ControlServiceException(ex);

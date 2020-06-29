@@ -152,7 +152,7 @@ public class SSHManager implements ManagementService {
         
             // we are supposed to wait here until either the announce message sent by the DS 
             // is received from the Announcelistener thread or the timeout is reached (5 secs)
-            infoPlaneDelegate.waitForDataSource(dataSource, host, 5000);
+            infoPlaneDelegate.waitForAddedDataSource(dataSource, 5000);
 
             // if there is no Exception we can now try to get the Data Source PID
             dataSource.setpID(infoPlaneDelegate.getDSPIDFromID(dataSource.getId()));
@@ -188,7 +188,7 @@ public class SSHManager implements ManagementService {
 
             // we are supposed to wait here until either the announce message sent by the DC 
             // is received from the Announcelistener thread or the timeout is reached (5 secs)
-            infoPlaneDelegate.waitForDataConsumer(dataConsumer, host, 5000);
+            infoPlaneDelegate.waitForAddedDataConsumer(dataConsumer, 5000);
 
             // if there is no Exception before we can now try to get the Data Consumer PID
             dataConsumer.setpID(infoPlaneDelegate.getDCPIDFromID(dataConsumer.getId()));
@@ -226,7 +226,7 @@ public class SSHManager implements ManagementService {
             
             // we are supposed to wait here until either the announce message sent by the Controller Agent 
             // is received from the Announcelistener thread or the timeout is reached (5 secs)
-            infoPlaneDelegate.waitForControllerAgent(controllerAgent, host, 5000);
+            infoPlaneDelegate.waitForAddedControllerAgent(controllerAgent, 5000);
 
             // if there is no Exception before we can now try to get the Controller Agent PID
             controllerAgent.setpID(infoPlaneDelegate.getControllerAgentPIDFromID(controllerAgent.getId()));
@@ -307,9 +307,10 @@ public class SSHManager implements ManagementService {
         try { 
             session.stopEntity(dataSource);
             host.removeDataSource(dataSourceID);
+            infoPlaneDelegate.waitForRemovedDataSource(dataSource, 5000);
             LOGGER.info("Stopped Data Source: " + dataSourceID);
             return (dataSources.remove(dataSourceID) != null);
-        } catch (SessionException e) {
+        } catch (SessionException | InterruptedException e) {
             throw new ManagementException(e);
         }
         
@@ -331,9 +332,10 @@ public class SSHManager implements ManagementService {
         try { 
             session.stopEntity(dataConsumer);
             host.removeDataConsumer(dataConsumerID);
+            infoPlaneDelegate.waitForRemovedDataConsumer(dataConsumer, 5000);
             LOGGER.info("Stopped Data Consumer: " + dataConsumerID);
             return (dataConsumers.remove(dataConsumerID) != null);
-        } catch (SessionException e) {
+        } catch (SessionException | InterruptedException e) {
             throw new ManagementException(e);
         }
     }
@@ -354,9 +356,10 @@ public class SSHManager implements ManagementService {
         try { 
             session.stopEntity(controllerAgent);
             host.removeControllerAgent(caID);
+            infoPlaneDelegate.waitForRemovedControllerAgent(controllerAgent, 5000);
             LOGGER.info("Stopped Controller Agent: " + caID);
             return (controllerAgents.remove(caID) != null);
-        } catch (SessionException e) {
+        } catch (SessionException | InterruptedException e) {
             throw new ManagementException(e);
         }
     }

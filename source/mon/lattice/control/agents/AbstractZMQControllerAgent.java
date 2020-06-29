@@ -76,7 +76,7 @@ public abstract class AbstractZMQControllerAgent extends AbstractPlaneInteracter
     
     public void init() throws IOException {
         // ZMQ Info Plane
-        ZMQInfoPlaneWithControlAgents zmqInfoPlane = new ZMQInfoPlaneWithControlAgents(remoteInfoHost, remoteInfoPort);
+        ZMQControllerAgentInfoPlane zmqInfoPlane = new ZMQControllerAgentInfoPlane(remoteInfoHost, remoteInfoPort);
         zmqInfoPlane.setControllerAgent(this);
         super.setInfoPlane(zmqInfoPlane);
             

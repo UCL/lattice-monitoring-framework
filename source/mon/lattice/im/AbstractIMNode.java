@@ -22,7 +22,7 @@ public abstract class AbstractIMNode implements IMBasicNode {
         return this.remoteHost;
     }
     
-    public abstract void sendMessage(AbstractAnnounceMessage m);
+    public abstract void sendMessageToListener(AbstractAnnounceMessage m);
     
     public abstract void addAnnounceEventListener(AnnounceEventListener l);
     

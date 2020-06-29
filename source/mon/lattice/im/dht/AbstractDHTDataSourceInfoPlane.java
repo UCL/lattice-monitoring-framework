@@ -40,7 +40,7 @@ public abstract class AbstractDHTDataSourceInfoPlane extends AbstractDHTInfoPlan
             // adding additional DS information
             addDataSourceInfo(dataSource);
             
-            imNode.sendMessage(new AnnounceMessage(dataSource.getID(), EntityType.DATASOURCE));
+            imNode.sendMessageToListener(new AnnounceMessage(dataSource.getID(), EntityType.DATASOURCE));
 	    LOGGER.info("just announced this Data Source " + dataSource.getID());
 	    return true;
 	} catch (IOException ioe) {
@@ -49,7 +49,7 @@ public abstract class AbstractDHTDataSourceInfoPlane extends AbstractDHTInfoPlan
     }
 
     /**
-     * Un-sendMessage that the plane is up and running
+     * Un-sendMessageToListener that the plane is up and running
      */
     @Override
     public boolean dennounce() {
@@ -57,7 +57,7 @@ public abstract class AbstractDHTDataSourceInfoPlane extends AbstractDHTInfoPlan
             DataSource dataSource = dataSourceDelegate.getDataSource();
             imNode.removeDataSource(dataSource);
             
-            imNode.sendMessage(new DeannounceMessage(dataSource.getID(), EntityType.DATASOURCE));
+            imNode.sendMessageToListener(new DeannounceMessage(dataSource.getID(), EntityType.DATASOURCE));
             LOGGER.info("just deannounced this Data Source " + dataSource.getID());
             return true;
         } catch (IOException ioe) {

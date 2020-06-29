@@ -25,10 +25,15 @@ import java.util.concurrent.TimeUnit;
 public class ControlInformationManager implements InfoPlaneDelegate {
     private final InfoPlane info;
     
-    private Map<ID, CountDownLatch> pendingProbes;
-    private Map<ID, CountDownLatch> pendingDataSources;
-    private Map<ID, CountDownLatch> pendingDataConsumers;
-    private Map<ID, CountDownLatch> pendingControllerAgents;
+    private Map<ID, CountDownLatch> pendingAddedProbes;
+    private Map<ID, CountDownLatch> pendingAddedDataSources;
+    private Map<ID, CountDownLatch> pendingAddedDataConsumers;
+    private Map<ID, CountDownLatch> pendingAddedControllerAgents;
+    
+    private Map<ID, CountDownLatch> pendingRemovedProbes;
+    private Map<ID, CountDownLatch> pendingRemovedDataSources;
+    private Map<ID, CountDownLatch> pendingRemovedDataConsumers;
+    private Map<ID, CountDownLatch> pendingRemovedControllerAgents;
     
     private final static Logger LOGGER = LoggerFactory.getLogger(ControlInformationManager.class);
     
@@ -37,10 +42,15 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     public ControlInformationManager(InfoPlane info){
         this.info=info;
         
-        pendingProbes = new ConcurrentHashMap<>();
-        pendingDataSources = new ConcurrentHashMap<>();
-        pendingDataConsumers = new ConcurrentHashMap<>();
-        pendingControllerAgents = new ConcurrentHashMap<>();
+        pendingAddedProbes = new ConcurrentHashMap<>();
+        pendingAddedDataSources = new ConcurrentHashMap<>();
+        pendingAddedDataConsumers = new ConcurrentHashMap<>();
+        pendingAddedControllerAgents = new ConcurrentHashMap<>();
+        
+        pendingRemovedProbes = new ConcurrentHashMap<>();
+        pendingRemovedDataSources = new ConcurrentHashMap<>();
+        pendingRemovedDataConsumers = new ConcurrentHashMap<>();
+        pendingRemovedControllerAgents = new ConcurrentHashMap<>();
     }
     
     
@@ -56,19 +66,19 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     void addAnnouncedEntity(ID id, EntityType type) {
         if (type != null) switch (type) {
             case DATASOURCE:
-                notifyDataSource(id);
+                notifyAddedDataSource(id);
                 LOGGER.info("Added Data Source " + id.toString());
                 break;
             case DATACONSUMER:
-                notifyDataConsumer(id);
+                notifyAddedDataConsumer(id);
                 LOGGER.info("Added Data Consumer " + id.toString());
                 break;
             case CONTROLLERAGENT:
-                notifyControllerAgent(id);
+                notifyAddedControllerAgent(id);
                 LOGGER.info("Added Controller Agent " + id.toString());
                 break;
             case PROBE:
-                notifyProbe(id);
+                notifyAddedProbe(id);
                 LOGGER.info("Added Probe " + id.toString());
                 break;
             default:
@@ -77,24 +87,28 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     }
     
     
-    // we might want to sync this with the control plane methods
-    // this is not strictly needed
     
     void removeDeannouncedEntity(ID id, EntityType type) {
-//        if (type == EntityType.DATASOURCE) { // && containsDataSource(id)) {
-//            LOGGER.info("Removing Data Source " + id.toString());
-//            deleteDataSource(id);
-//        }
-//        else if (type == EntityType.DATACONSUMER && containsDataConsumer(id)) {
-//            LOGGER.info("Removing Data Consumer " + id.toString());
-//            deleteDataConsumer(id);
-//        } else if (type == EntityType.CONTROLLERAGENT && containsControllerAgent(id)) {
-//              LOGGER.info("Removing Controller Agent " + id.toString());
-//              deleteControllerAgent(id);
-//        } else if (type == EntityType.PROBE && containsProbe(id)) {
-//              LOGGER.info("Removing Probe " + id.toString());
-//              deleteProbe(id); 
-//        }
+        if (type != null) switch (type) {
+            case DATASOURCE:
+                notifyRemovedDataSource(id);
+                LOGGER.info("Removing Data Source " + id.toString());
+                break;
+            case DATACONSUMER:
+                notifyRemovedDataConsumer(id);
+                LOGGER.info("Removing Data Consumer " + id.toString());
+                break;
+            case CONTROLLERAGENT:
+                notifyRemovedControllerAgent(id);
+                LOGGER.info("Removing Controller Agent " + id.toString());
+                break; 
+            case PROBE:
+                notifyRemovedProbe(id);
+                LOGGER.info("Removing Probe " + id.toString());
+                break;
+            default:
+                break;
+        }
     }
     
     
@@ -121,12 +135,12 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
     
     @Override
-    public void waitForDataSource(DataSourceInfo dataSource, Host resource, int timeout) throws InterruptedException, DSNotFoundException {
+    public void waitForAddedDataSource(DataSourceInfo dataSource, int timeout) throws InterruptedException {
         ID dataSourceID = dataSource.getId();
         
         if (!containsDataSource(dataSourceID)) {
             CountDownLatch latch = new CountDownLatch(1);
-            pendingDataSources.put(dataSourceID, latch);
+            pendingAddedDataSources.putIfAbsent(dataSourceID, latch);
             LOGGER.debug("waitForDataSource: Waiting on the latch: " + dataSourceID);
             latch.await(timeout, TimeUnit.SECONDS);
         }
@@ -135,12 +149,12 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
     
     @Override
-    public void waitForDataConsumer(DataConsumerInfo dataConsumer, Host resource, int timeout) throws InterruptedException, DCNotFoundException {
+    public void waitForAddedDataConsumer(DataConsumerInfo dataConsumer, int timeout) throws InterruptedException {
         ID dataConsumerID = dataConsumer.getId();
         
         if (!containsDataSource(dataConsumerID)) {
             CountDownLatch latch = new CountDownLatch(1);
-            pendingDataConsumers.put(dataConsumerID, latch);
+            pendingAddedDataConsumers.putIfAbsent(dataConsumerID, latch);
             LOGGER.debug("waitForDataConsumer: Waiting on the latch: " + dataConsumerID);
             latch.await(timeout, TimeUnit.SECONDS);
         }
@@ -148,12 +162,12 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
 
     @Override
-    public void waitForControllerAgent(ControllerAgentInfo controllerAgent, Host resource, int timeout) throws InterruptedException, ControllerAgentNotFoundException {
+    public void waitForAddedControllerAgent(ControllerAgentInfo controllerAgent, int timeout) throws InterruptedException {
         ID controllerAgentID = controllerAgent.getId();
         
         if (!containsDataSource(controllerAgentID)) {
             CountDownLatch latch = new CountDownLatch(1);
-            pendingControllerAgents.put(controllerAgentID, latch);
+            pendingAddedControllerAgents.putIfAbsent(controllerAgentID, latch);
             LOGGER.debug("waitForControllerAgent: Waiting on the latch: " + controllerAgentID);
             latch.await(timeout, TimeUnit.SECONDS);
         }
@@ -161,50 +175,135 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
         
     @Override
-    public void waitForProbe(ID probeID, int timeout) throws InterruptedException, ProbeNotFoundException {
+    public void waitForAddedProbe(ID probeID, int timeout) throws InterruptedException {
         if (!containsProbe(probeID)) {
             CountDownLatch latch = new CountDownLatch(1);
-            pendingProbes.put(probeID, latch);
+            pendingAddedProbes.putIfAbsent(probeID, latch);
             LOGGER.debug("waitForProbe: Waiting on the latch: " + probeID);
             latch.await(timeout, TimeUnit.SECONDS);
         }
     }
     
     
-    void notifyDataSource(ID id) {
-        if (pendingDataSources.containsKey(id)) {
+    void notifyAddedDataSource(ID id) {
+        if (pendingAddedDataSources.containsKey(id)) {
             LOGGER.debug("Notifying pending Data Source: " + id);
-            CountDownLatch latch = pendingDataSources.remove(id);
+            CountDownLatch latch = pendingAddedDataSources.remove(id);
             latch.countDown();
         }
     }
     
     
-    void notifyDataConsumer(ID id) {
-        if (pendingDataConsumers.containsKey(id)) {
+    void notifyAddedDataConsumer(ID id) {
+        if (pendingAddedDataConsumers.containsKey(id)) {
             LOGGER.debug("Notifying pending Data Consumer: " + id);
-            CountDownLatch latch = pendingDataConsumers.remove(id);
+            CountDownLatch latch = pendingAddedDataConsumers.remove(id);
             latch.countDown();
         }
     }
     
     
-    void notifyControllerAgent(ID id) {
-        if (pendingControllerAgents.containsKey(id)) {
+    void notifyAddedControllerAgent(ID id) {
+        if (pendingAddedControllerAgents.containsKey(id)) {
             LOGGER.debug("Notifying pending Controller Agent: " + id);
-            CountDownLatch latch = pendingControllerAgents.remove(id);
+            CountDownLatch latch = pendingAddedControllerAgents.remove(id);
             latch.countDown();
         }
     }
     
     
-    void notifyProbe(ID id) {
-        if (pendingProbes.containsKey(id)) {
+    void notifyAddedProbe(ID id) {
+        if (pendingAddedProbes.containsKey(id)) {
             LOGGER.debug("Notifying pending Probe: " + id);
-            CountDownLatch latch = pendingProbes.remove(id);
+            CountDownLatch latch = pendingAddedProbes.remove(id);
             latch.countDown();
         }
     }
+
+    
+    @Override
+    public void waitForRemovedDataSource(DataSourceInfo dataSource, int timeout) throws InterruptedException {
+        ID dataSourceID = dataSource.getId();
+        
+        if (containsDataSource(dataSourceID)) {
+            CountDownLatch latch = new CountDownLatch(1);
+            pendingRemovedDataSources.putIfAbsent(dataSourceID, latch);
+            LOGGER.debug("waitForDataSource: Waiting on the latch: " + dataSourceID);
+            latch.await(timeout, TimeUnit.SECONDS);
+        }
+        // else: already removed from the info plane – no need to wait
+    }
+
+    @Override
+    public void waitForRemovedDataConsumer(DataConsumerInfo dataConsumer, int timeout) throws InterruptedException {
+        ID dataConsumerID = dataConsumer.getId();
+        
+        if (containsDataSource(dataConsumerID)) {
+            CountDownLatch latch = new CountDownLatch(1);
+            pendingRemovedDataConsumers.putIfAbsent(dataConsumerID, latch);
+            LOGGER.debug("waitForDataConsumer: Waiting on the latch: " + dataConsumerID);
+            latch.await(timeout, TimeUnit.SECONDS);
+        }
+    }
+
+    @Override
+    public void waitForRemovedControllerAgent(ControllerAgentInfo controllerAgent, int timeout) throws InterruptedException {
+        ID controllerAgentID = controllerAgent.getId();
+        
+        if (containsDataSource(controllerAgentID)) {
+            CountDownLatch latch = new CountDownLatch(1);
+            pendingRemovedControllerAgents.putIfAbsent(controllerAgentID, latch);
+            LOGGER.debug("waitForControllerAgent: Waiting on the latch: " + controllerAgentID);
+            latch.await(timeout, TimeUnit.SECONDS);
+        }
+    }
+
+    @Override
+    public void waitForRemovedProbe(ID probeID, int timeout) throws InterruptedException {
+        if (containsProbe(probeID)) {
+            CountDownLatch latch = new CountDownLatch(1);
+            pendingRemovedProbes.putIfAbsent(probeID, latch);
+            LOGGER.debug("waitForProbe: Waiting on the latch: " + probeID);
+            latch.await(timeout, TimeUnit.SECONDS);
+        }
+    }
+    
+    
+    void notifyRemovedDataSource(ID id) {
+        if (pendingRemovedDataSources.containsKey(id)) {
+            LOGGER.debug("Notifying pending Data Source: " + id);
+            CountDownLatch latch = pendingRemovedDataSources.remove(id);
+            latch.countDown();
+        }
+    }
+    
+    
+    void notifyRemovedDataConsumer(ID id) {
+        if (pendingRemovedDataConsumers.containsKey(id)) {
+            LOGGER.debug("Notifying pending Data Consumer: " + id);
+            CountDownLatch latch = pendingRemovedDataConsumers.remove(id);
+            latch.countDown();
+        }
+    }
+    
+    
+    void notifyRemovedControllerAgent(ID id) {
+        if (pendingRemovedControllerAgents.containsKey(id)) {
+            LOGGER.debug("Notifying pending Controller Agent: " + id);
+            CountDownLatch latch = pendingRemovedControllerAgents.remove(id);
+            latch.countDown();
+        }
+    }
+    
+    
+    void notifyRemovedProbe(ID id) {
+        if (pendingRemovedProbes.containsKey(id)) {
+            LOGGER.debug("Notifying pending Probe: " + id);
+            CountDownLatch latch = pendingRemovedProbes.remove(id);
+            latch.countDown();
+        }
+    }
+    
 
     
     @Override

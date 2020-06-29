@@ -316,7 +316,7 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     }
 
     @Override
-    public void sendMessage(AbstractAnnounceMessage m) {
+    public void sendMessageToListener(AbstractAnnounceMessage m) {
         listener.receivedAnnounceEvent(m);
     }
 }

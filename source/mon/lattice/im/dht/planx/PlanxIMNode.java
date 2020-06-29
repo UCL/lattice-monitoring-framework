@@ -520,7 +520,7 @@ public class PlanxIMNode extends AbstractDHTIMNode {
     }
 
     @Override
-    public void sendMessage(AbstractAnnounceMessage m) {
+    public void sendMessageToListener(AbstractAnnounceMessage m) {
         throw new UnsupportedOperationException("Not supported on this IMNode implementation");
     }
 

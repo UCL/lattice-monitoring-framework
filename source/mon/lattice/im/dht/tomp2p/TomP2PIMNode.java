@@ -567,7 +567,7 @@ public class TomP2PIMNode extends AbstractDHTIMNode implements AnnounceEventList
     
     
     @Override
-    public void sendMessage(AbstractAnnounceMessage m) {
+    public void sendMessageToListener(AbstractAnnounceMessage m) {
         dht.announce(m);
     }
 

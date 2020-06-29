@@ -94,7 +94,7 @@ public class ZMQSubscriberWithNoMessageOnRemoveProbe extends AbstractZMQSubscrib
                 case "datasource":  
                     if (operation.equals("add")) {
                         dataSources.put(entityID, msgObj.getJSONObject("info"));
-                        sendMessage(new AnnounceMessage(entityID, EntityType.DATASOURCE));
+                        sendMessageToListener(new AnnounceMessage(entityID, EntityType.DATASOURCE));
                     }
                     else if (operation.equals("remove")) {
                         JSONObject dataSource = dataSources.get(entityID);
@@ -103,12 +103,12 @@ public class ZMQSubscriberWithNoMessageOnRemoveProbe extends AbstractZMQSubscrib
                         for (int i=0; i<dsProbes.length(); i++) {
                             ID probeID = ID.fromString(dsProbes.getString(i));
                             probes.remove(probeID);
-                            sendMessage(new DeannounceMessage(entityID, EntityType.PROBE));
+                            sendMessageToListener(new DeannounceMessage(probeID, EntityType.PROBE));
                             probeAttributes.remove(probeID);
                         }
                         
                         dataSources.remove(entityID);
-                        sendMessage(new DeannounceMessage(entityID, EntityType.DATASOURCE));
+                        sendMessageToListener(new DeannounceMessage(entityID, EntityType.DATASOURCE));
                         
                     }
                     
@@ -122,7 +122,7 @@ public class ZMQSubscriberWithNoMessageOnRemoveProbe extends AbstractZMQSubscrib
                     if (operation.equals("add")) {    
                         JSONObject probeInfo = msgObj.getJSONObject("info");
                         probes.put(entityID, probeInfo);
-                        sendMessage(new AnnounceMessage(entityID, EntityType.PROBE));
+                        sendMessageToListener(new AnnounceMessage(entityID, EntityType.PROBE));
                         
                         ID dataSourceID = ID.fromString(probeInfo.getString("datasource"));
                         JSONObject dataSource = dataSources.get(dataSourceID);
@@ -131,8 +131,13 @@ public class ZMQSubscriberWithNoMessageOnRemoveProbe extends AbstractZMQSubscrib
                         JSONArray embeddedAttributes = msgObj.getJSONArray("attributes");
                         for (int i=0; i < embeddedAttributes.length(); i++)
                             messageHandler(embeddedAttributes.getString(i));
+                    }
                         
-                    }          
+                    else if (operation.equals("remove")) {
+                        probes.remove(entityID);
+                        probeAttributes.remove(entityID);
+                        sendMessageToListener(new DeannounceMessage(entityID, EntityType.PROBE));       
+                    }         
                     
                     LOGGER.trace("probe map:\n");
                     for (ID id: probes.keySet())
@@ -169,11 +174,11 @@ public class ZMQSubscriberWithNoMessageOnRemoveProbe extends AbstractZMQSubscrib
                 case "dataconsumer":  
                     if (operation.equals("add")) {
                         dataConsumers.put(entityID, msgObj.getJSONObject("info"));
-                        sendMessage(new AnnounceMessage(entityID, EntityType.DATACONSUMER));
+                        sendMessageToListener(new AnnounceMessage(entityID, EntityType.DATACONSUMER));
                     }
                     else if (operation.equals("remove")) {
                         dataConsumers.remove(entityID);
-                        sendMessage(new DeannounceMessage(entityID, EntityType.DATACONSUMER));
+                        sendMessageToListener(new DeannounceMessage(entityID, EntityType.DATACONSUMER));
                     }
                     break;
                         
@@ -195,11 +200,11 @@ public class ZMQSubscriberWithNoMessageOnRemoveProbe extends AbstractZMQSubscrib
                 case "controlleragent":
                     if (operation.equals("add")) {
                         controllerAgents.put(entityID, msgObj.getJSONObject("info"));
-                        sendMessage(new AnnounceMessage(entityID, EntityType.CONTROLLERAGENT));
+                        sendMessageToListener(new AnnounceMessage(entityID, EntityType.CONTROLLERAGENT));
                     }
                     else if (operation.equals("remove")) {
                         controllerAgents.remove(entityID);
-                        sendMessage(new DeannounceMessage(entityID, EntityType.CONTROLLERAGENT));
+                        sendMessageToListener(new DeannounceMessage(entityID, EntityType.CONTROLLERAGENT));
                     }
             }
             
