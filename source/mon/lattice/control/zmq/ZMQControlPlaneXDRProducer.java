@@ -24,56 +24,30 @@ import mon.lattice.im.delegate.ReporterNotFoundException;
 import mon.lattice.im.delegate.ZMQControlEndPointMetaData;
 
 
-public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer {
-    
-    protected ZMQXDRRequesterPool controlTransmittersPool;
-    int maxPoolSize;
-    
-    
+public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer {    
+    protected ZMQXDRRequester requester;
     
     /**
      * Creates a Producer without announce/deannounce management capabilities
-     * @param maxPoolSize is the size of the ZMQ Transmitters pool
      */
-    public ZMQControlPlaneXDRProducer(int maxPoolSize, int port) {
+    public ZMQControlPlaneXDRProducer(int port) {
         super(port);
-        this.maxPoolSize = maxPoolSize;
+        try {
+            requester = new ZMQXDRRequester(zmqRouter.getContext());
+        } catch (IOException ioe) {
+             LOGGER.error("Error while connecting " + ioe.getMessage());
+        }
     }
-    
     
     
     @Override
     public boolean connect() {
-        super.connect();
-
-	try {
-            if (controlTransmittersPool == null) {
-                // creating a pool for Control Messages transmission
-                controlTransmittersPool = new ZMQXDRRequesterPool(maxPoolSize, zmqRouter.getContext());
-                controlTransmittersPool.connect();
-            }       
-            return true;
-        }   
-        
-        catch (InterruptedException ie) {
-	    LOGGER.error("Interrupted connecting " + ie.getMessage());
-	    return false;
-            
-	} catch (IOException ioe) {
-	    LOGGER.error("Error while connecting " + ioe.getMessage());
-	    return false;
-	}
+        return super.connect();
     }
 
     @Override
     public boolean disconnect() {
-        super.disconnect();
-        try {
-            controlTransmittersPool.disconnect();
-	    return true;
-	} catch (IOException ieo) {
-	    return false;
-	}
+        return super.disconnect();
     }
     
     
@@ -94,32 +68,24 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
             
             MetaData mData;
             if (dstAddr.getType().equals("zmq")) {
-                mData = new ZMQControlMetaData(dataSourceID.toString());
-                //we return the ID of the new created probe as result
-
-                ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-                probeID = (ID) connection.synchronousTransmit(m, mData);
-                controlTransmittersPool.releaseConnection(connection);
+                mData = new ZMQControlMetaData(dataSourceID.toString());                
+                probeID = (ID) requester.synchronousTransmit(m, mData);
                 
                 // should wait until the info plane message for that probe is received
-                infoPlaneDelegate.waitForProbe(probeID, 10000);
+                infoPlaneDelegate.waitForProbe(probeID, 5000);
             }  
-        } 
-          catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);
-          }   
+        }
+          catch (InterruptedException e) {
+            LOGGER.error("Interrupted while loading probe: " + e.getMessage());
+            throw new ControlServiceException(e);
+          }
           catch (ProbeNotFoundException pex) {
-            LOGGER.error("The probe information was not received on the info plane " + pex.getMessage());
+            LOGGER.error("The probe information was not received on the info plane: " + pex.getMessage());
             throw new ControlServiceException(pex);  
           }
           catch (IOException | DSNotFoundException | ControlPlaneConsumerException ex) {
-            LOGGER.error("Error while performing load probe command " + ex.getMessage());
+            LOGGER.error("Error while performing load probe command: " + ex.getMessage());
             throw new ControlServiceException(ex);
-          } 
-          catch (Exception e) {
-            LOGGER.error("Unknown Error while performing load probe command " + e.getMessage());
-            throw new ControlServiceException(e);
           }
         return probeID;
     }
@@ -133,16 +99,9 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.UNLOAD_PROBE, args);
         try {
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
-            
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            result = (Boolean) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
+            result = (Boolean) requester.synchronousTransmit(m, mData);
         }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);      
-        } 
         catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing unload probe command " + ex.getMessage());
             throw new ControlServiceException(ex);
@@ -171,25 +130,13 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.SET_PROBE_SERVICE_ID, args);
         try {
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
-            
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            result = (Boolean) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
+            result = (Boolean) requester.synchronousTransmit(m, mData);
         }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);
-               
-        } catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
+        catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing set probe service ID command " + ex.getMessage());
             throw new ControlServiceException(ex);
-          }
-          catch (Exception e) {
-            LOGGER.error("Unknown Error while performing setProbeServiceID command " + e.getMessage());
-            throw new ControlServiceException(e);
-          }
-        
+          }        
         return result;
         
     }
@@ -205,15 +152,8 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         
         try {
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
-            
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            result = (ID) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
-        }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);
+            result = (ID) requester.synchronousTransmit(m, mData);
         }
         catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing get probe Service ID command " + ex.getMessage());
@@ -240,18 +180,9 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.SET_PROBE_GROUP_ID, args);
         try {
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
-            
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            result = (Boolean) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
-           
-        }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);
-        } 
-        
+            result = (Boolean) requester.synchronousTransmit(m, mData);
+        }        
         catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing set probe group ID command " + ex.getMessage());
             throw new ControlServiceException(ex);
@@ -270,18 +201,10 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         
         try {
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
-            
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            result = (Rational) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
+            result = (Rational) requester.synchronousTransmit(m, mData);
         
-        }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);
-        }
-        
+        }        
         catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing get probe data rate  command " + ex.getMessage());
             throw new ControlServiceException(ex);
@@ -304,14 +227,8 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
             
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            result = (Boolean) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
+            result = (Boolean) requester.synchronousTransmit(m, mData);
         }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);
-        } 
           catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing set probe data rate command " + ex.getMessage());
             throw new ControlServiceException(ex);
@@ -341,24 +258,13 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
             
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            result = (Boolean) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
-            
+            result = (Boolean) requester.synchronousTransmit(m, mData);
             return result;
         
-        }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);
-        }    
+        }  
          catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing turn on probe command " + ex.getMessage());
             throw new ControlServiceException(ex);
-          }
-          catch (Exception e) {
-            LOGGER.error("Unknown Error while performing turnOnProbe command " + e.getMessage());
-            throw new ControlServiceException(e);
           }
         }
 
@@ -371,20 +277,12 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.TURN_OFF_PROBE, args);
         try {
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
-            
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            result = (Boolean) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
-            
+            result = (Boolean) requester.synchronousTransmit(m, mData); 
             return result;
-            
         }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);    
-            
-        } catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
+        
+        catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing turn off probe command " + ex.getMessage());
             throw new ControlServiceException(ex);
           }
@@ -422,20 +320,11 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         
         try {
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromID(id);
-            
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            name = (String) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
-            
+            name = (String) requester.synchronousTransmit(m, mData);
             return name;
-            
         }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);
-            
-        } catch (IOException | DSNotFoundException | ControlPlaneConsumerException ex) {
+        catch (IOException | DSNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing getDataSourceName command " + ex.getMessage());
             throw new ControlServiceException(ex);
         }
@@ -460,15 +349,10 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         
         try {
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDCAddressFromID(dcId);
-            MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString()); 
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            rate = (Rational) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
+            MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
+            rate = (Rational) requester.synchronousTransmit(m, mData);
         }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);
-        }
+
         catch (IOException | DCNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing getDCMeasurementsRate command " + ex.getMessage());
             throw new ControlServiceException(ex);
@@ -490,16 +374,9 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         try {
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDCAddressFromID(dataConsumerID);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            //we return the ID of the new created reporter as result
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            reporterID = (ID) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
+            reporterID = (ID) requester.synchronousTransmit(m, mData);
         }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);
-            
-        } catch (IOException | DCNotFoundException | ControlPlaneConsumerException ex) {
+        catch (IOException | DCNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing loadReporter command " + ex.getMessage());
             throw new ControlServiceException(ex);
           }
@@ -517,23 +394,12 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         try {
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDCAddressFromReporterID(reporterID);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            result = (Boolean) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
-            
+            result = (Boolean) requester.synchronousTransmit(m, mData);
         }
-        catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);
-        
-        } catch (IOException | DCNotFoundException | ReporterNotFoundException | ControlPlaneConsumerException ex) {
+        catch (IOException | DCNotFoundException | ReporterNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing unloadReporter command " + ex.getMessage());
             throw new ControlServiceException(ex);
           }
         return result;
     }
-    
-    
-
-
 }

@@ -38,7 +38,6 @@ public class ZMQDataPublisher {
     public void connect() throws IOException {
         String uri = "tcp://" + subscriberHost + ":" + subscriberPort;
         publisherSocket.setLinger(0);
-        //publisherSocket.setHWM(0);
         publisherSocket.connect(uri);
         try {
             Thread.sleep(1000);
@@ -48,7 +47,6 @@ public class ZMQDataPublisher {
     
     
     public void end() throws IOException {
-        publisherSocket.close();
         context.destroy();
     }
     

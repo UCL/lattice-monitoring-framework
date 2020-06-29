@@ -12,7 +12,6 @@ import mon.lattice.control.ControlPlaneConsumerException;
 import mon.lattice.control.ControlServiceException;
 import mon.lattice.control.zmq.ZMQControlMetaData;
 import mon.lattice.control.zmq.ZMQControlPlaneXDRProducer;
-import mon.lattice.control.zmq.ZMQXDRRequester;
 import mon.lattice.core.ID;
 import mon.lattice.core.Rational;
 import mon.lattice.core.plane.ControlOperation;
@@ -32,8 +31,8 @@ public class ZMQControlPlaneXDRProducerWithControlAgents extends ZMQControlPlane
 
     private static Logger LOGGER = LoggerFactory.getLogger(ZMQControlPlaneXDRProducerWithControlAgents.class);
     
-    public ZMQControlPlaneXDRProducerWithControlAgents(int maxPoolSize, int port) {
-        super(maxPoolSize, port);
+    public ZMQControlPlaneXDRProducerWithControlAgents(int port) {
+        super(port);
     }
 
     @Override
@@ -59,17 +58,10 @@ public class ZMQControlPlaneXDRProducerWithControlAgents extends ZMQControlPlane
             ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getControllerAgentAddressFromID(controllerAgentID);
             
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            result = (Boolean) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
-            
+            result = (Boolean) requester.synchronousTransmit(m, mData);
         } 
-          catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);     
-            
-        } catch (IOException | ControllerAgentNotFoundException | ControlPlaneConsumerException ex) {
+        
+        catch (IOException | ControllerAgentNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing set Monitoring Reporting Endpoint command " + ex.getMessage());
             throw new ControlServiceException(ex);
           }

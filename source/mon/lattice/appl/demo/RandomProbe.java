@@ -73,7 +73,7 @@ public class RandomProbe extends AbstractProbe implements Probe  {
 	try {
 	    ArrayList<ProbeValue> list = new ArrayList<ProbeValue>(1);
 
-	    float next = scaleFactor + (randomNo.nextFloat() * (scaleFactor / 5));;
+	    float next = scaleFactor + (randomNo.nextFloat() * (scaleFactor / 5));
 
 	    //System.err.println("rand = " + next);
 

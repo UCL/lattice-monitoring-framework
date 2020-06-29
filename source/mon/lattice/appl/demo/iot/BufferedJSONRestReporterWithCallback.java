@@ -3,17 +3,9 @@
 package mon.lattice.appl.demo.iot;
 
 import java.io.IOException;
-import mon.lattice.core.AbstractReporter;
-import mon.lattice.core.Measurement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import mon.lattice.core.ProbeValue;
-import mon.lattice.core.Timestamp;
 import mon.lattice.core.ID;
-import mon.lattice.core.ProbeValueWithName;
-import us.monoid.web.Resty;
-import us.monoid.json.JSONObject;
-import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.web.Content;
 /**

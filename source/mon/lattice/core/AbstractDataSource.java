@@ -841,12 +841,21 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
                     if (retVal > 0)
                         sendSuccess(msg);
                 }
-            }   
-            catch (InterruptedException ie) {
-                LOGGER.info("Caught Interrupted Exeception (sendData)");
+            } 
+            
+            catch (IOException e) {
+                LOGGER.info("Caught IOException (sendData)");
                 break;
 	        
-            } catch (Exception ex) {
+            }
+            
+            catch (InterruptedException ie) {
+                LOGGER.info("Caught Interrupted Exception (sendData)");
+                break;
+	        
+            } 
+            
+            catch (Exception ex) {
                 sendFailure(msg, ex);
             }
 	}

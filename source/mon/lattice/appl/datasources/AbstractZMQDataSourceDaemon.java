@@ -1,7 +1,6 @@
 package mon.lattice.appl.datasources;
 
 import mon.lattice.appl.Daemon;
-import mon.lattice.core.DefaultControllableDataSource;
 import mon.lattice.control.zmq.ZMQDataSourceControlPlaneXDRConsumer;
 import mon.lattice.core.ControllableDataSource;
 import mon.lattice.core.ID;
@@ -74,7 +73,7 @@ public abstract class AbstractZMQDataSourceDaemon extends Daemon {
         attachShutDownHook();
         initLogger();
         
-	dataSource = new DefaultControllableDataSource(dataSourceName, ID.fromString(entityID));
+	dataSource = new ZMQControllableDataSource(dataSourceName, ID.fromString(entityID));
         
         LOGGER.info("Data Source ID: " + dataSource.getID());
         LOGGER.info("Process ID: " + dataSource.getMyPID());

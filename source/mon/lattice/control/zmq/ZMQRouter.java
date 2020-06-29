@@ -16,7 +16,7 @@ import org.zeromq.ZMQ;
  * @author uceeftu
  */
 public class ZMQRouter implements Runnable {
-    ZContext context;
+    ZMQ.Context context;
     ZMQ.Socket frontend;
     ZMQ.Socket backend;
     
@@ -28,9 +28,9 @@ public class ZMQRouter implements Runnable {
 
     public ZMQRouter(int port) {
         backendPort = port;
-        context = new ZContext(1);
-        frontend = context.createSocket(SocketType.ROUTER);
-        backend = context.createSocket(SocketType.ROUTER);
+        context = ZMQ.context(1);
+        frontend = context.socket(SocketType.ROUTER);
+        backend = context.socket(SocketType.ROUTER);
     }
     
     public void bind() {
@@ -46,7 +46,7 @@ public class ZMQRouter implements Runnable {
         router.start();
     }
     
-    public ZContext getContext() {
+    public ZMQ.Context getContext() {
         return this.context;
     }
     
@@ -54,12 +54,12 @@ public class ZMQRouter implements Runnable {
     public void disconnect() {
         frontend.close();
         backend.close();
-        context.destroy();
+        context.term();
     }
 
     @Override
     public void run() {
-        ZMQ.Poller items = context.createPoller(2);
+        ZMQ.Poller items = context.poller(2);
         items.register(backend, ZMQ.Poller.POLLIN);
         items.register(frontend, ZMQ.Poller.POLLIN);
         

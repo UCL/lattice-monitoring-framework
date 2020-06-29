@@ -595,6 +595,9 @@ public abstract class AbstractProbe implements Probe {
      * Inform the Probe of an object.
      * This turns the Probe on so it calls collect().
      */
+    
+    
+    // I think this can be replaced with a kind of LinkedQueue
     public Object inform(Object obj) {
         informObject = obj;
     	informsToProcess.incrementAndGet();
@@ -683,6 +686,9 @@ public abstract class AbstractProbe implements Probe {
 		// if using events turn probe off
 		// if there are no more events to process
 		if (collectiontype ==  Probe.CollectionType.OnEvent) {
+                    // if using a LinkedQueue this is the code reading from the queue 
+                    // (will block if there are no items)
+                    
 		    if ( informsToProcess.decrementAndGet() <= 0 ) {
                         informsToProcess.set(0);
                         turnOffProbe();

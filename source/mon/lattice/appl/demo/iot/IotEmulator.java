@@ -174,7 +174,7 @@ public class IotEmulator {
                 IotTopology t = new IotTopology(id,
                                                 iot.userID,
                                                 iot.hostID,
-                                                iot.dsNumber,
+                                                iot.dsNumber,                     
                                                 iot.nSensors,
                                                 iot.rate,
                                                 iot.waitMin,

@@ -33,9 +33,6 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
     protected String jarFileName;
     protected String remoteJarPath;
     
-    protected String dsClassName;
-    protected String dcClassName;
-    
     protected int restConsolePort;
     protected ManagementConsoleWithPoolSize JSONManagementConsole = null;
     
@@ -59,6 +56,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
     @Override
     public void initRESTConsole() {
         restConsolePort = Integer.parseInt(pr.getProperty("restconsole.localport"));
+        poolSize = Integer.parseInt(pr.getProperty("control.poolsize"));
         JSONManagementConsole=new JSONControllerManagementConsole(this, restConsolePort);
         JSONManagementConsole.start(poolSize);  
     }
