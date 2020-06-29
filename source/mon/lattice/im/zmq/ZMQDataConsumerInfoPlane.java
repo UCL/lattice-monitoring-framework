@@ -10,6 +10,8 @@ import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.ControllableReporter;
 import mon.lattice.core.DataConsumerInteracter;
 import mon.lattice.control.agents.ControllerAgent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A ZMQDataSourceInfoPlane is an InfoPlane implementation
@@ -26,6 +28,8 @@ public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements In
     // The port of the Subscriber
     int remotePort;
     
+    private Logger LOGGER = LoggerFactory.getLogger(ZMQDataConsumerInfoPlane.class);
+    
     /**
      * Construct a ZMQDataConsumerInfoPlane.
      * Connect to the Proxy Subscriber at hostname on port,
@@ -36,7 +40,8 @@ public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements In
 	remoteHost = remoteHostname;
 	this.remotePort = remotePort;        
         zmqPublisher = new ZMQDataConsumerPublisher(remoteHost, remotePort);
-        zmqSubscriber = new ZMQSubscriberWithNoMessageOnRemoveProbe(remoteHost, remotePort + 1, "info.probe", zmqPublisher.getContext()); //reusing context
+        // TODO: check the topics it should subscribe to
+        zmqSubscriber = new ZMQDataConsumerSubscriber(remoteHost, remotePort + 1, "info.", zmqPublisher.getContext());
         
     }
      

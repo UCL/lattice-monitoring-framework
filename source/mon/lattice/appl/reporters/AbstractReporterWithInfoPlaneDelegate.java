@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mon.lattice.appl.dataconsumers;
+package mon.lattice.appl.reporters;
 
 import mon.lattice.core.ControllableReporter;
 import mon.lattice.core.ID;

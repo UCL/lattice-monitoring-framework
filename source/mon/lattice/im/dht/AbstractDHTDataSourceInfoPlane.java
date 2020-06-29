@@ -6,6 +6,7 @@
 package mon.lattice.im.dht;
 
 import java.io.IOException;
+import java.util.Collection;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.DataSource;
 import mon.lattice.core.DataSourceDelegate;
@@ -40,7 +41,7 @@ public abstract class AbstractDHTDataSourceInfoPlane extends AbstractDHTInfoPlan
             // adding additional DS information
             addDataSourceInfo(dataSource);
             
-            imNode.sendMessageToListener(new AnnounceMessage(dataSource.getID(), EntityType.DATASOURCE));
+            imNode.announce(new AnnounceMessage(dataSource.getID(), EntityType.DATASOURCE));
 	    LOGGER.info("just announced this Data Source " + dataSource.getID());
 	    return true;
 	} catch (IOException ioe) {
@@ -57,7 +58,12 @@ public abstract class AbstractDHTDataSourceInfoPlane extends AbstractDHTInfoPlan
             DataSource dataSource = dataSourceDelegate.getDataSource();
             imNode.removeDataSource(dataSource);
             
-            imNode.sendMessageToListener(new DeannounceMessage(dataSource.getID(), EntityType.DATASOURCE));
+            Collection<Probe> probes = dataSource.getProbes();
+            for (Probe p : probes) {
+                imNode.announce(new DeannounceMessage(p.getID(), EntityType.PROBE));
+            }
+            
+            imNode.announce(new DeannounceMessage(dataSource.getID(), EntityType.DATASOURCE));
             LOGGER.info("just deannounced this Data Source " + dataSource.getID());
             return true;
         } catch (IOException ioe) {
@@ -105,6 +111,7 @@ public abstract class AbstractDHTDataSourceInfoPlane extends AbstractDHTInfoPlan
     public boolean addProbeInfo(Probe p) {
 	try {
 	    imNode.addProbe(p);
+            imNode.announce(new AnnounceMessage(p.getID(), EntityType.PROBE));
 
 	    LOGGER.info("just added Probe " + p.getClass());
             LOGGER.debug(p.toString());
@@ -199,7 +206,7 @@ public abstract class AbstractDHTDataSourceInfoPlane extends AbstractDHTInfoPlan
     public boolean removeProbeInfo(Probe p) {
 	try {
 	    imNode.removeProbe(p);
-
+            imNode.announce(new DeannounceMessage(p.getID(), EntityType.PROBE));
 	    LOGGER.info("just removed Probe " + p.getClass());
 	    return true;
 	} catch (IOException ioe) {

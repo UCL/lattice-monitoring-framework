@@ -13,9 +13,6 @@ import mon.lattice.core.ID;
  */
 public interface IMSubscriberNode extends IMBasicNode {
     
-    /**
-     * Lookup information
-     */
     public Object getDataSourceInfo(ID dsID, String info);
 
     public Object getProbeInfo(ID probeID, String info);
@@ -28,12 +25,14 @@ public interface IMSubscriberNode extends IMBasicNode {
 
     public Object getReporterInfo(ID reporterID, String info);
     
+    public Object getControllerAgentInfo(ID dsID, String info);
+    
     public boolean containsDataSource(ID dataSourceID, int timeout);
     
     public boolean containsDataConsumer(ID dataConsumerID, int timeout);
     
     public boolean containsControllerAgent(ID controllerAgentID, int timeout);
     
-    public boolean containsProbe(ID controllerAgentID, int timeout);
+    public boolean containsProbe(ID probeID, int timeout);
     
 }

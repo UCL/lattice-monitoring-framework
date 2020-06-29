@@ -1,17 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mon.lattice.im.dht;
 
 import java.io.Serializable;
 
-/**
- *
- * @author uceeftu
- */
-public interface DHTInteractor {
+
+public interface DHTInteracter {
 
     /**
      * Lookup info directly from the DHT.

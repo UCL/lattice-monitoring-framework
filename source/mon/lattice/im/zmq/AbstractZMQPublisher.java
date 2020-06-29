@@ -7,14 +7,11 @@ import mon.lattice.core.ControllableReporter;
 import mon.lattice.core.DataSource;
 import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
-import mon.lattice.core.plane.AbstractAnnounceMessage;
-import mon.lattice.core.plane.AnnounceEventListener;
 import mon.lattice.im.AbstractIMNode;
 import mon.lattice.im.IMPublisherNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
-import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 /**
@@ -24,7 +21,7 @@ import org.zeromq.ZMQ;
 public abstract class AbstractZMQPublisher extends AbstractIMNode implements IMPublisherNode {
     
     int remotePort;
-    ZContext context;
+    ZMQ.Context context;
     ZMQ.Socket publisherSocket;
     
     private Logger LOGGER = LoggerFactory.getLogger(AbstractZMQPublisher.class);
@@ -34,8 +31,8 @@ public abstract class AbstractZMQPublisher extends AbstractIMNode implements IMP
 	remoteHost = remHost;
 	remotePort = remPort;
         
-        context = new ZContext(1);
-        publisherSocket = context.createSocket(SocketType.PUB);
+        context = ZMQ.context(1);
+        publisherSocket = context.socket(SocketType.PUB);
     }
 
     /**
@@ -64,14 +61,14 @@ public abstract class AbstractZMQPublisher extends AbstractIMNode implements IMP
     }
 
     public void destroyZMQContext() {
-        context.destroy();
+        context.term();
     }
 
     public String getRootHostname() {
         return this.remoteHost;
     }
 
-    public ZContext getContext() {
+    public ZMQ.Context getContext() {
         return context;
     }
     
@@ -129,16 +126,6 @@ public abstract class AbstractZMQPublisher extends AbstractIMNode implements IMP
     
     
     
-    
-    @Override
-    public void addAnnounceEventListener(AnnounceEventListener l) {
-        throw new UnsupportedOperationException("Not supported by a Publisher");
-    }
-
-    @Override
-    public void sendMessageToListener(AbstractAnnounceMessage m) {
-        throw new UnsupportedOperationException("Not supported by a Publisher");
-    }
 
     @Override
     public AbstractZMQPublisher addDataConsumerInfo(ControllableDataConsumer dc) throws IOException {

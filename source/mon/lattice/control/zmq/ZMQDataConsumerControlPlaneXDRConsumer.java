@@ -15,6 +15,8 @@ import java.net.InetSocketAddress;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.Rational;
 import java.io.IOException;
+import mon.lattice.core.ControllableReporter;
+import mon.lattice.core.plane.InfoPlaneInteracter;
 
 
 
@@ -79,7 +81,13 @@ public class ZMQDataConsumerControlPlaneXDRConsumer extends AbstractZMQControlPl
         try {
             LOGGER.info("** invoking loadReporter **");            
             ReporterLoader r = new ReporterLoader(reporterClassName, reporterArgs);
-            dataConsumer.addReporter(r.getReporter());
+            
+            ControllableReporter reporter = r.getReporter();
+            dataConsumer.addReporter(reporter);
+            
+            if (reporter instanceof InfoPlaneInteracter)
+                ((InfoPlaneInteracter) reporter).setInfoPlane(dataConsumer.getInfoPlane());
+            
             return r.getReporter().getId();
         } catch (ReporterLoaderException e) {
             throw new ControlServiceException(e);

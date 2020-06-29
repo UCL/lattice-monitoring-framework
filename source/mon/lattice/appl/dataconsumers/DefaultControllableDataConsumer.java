@@ -5,6 +5,7 @@
  */
 package mon.lattice.appl.dataconsumers;
 
+import mon.lattice.appl.reporters.AbstractReporterWithInfoPlaneDelegate;
 import mon.lattice.im.delegate.ReporterInformationManager;
 import mon.lattice.core.AbstractDataConsumer;
 import mon.lattice.core.MeasurementReceiver;

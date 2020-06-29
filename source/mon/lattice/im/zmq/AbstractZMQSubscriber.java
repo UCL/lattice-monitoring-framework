@@ -1,11 +1,9 @@
 package mon.lattice.im.zmq;
 
 import mon.lattice.core.ID;
-import mon.lattice.core.plane.AbstractAnnounceMessage;
-import mon.lattice.core.plane.AnnounceEventListener;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import mon.lattice.im.AbstractIMNode;
+import mon.lattice.im.AbstractIMNodeWithAnnounce;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
@@ -15,7 +13,6 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import mon.lattice.im.IMSubscriberNode;
 import org.zeromq.SocketType;
-import org.zeromq.ZContext;
 
 /**
  * An ZMQSubscriber is responsible for receiving information about  
@@ -23,11 +20,11 @@ import org.zeromq.ZContext;
  * using ZMQ.
 **/
 
-public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IMSubscriberNode, Runnable {
+public abstract class AbstractZMQSubscriber extends AbstractIMNodeWithAnnounce implements IMSubscriberNode, Runnable {
     int remotePort = 0;
     int localPort = 0;
     
-    ZContext context;
+    ZMQ.Context context;
     ZMQ.Socket subscriberSocket;
     
     String internalURI;
@@ -44,11 +41,11 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     
     Map<ID, JSONObject> controllerAgents = new ConcurrentHashMap<>();
     
-    AnnounceEventListener listener;
+    
     
     Thread thread = new Thread(this, "zmq-info-subscriber");
     
-    private static Logger LOGGER = LoggerFactory.getLogger(AbstractZMQSubscriber.class);
+    private Logger LOGGER = LoggerFactory.getLogger(AbstractZMQSubscriber.class);
 
     
     /**
@@ -56,33 +53,33 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
      * port where connecting to and a message filter.
      */
     public AbstractZMQSubscriber(String remHost, int remPort, String filter) {
-        this(remHost, remPort, filter, new ZContext(1));
+        this(remHost, remPort, filter, ZMQ.context(1));
     } 
     
     /**
      * Construct a ZMQInformationConsumer given a remote host, a remote 
-     * port where connecting to, a message filter and an existing ZContext.
+     * port where connecting to, a message filter and an existing ZMQ.Context.
      */
-    public AbstractZMQSubscriber(String remHost, int remPort, String filter, ZContext context) {
+    public AbstractZMQSubscriber(String remHost, int remPort, String filter, ZMQ.Context context) {
 	remoteHost = remHost;
 	remotePort = remPort;
         messageFilter = filter;
         
         this.context = context;
-        subscriberSocket = context.createSocket(SocketType.SUB);
+        subscriberSocket = context.socket(SocketType.SUB);
     }
     
     
     /**
      * Construct a ZMQInformationConsumer given a remote host, a remote 
-     * port where connecting to, a message filter and an existing ZContext.
+     * port where connecting to, a message filter and an existing ZMQ.Context.
      */
-    public AbstractZMQSubscriber(String internalURI, String filter, ZContext context) {
+    public AbstractZMQSubscriber(String internalURI, String filter, ZMQ.Context context) {
 	this.internalURI = internalURI;
         messageFilter = filter;
         
         this.context = context;
-        subscriberSocket = context.createSocket(SocketType.SUB);
+        subscriberSocket = context.socket(SocketType.SUB);
     }
     
     
@@ -92,21 +89,21 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
      * and a message filter.
      */
     public AbstractZMQSubscriber(int port, String filter) {
-        this(port, filter, new ZContext(1));
+        this(port, filter, ZMQ.context(1));
     }
     
     
     /**
      * Construct a ZMQSubscriber given a local port where connecting to, 
-     * a message filter and an existing ZContext.
+     * a message filter and an existing ZMQ.Context.
      */
     
-    public AbstractZMQSubscriber(int port, String filter, ZContext context) {
+    public AbstractZMQSubscriber(int port, String filter, ZMQ.Context context) {
 	localPort = port;
         messageFilter = filter; 
         
         this.context = context;
-        subscriberSocket = context.createSocket(SocketType.SUB);
+        subscriberSocket = context.socket(SocketType.SUB);
     }
     
 
@@ -150,19 +147,38 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     }
     
 
-    /**
-     * Disconnect from the DHT peers.
-     */
     @Override
     public boolean disconnect() {
         threadRunning = false;
         return true;
     }
-
+    
+    
+    abstract protected void messageHandler(String message);
+     
+    
     @Override
-    public String getRemoteHostname() {
-        return this.remoteHost;
+    public void run() {
+        subscriberSocket.subscribe(messageFilter.getBytes());
+        
+        LOGGER.info("Listening for messages");
+        
+        threadRunning = true;
+        try {
+            while (threadRunning) {
+                String header = subscriberSocket.recvStr();
+                String content = subscriberSocket.recvStr();
+                LOGGER.debug(header + " : " + content);
+                messageHandler(content);
+            }
+            } catch (ZMQException e) {
+                subscriberSocket.close();
+                LOGGER.debug(e.getMessage());
+            }
+        subscriberSocket.close();
+        context.term();
     }
+    
     
     
     @Override
@@ -219,7 +235,7 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     public Object getProbeAttributeInfo(ID probeID, Integer field, String info) {
         try {
             JSONObject probeAttribute = probeAttributes.get(probeID);
-            Object probeAttributeInfo = probeAttribute.getJSONObject(field.toString()).get(info);
+            Object probeAttributeInfo = probeAttribute.getJSONObject(field.toString()).get(info);            
             return probeAttributeInfo;
         } catch (JSONException | NullPointerException e) {
             LOGGER.error("Error while retrieving Attribute info '" + info + "': " + e.getMessage());
@@ -240,7 +256,7 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
         }
     }
     
-    //@Override
+    @Override
     public Object getControllerAgentInfo(ID controllerAgentID, String info) {
         try {
             JSONObject controllerAgent = controllerAgents.get(controllerAgentID);
@@ -269,54 +285,12 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     
     @Override
     public Object getProbesOnDataSource(ID dataSourceID) {
-        JSONArray probesOnDS = new JSONArray();
+        JSONObject dataSourceInfo = this.dataSources.get(dataSourceID);
         try {
-            for (ID probeID : probes.keySet()) {
-                if (probes.get(probeID).get("datasource").equals(dataSourceID.toString()))
-                    probesOnDS.put(probeID.toString());
-                }
-                    
-            } catch (JSONException e) {
-                LOGGER.error("Error while retrieving Probe info" + e.getMessage());
-                return null;
-            }
-        return probesOnDS;       
+            return dataSourceInfo.getJSONArray("probes");
+        } catch (JSONException e) {
+            return new JSONArray();
+        }
     }
     
-    
-    @Override
-    public void run() {
-        subscriberSocket.subscribe(messageFilter.getBytes());
-        
-        LOGGER.info("Listening for messages");
-        
-        threadRunning = true;
-        try {
-            while (threadRunning) {
-                String header = subscriberSocket.recvStr();
-                String content = subscriberSocket.recvStr();
-                LOGGER.debug(header + " : " + content);
-                messageHandler(content);
-            }
-            } catch (ZMQException e) {
-                subscriberSocket.close();
-                LOGGER.debug(e.getMessage());
-            }
-        subscriberSocket.close();
-        context.destroy();
-    }
-    
-    
-    abstract protected void messageHandler(String message);
-    
-    
-    @Override
-    public void addAnnounceEventListener(AnnounceEventListener l) {
-        listener = l;
-    }
-
-    @Override
-    public void sendMessageToListener(AbstractAnnounceMessage m) {
-        listener.receivedAnnounceEvent(m);
-    }
 }

@@ -20,10 +20,6 @@ public class ZMQControlEndPointMetaData extends ControlEndPointMetaData {
         this.id = id;
     }
 
-    public String getType() {
-        return type;
-    }
-
     public ID getId() {
         return id;
     }

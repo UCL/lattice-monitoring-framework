@@ -63,14 +63,10 @@ public class UDPControllerWithPlanx extends AbstractJSONRestController {
         
 	setInfoPlane(infoPlane);
         
-        // create a control plane producer 
+        // create a control plane producer  with announce listening (port 8888)
         // announcePort to listen for announce Messages from DSs/DCs
         // maxPoolSize to instantiate a pool of UDP Transmitters (each transmitter is not connected to any specific DS)
         ControlPlane controlPlane = new UDPControlPlaneXDRProducer(8888, poolSize);
-        
-        // create a control plane producer without announce listening capabilities 
-        // as this is implemented in the used info plane implementation
-        //ControlPlane controlPlane = new UDPControlPlaneXDRProducer(poolSize);
         
         // setting a reference to the InfoPlaneDelegate on the Control Plane
         ((InfoPlaneDelegateInteracter) controlPlane).setInfoPlaneDelegate(controlInformationManager);

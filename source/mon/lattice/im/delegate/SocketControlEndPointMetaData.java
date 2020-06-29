@@ -22,10 +22,6 @@ public class SocketControlEndPointMetaData extends ControlEndPointMetaData {
         this.port = port;
     }
 
-    public String getType() {
-        return type;
-    }
-
     public InetAddress getHost() {
         return host;
     }

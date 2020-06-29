@@ -14,6 +14,7 @@ import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.Reporter;
 import mon.lattice.core.plane.InfoPlane;
+import mon.lattice.im.zmq.AbstractZMQInfoPlane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author uceeftu
  */
-public class ZMQControllerAgentInfoPlane implements InfoPlane, ControllerAgentInteracter {
+public class ZMQControllerAgentInfoPlane extends AbstractZMQInfoPlane implements InfoPlane, ControllerAgentInteracter {
     
     // The hostname of the Subscriber.
     String remoteHost;
@@ -119,55 +120,6 @@ public class ZMQControllerAgentInfoPlane implements InfoPlane, ControllerAgentIn
 	}
     }
     
-    @Override
-    public Object lookupControllerAgentInfo(ID controllerAgentID, String info) {
-        return false;
-    }
-    
-    @Override
-    public Object lookupDataSourceInfo(DataSource dataSource, String info) {
-        return false;
-    }
-
-    @Override
-    public Object lookupDataSourceInfo(ID dataSourceID, String info) {
-        return false;
-    }
-
-    @Override
-    public Object lookupProbeInfo(Probe probe, String info) {
-        return false;
-    }
-
-    @Override
-    public Object lookupProbeInfo(ID probeID, String info) {
-        return false;
-    }
-
-    @Override
-    public Object lookupProbeAttributeInfo(Probe probe, int field, String info) {
-        return false;
-    }
-
-    @Override
-    public Object lookupProbeAttributeInfo(ID probeID, int field, String info) {
-        return false;
-    }
-
-    @Override
-    public Object lookupDataConsumerInfo(ID dataConsumerID, String info) {
-        return false;
-    }
-
-    @Override
-    public Object lookupReporterInfo(ID reporterID, String info) {
-        return false;
-    }
-
-    @Override
-    public Object lookupProbesOnDataSource(ID dataSourceID) {
-        return false;
-    }
 
     @Override
     public boolean addDataSourceInfo(DataSource ds) {
@@ -231,41 +183,6 @@ public class ZMQControllerAgentInfoPlane implements InfoPlane, ControllerAgentIn
 
     @Override
     public boolean removeReporterInfo(Reporter r) {
-        return false;
-    }
-
-    @Override
-    public boolean containsDataSource(ID dataSourceID, int timeOut) {
-        return false;
-    }
-
-    @Override
-    public boolean containsDataConsumer(ID dataConsumerID, int timeOut) {
-        return false;
-    }
-
-    @Override
-    public boolean containsControllerAgent(ID controllerAgentID, int timeOut) {
-        return false;
-    }
-
-    @Override
-    public boolean containsProbe(ID probeID, int timeOut) {
-        return false;
-    }
-
-    @Override
-    public boolean putInfo(String key, Serializable value) {
-        return false;
-    }
-
-    @Override
-    public Object getInfo(String key) {
-        return false;
-    }
-
-    @Override
-    public boolean removeInfo(String key) {
         return false;
     }
 }

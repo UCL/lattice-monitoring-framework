@@ -6,7 +6,6 @@
 package mon.lattice.im.zmq;
 
 import org.zeromq.SocketType;
-import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 /**
@@ -15,7 +14,7 @@ import org.zeromq.ZMQ;
  */
 public class ZMQProxy extends Thread {
     
-    ZContext context;
+    ZMQ.Context context;
     ZMQ.Socket backend;
     ZMQ.Socket frontend;
     
@@ -26,12 +25,12 @@ public class ZMQProxy extends Thread {
     public ZMQProxy(int localPort) {
         this.localPort = localPort;
         
-        context = new ZContext(1);
-        backend = context.createSocket(SocketType.XPUB);
-        frontend = context.createSocket(SocketType.XSUB);
+        context = ZMQ.context(1);
+        backend = context.socket(SocketType.XPUB);
+        frontend = context.socket(SocketType.XSUB);
     }
 
-    public ZContext getContext() {
+    public ZMQ.Context getContext() {
         return context;
     }
     
@@ -52,7 +51,7 @@ public class ZMQProxy extends Thread {
     public boolean stopProxy() {
         frontend.close();
         backend.close();
-        context.destroy();
+        context.term();
         return true;
     }
     

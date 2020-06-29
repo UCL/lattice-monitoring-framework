@@ -166,11 +166,11 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
                     ID entityID = new ID(entityIDMSB, entityIDLSB);
                     if (mType == MessageType.ANNOUNCE) {
                         LOGGER.debug("-------- Announce Message Received ---------");
-                        fireEvent(new AnnounceMessage(entityID, entity));
+                        sendMessageToListener(new AnnounceMessage(entityID, entity));
                     }
                     else {
                         LOGGER.debug("-------- Dennounce Message Received ---------");
-                        fireEvent(new DeannounceMessage(entityID, entity));
+                        sendMessageToListener(new DeannounceMessage(entityID, entity));
                     }
                         
                 }         

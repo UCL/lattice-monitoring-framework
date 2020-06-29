@@ -44,7 +44,7 @@ public abstract class AbstractDHTDataConsumerInfoPlane extends AbstractDHTInfoPl
         try {
 	    imNode.removeDataConsumer(dataConsumer);
             
-            imNode.sendMessageToListener(new DeannounceMessage(dataConsumer.getID(), EntityType.DATACONSUMER));
+            imNode.announce(new DeannounceMessage(dataConsumer.getID(), EntityType.DATACONSUMER));
 	    LOGGER.info("just deannounced this Data Consumer " + dataConsumer.getID());
 	    return true;
 	} catch (IOException ioe) {
@@ -71,7 +71,7 @@ public abstract class AbstractDHTDataConsumerInfoPlane extends AbstractDHTInfoPl
 	    imNode.addDataConsumer(dc);
             imNode.addDataConsumerInfo(dc);
             
-            imNode.sendMessageToListener(new AnnounceMessage(dataConsumer.getID(), EntityType.DATACONSUMER));
+            imNode.announce(new AnnounceMessage(dataConsumer.getID(), EntityType.DATACONSUMER));
 	    LOGGER.info("just announced this Data Consumer " + dc.getID());
 	    return true;
 	} catch (IOException ioe) {

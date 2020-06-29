@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Random;
+import mon.lattice.im.AnnounceHandler;
 import net.tomp2p.connection.Bindings;
 import net.tomp2p.futures.FutureBootstrap;
 import net.tomp2p.futures.FutureDHT;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * of the distributed nodes.
  */
 
-public class TomP2PDistributedHashTable implements ObjectDataReply {
+public class TomP2PDistributedHashTable implements ObjectDataReply, AnnounceHandler {
     Peer peer; 
 
     PeerAddress rootPeer;
@@ -133,7 +134,7 @@ public class TomP2PDistributedHashTable implements ObjectDataReply {
         LOGGER.debug("Received " + m.getMessageType() + " message for " + m.getEntity() + 
                      " with ID " + m.getEntityID() +
                      " from " + sender.getID());            
-        this.fireEvent(AbstractAnnounceMessage.fromString((String)request));
+        sendMessageToListener(AbstractAnnounceMessage.fromString((String)request));
             
         return "ACK"; // @ TODO: will return an ACK
     }
@@ -214,15 +215,18 @@ public class TomP2PDistributedHashTable implements ObjectDataReply {
         }
     }
   
+    @Override
     public String toString() {
             return peer.toString();
         }
     
+    @Override
     public void addAnnounceEventListener(AnnounceEventListener l) {
         listener = l;
     }
 
-    protected void fireEvent(AbstractAnnounceMessage m) {
+    @Override
+    public void sendMessageToListener(AbstractAnnounceMessage m) {
         listener.receivedAnnounceEvent(m);
     }
 }

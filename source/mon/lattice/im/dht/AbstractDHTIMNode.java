@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mon.lattice.im.dht;
 
 import java.io.IOException;
@@ -18,18 +13,26 @@ import mon.lattice.core.DataSource;
 import mon.lattice.core.ID;
 import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
-import mon.lattice.im.AbstractIMNode;
 import mon.lattice.im.IMBasicNode;
 import mon.lattice.im.IMPublisherNode;
 import mon.lattice.im.IMSubscriberNode;
 import static mon.lattice.im.dht.AbstractDHTInfoPlane.LOGGER;
 import mon.lattice.control.agents.ControllerAgent;
+import mon.lattice.core.plane.AbstractAnnounceMessage;
+import mon.lattice.im.AbstractIMNodeWithAnnounce;
 
 /**
  *
  * @author uceeftu
  */
-public abstract class AbstractDHTIMNode extends AbstractIMNode implements IMPublisherNode, IMSubscriberNode, DHTInteractor {
+public abstract class AbstractDHTIMNode extends AbstractIMNodeWithAnnounce implements IMPublisherNode, IMSubscriberNode, DHTInteracter {
+    
+    
+    /**
+    * Send an announce / deannounce message for this DHT IM Node
+    * @param m is the message
+    */
+    public abstract void announce(AbstractAnnounceMessage m);
     
     @Override
     public AbstractDHTIMNode addDataConsumer(ControllableDataConsumer dc) throws IOException {
@@ -330,6 +333,11 @@ public abstract class AbstractDHTIMNode extends AbstractIMNode implements IMPubl
 	return getDHT("/dataconsumer/" + dcID + "/" + info);
     }
     
+    
+    @Override
+    public Object getControllerAgentInfo(ID caID, String info) {
+	return getDHT("/controlleragent/" + caID + "/" + info);
+    }
     
     /**
      * Lookup Reporter info

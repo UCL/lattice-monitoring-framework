@@ -14,7 +14,7 @@ import mon.lattice.im.dht.AbstractDHTRootInfoPlane;
  * There needs to be one root for a DHT.
  * The other nodes connect to it.
  */
-public class PlanxDHTRootInfoPlane extends AbstractDHTRootInfoPlane {
+public final class PlanxDHTRootInfoPlane extends AbstractDHTRootInfoPlane {
     /**
      * Construct a DHTInfoPlane.
      * Connect to the DHT root at hostname on port,

@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import mon.lattice.management.ControllerAgentInfo;
 import mon.lattice.management.DataConsumerInfo;
 import mon.lattice.management.DataSourceInfo;
-import mon.lattice.management.Host;
 import mon.lattice.core.plane.InfoPlane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +62,7 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     }
     
     
-    void addAnnouncedEntity(ID id, EntityType type) {
+    private void addAnnouncedEntity(ID id, EntityType type) {
         if (type != null) switch (type) {
             case DATASOURCE:
                 notifyAddedDataSource(id);
@@ -88,7 +87,7 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
     
     
-    void removeDeannouncedEntity(ID id, EntityType type) {
+    private void removeDeannouncedEntity(ID id, EntityType type) {
         if (type != null) switch (type) {
             case DATASOURCE:
                 notifyRemovedDataSource(id);
@@ -113,24 +112,20 @@ public class ControlInformationManager implements InfoPlaneDelegate {
     
     
     
-    @Override
-    public boolean containsDataSource(ID id) {
-        return info.containsDataSource(id, 0);
+    private boolean containsDataSource(ID id) {
+        return info.containsDataSource(id, 5);
+    } 
+    
+    private boolean containsDataConsumer(ID id) {
+        return info.containsDataConsumer(id, 5);
     }
     
-    @Override
-    public boolean containsDataConsumer(ID id) {
-        return info.containsDataConsumer(id, 0);
+    private boolean containsControllerAgent(ID id) {
+        return info.containsControllerAgent(id, 5);
     }
     
-    @Override
-    public boolean containsControllerAgent(ID id) {
-        return info.containsControllerAgent(id, 0);
-    }
-    
-    @Override
-    public boolean containsProbe(ID id) {
-        return info.containsProbe(id, 0);
+    private boolean containsProbe(ID id) {
+        return info.containsProbe(id, 5);
     } 
     
     

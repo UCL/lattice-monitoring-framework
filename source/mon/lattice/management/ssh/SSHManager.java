@@ -40,11 +40,11 @@ public class SSHManager implements ManagementService {
     final Map<ID, Host> hosts;
     final Map<ID, SSHSession> sessions;
     
-    final Map<ID, DataSourceInfo> dataSources;
+    final Map<ID, DataSourceInfo> deployedDataSources;
     
-    final Map<ID, DataConsumerInfo> dataConsumers;
+    final Map<ID, DataConsumerInfo> deployedDataConsumers;
     
-    final Map<ID, ControllerAgentInfo> controllerAgents;
+    final Map<ID, ControllerAgentInfo> deployedControllerAgents;
     
     final InfoPlaneDelegate infoPlaneDelegate;
     
@@ -59,9 +59,9 @@ public class SSHManager implements ManagementService {
         this.hosts = new ConcurrentHashMap();
         this.sessions = new ConcurrentHashMap();
         
-        this.dataSources = new ConcurrentHashMap<>();
-        this.dataConsumers = new ConcurrentHashMap<>();
-        this.controllerAgents = new ConcurrentHashMap<>();
+        this.deployedDataSources = new ConcurrentHashMap<>();
+        this.deployedDataConsumers = new ConcurrentHashMap<>();
+        this.deployedControllerAgents = new ConcurrentHashMap<>();
         
         this.infoPlaneDelegate = info;
         
@@ -163,7 +163,7 @@ public class SSHManager implements ManagementService {
             host.addDataSource(dataSource.getId());
             dataSource.setHost(host);
 
-            dataSources.put(dataSource.getId(), dataSource);
+            deployedDataSources.put(dataSource.getId(), dataSource);
             LOGGER.info("Started Data Source: " + dataSource.getId());
         } catch (SessionException | InterruptedException | DSNotFoundException e) {
             throw new ManagementException(e); 
@@ -199,7 +199,7 @@ public class SSHManager implements ManagementService {
             host.addDataConsumer(dataConsumer.getId());
             dataConsumer.setHost(host);
 
-            dataConsumers.put(dataConsumer.getId(), dataConsumer);
+            deployedDataConsumers.put(dataConsumer.getId(), dataConsumer);
             LOGGER.info("Started Data Consumer: " + dataConsumer.getId());
         } catch (SessionException | InterruptedException | DCNotFoundException e) {
             throw new ManagementException(e);
@@ -237,7 +237,7 @@ public class SSHManager implements ManagementService {
             host.addControllerAgent(controllerAgent.getId());
             controllerAgent.setHost(host);
 
-            controllerAgents.put(controllerAgent.getId(), controllerAgent);
+            deployedControllerAgents.put(controllerAgent.getId(), controllerAgent);
             LOGGER.info("Started Controller Agent: " + controllerAgent.getId());
         } catch (SessionException | InterruptedException | ControllerAgentNotFoundException e) {
             throw new ManagementException(e);
@@ -294,7 +294,7 @@ public class SSHManager implements ManagementService {
     
     @Override
     public boolean stopDataSource(ID dataSourceID, ID sessionID) throws ManagementException {
-        DataSourceInfo dataSource = dataSources.get(dataSourceID);
+        DataSourceInfo dataSource = deployedDataSources.get(dataSourceID);
         if (dataSource == null) 
             throw new ManagementException(new DSNotFoundException("ID " + dataSourceID + " is not a valid Data Source ID"));
         
@@ -309,7 +309,7 @@ public class SSHManager implements ManagementService {
             host.removeDataSource(dataSourceID);
             infoPlaneDelegate.waitForRemovedDataSource(dataSource, 5000);
             LOGGER.info("Stopped Data Source: " + dataSourceID);
-            return (dataSources.remove(dataSourceID) != null);
+            return (deployedDataSources.remove(dataSourceID) != null);
         } catch (SessionException | InterruptedException e) {
             throw new ManagementException(e);
         }
@@ -319,7 +319,7 @@ public class SSHManager implements ManagementService {
     
     @Override
     public boolean stopDataConsumer(ID dataConsumerID, ID sessionID) throws ManagementException {
-        DataConsumerInfo dataConsumer = dataConsumers.get(dataConsumerID);
+        DataConsumerInfo dataConsumer = deployedDataConsumers.get(dataConsumerID);
         if (dataConsumer == null) 
             throw new ManagementException(new DCNotFoundException("ID " + dataConsumerID + " is not a valid Data Consumer ID"));
         
@@ -334,7 +334,7 @@ public class SSHManager implements ManagementService {
             host.removeDataConsumer(dataConsumerID);
             infoPlaneDelegate.waitForRemovedDataConsumer(dataConsumer, 5000);
             LOGGER.info("Stopped Data Consumer: " + dataConsumerID);
-            return (dataConsumers.remove(dataConsumerID) != null);
+            return (deployedDataConsumers.remove(dataConsumerID) != null);
         } catch (SessionException | InterruptedException e) {
             throw new ManagementException(e);
         }
@@ -343,7 +343,7 @@ public class SSHManager implements ManagementService {
     
     @Override
     public boolean stopControllerAgent(ID caID, ID sessionID) throws ManagementException {
-        ControllerAgentInfo controllerAgent = controllerAgents.get(caID);
+        ControllerAgentInfo controllerAgent = deployedControllerAgents.get(caID);
         if (controllerAgent == null) 
             throw new ManagementException(new ControllerAgentNotFoundException("ID " + caID + " is not a valid Controller Agent ID"));
         
@@ -358,7 +358,7 @@ public class SSHManager implements ManagementService {
             host.removeControllerAgent(caID);
             infoPlaneDelegate.waitForRemovedControllerAgent(controllerAgent, 5000);
             LOGGER.info("Stopped Controller Agent: " + caID);
-            return (controllerAgents.remove(caID) != null);
+            return (deployedControllerAgents.remove(caID) != null);
         } catch (SessionException | InterruptedException e) {
             throw new ManagementException(e);
         }
@@ -368,7 +368,7 @@ public class SSHManager implements ManagementService {
     @Override
     public JSONArray getDataSources() throws JSONException {
         JSONArray obj = new JSONArray();
-        for (ID id : dataSources.keySet()) {
+        for (ID id : deployedDataSources.keySet()) {
             JSONObject dsAddr = new JSONObject();
             JSONObject dataSourceInfo = new JSONObject();
             try {
@@ -382,7 +382,7 @@ public class SSHManager implements ManagementService {
                 dataSourceInfo.put("id", id.toString());
                 dataSourceInfo.put("info", dsAddr);
                 
-                DataSourceInfo dataSource = dataSources.get(id);
+                DataSourceInfo dataSource = deployedDataSources.get(id);
                 
                 if (dataSource != null) {
                     Host resource = dataSource.getHost();
@@ -410,7 +410,7 @@ public class SSHManager implements ManagementService {
     @Override
     public JSONArray getDataConsumers() throws JSONException {
         JSONArray obj = new JSONArray();
-        for (ID id: dataConsumers.keySet()) {
+        for (ID id: deployedDataConsumers.keySet()) {
             JSONObject dcAddr = new JSONObject();
             JSONObject dataConsumerInfo = new JSONObject();
             try {
@@ -424,7 +424,7 @@ public class SSHManager implements ManagementService {
                 dataConsumerInfo.put("id", id.toString());
                 dataConsumerInfo.put("info", dcAddr);
                 
-                DataConsumerInfo dataConsumer = dataConsumers.get(id);
+                DataConsumerInfo dataConsumer = deployedDataConsumers.get(id);
                 
                 if (dataConsumer != null) {
                     Host resource = dataConsumer.getHost();
@@ -451,7 +451,7 @@ public class SSHManager implements ManagementService {
     @Override
     public JSONArray getControllerAgents() throws JSONException {
         JSONArray obj = new JSONArray();
-        for (ID id: controllerAgents.keySet()) {
+        for (ID id: deployedControllerAgents.keySet()) {
             JSONObject controllerAgentAddr = new JSONObject();
             JSONObject controllerAgentInfo = new JSONObject();
             try {
@@ -465,7 +465,7 @@ public class SSHManager implements ManagementService {
                 controllerAgentInfo.put("id", id.toString());
                 controllerAgentInfo.put("info", controllerAgentAddr);
                 
-                ControllerAgentInfo controllerAgent = controllerAgents.get(id);
+                ControllerAgentInfo controllerAgent = deployedControllerAgents.get(id);
                 
                 if (controllerAgent != null) {
                     Host resource = controllerAgent.getHost();

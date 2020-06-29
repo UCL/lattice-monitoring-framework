@@ -8,7 +8,6 @@ package mon.lattice.control.zmq;
 import java.util.HashSet;
 import java.util.Set;
 import org.zeromq.SocketType;
-import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 /**

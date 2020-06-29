@@ -45,7 +45,16 @@ public class RandomProbe extends AbstractProbe implements Probe  {
 	this.scaleFactor = scaleFactor;
     }
     
-    //FT: this has been added for testing
+    
+    public RandomProbe(String name, String fieldName, Integer scaleFactor, String units) {
+        setName(name);
+        setDataRate(new EveryNSeconds(2));
+        addProbeAttribute(new DefaultProbeAttribute(0, fieldName, ProbeAttributeType.FLOAT, units));
+	randomNo = new Random();
+	this.scaleFactor = scaleFactor;
+    }
+    
+    
     public RandomProbe(String name, String fieldName, int scaleFactor, String sID) {
         super(sID);
         setName(name);
@@ -54,6 +63,9 @@ public class RandomProbe extends AbstractProbe implements Probe  {
 	randomNo = new Random();
 	this.scaleFactor = scaleFactor;
     }
+    
+    
+    
 
     public RandomProbe(String name, String fieldName, String scaleFactor) {
         this(name, fieldName, Integer.valueOf(scaleFactor));
@@ -62,6 +74,12 @@ public class RandomProbe extends AbstractProbe implements Probe  {
     
     public RandomProbe(String name, String fieldName, String scaleFactor, String rate) {
         this(name, fieldName, Integer.valueOf(scaleFactor));
+        this.setDataRate(new EveryNMilliseconds(Integer.valueOf(rate)));
+    }
+    
+    
+    public RandomProbe(String name, String fieldName, String scaleFactor, String rate, String units) {
+        this(name, fieldName, Integer.valueOf(scaleFactor), units);
         this.setDataRate(new EveryNMilliseconds(Integer.valueOf(rate)));
     }
 

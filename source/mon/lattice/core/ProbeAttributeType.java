@@ -73,6 +73,11 @@ public enum ProbeAttributeType {
 	    throw new TypeException("Invalid ProbeAttributeType code: " + code);
 	}
     }
+    
+    
+    public static ProbeAttributeType fromCode(Integer code) throws TypeException {
+        return ProbeAttributeType.fromCode(code.byteValue());
+    }
 
     /**
      * A lookup function

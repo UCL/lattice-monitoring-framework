@@ -1,26 +1,27 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mon.lattice.im;
 
 /**
- *
- * @author uceeftu
+ * @author Francesco Tusa
+ * An IMBasicNode has the functionalities to
+ * connect and disconnect to / from a Hierarchical Distributed Information system 
  */
 public interface IMBasicNode {
-    
-     /**
-     * Connection methods to the DHT peers.
+    /**
+     * Connect to the Information System
+     * @return true if successful
      */
-    
     public boolean connect();
 
+    /**
+    * Disconnect from the Information System
+    * @return true if successful
+    */
     public boolean disconnect();  
     
+    /**
+    * Connect to the Information System
+    * @return true if successful
+    */
     public String getRemoteHostname();
-    
-    
-    
 }
+

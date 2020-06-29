@@ -11,6 +11,8 @@ import java.io.IOException;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.control.agents.ControllerAgent;
 import mon.lattice.core.plane.InfoPlane;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A ZMQDataSourceInfoPlane is an InfoPlane implementation
@@ -26,6 +28,8 @@ public class ZMQDataSourceInfoPlane extends AbstractZMQInfoPlane implements Info
 
     // The port of the Subscriber
     int remotePort;
+    
+    private Logger LOGGER = LoggerFactory.getLogger(ZMQDataSourceInfoPlane.class);
     
     /**
      * Construct a ZMQDataSourceInfoPlane.

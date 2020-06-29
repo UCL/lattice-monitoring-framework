@@ -14,13 +14,6 @@ import us.monoid.json.JSONArray;
  * @author uceeftu
  */
 public interface InfoPlaneDelegateConsumer {
-    public boolean containsDataSource(ID id);
-        
-    public boolean containsDataConsumer(ID id);
-    
-    public boolean containsControllerAgent(ID id);
-    
-    public boolean containsProbe(ID id);
     
     public ControlEndPointMetaData getDSAddressFromProbeID(ID probe) throws ProbeNotFoundException, DSNotFoundException, IOException;
     

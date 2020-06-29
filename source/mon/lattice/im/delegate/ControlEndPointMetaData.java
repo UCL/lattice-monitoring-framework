@@ -9,13 +9,15 @@ package mon.lattice.im.delegate;
  *
  * @author uceeftu
  */
-public abstract class ControlEndPointMetaData {
+public abstract class ControlEndPointMetaData implements ControlEndPointMetadataInterface {
     protected final String type;
 
     public ControlEndPointMetaData(String type) {
         this.type = type;
     }
     
-    
-    
+    @Override
+    public String getType() {
+        return type;
+    }  
 }

@@ -19,6 +19,7 @@ import mon.lattice.distribution.udp.UDPReceiver;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.util.Map;
+import mon.lattice.im.AnnounceHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * @author uceeftu
  */
 public abstract class AbstractUDPControlPlaneProducer implements 
-        ControllerControlPlane, SynchronousTransmitting, Receiving, InfoPlaneDelegateInteracter  {
+        ControllerControlPlane, SynchronousTransmitting, Receiving, InfoPlaneDelegateInteracter, AnnounceHandler  {
     
     UDPReceiver AnnounceListener;
     UDPTransmitterPool controlTransmittersPool;
@@ -128,11 +129,13 @@ public abstract class AbstractUDPControlPlaneProducer implements
     }
     
     
+    @Override
     public void addAnnounceEventListener(AnnounceEventListener l) {
         listener = l;
     }
 
-    protected void fireEvent(AbstractAnnounceMessage m) {
+    @Override
+    public void sendMessageToListener(AbstractAnnounceMessage m) {
         listener.receivedAnnounceEvent(m);
     }
     

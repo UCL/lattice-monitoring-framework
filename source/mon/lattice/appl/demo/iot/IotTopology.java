@@ -214,11 +214,12 @@ public class IotTopology {
     
     private void loadSensor(String dataSourceID, String probeName, List<String> probes)  {
         String probeClassName = "mon.lattice.appl.demo.iot.SensorEmulatorProbe";
-        String probeAttributeName = "temperature";
+        String probeAttributeName = "Temperature";
+        String units = "Celsius";
         
         Integer value = ThreadLocalRandom.current().nextInt(valueMin, valueMax);
         try {
-            JSONObject out = restClient.loadProbe(dataSourceID, probeClassName, probeName + "+" + probeAttributeName + "+" + value + "+" + rate);
+            JSONObject out = restClient.loadProbe(dataSourceID, probeClassName, probeName + "+" + probeAttributeName + "+" + value + "+" + rate + "+" + units);
             String probeID = out.getString("createdProbeID");
             probes.add(probeID);
         } catch (JSONException je) {
