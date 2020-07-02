@@ -18,8 +18,8 @@ import mon.lattice.core.plane.ControlOperation;
 import mon.lattice.core.plane.ControlPlaneMessage;
 import mon.lattice.core.plane.ControllerControlPlaneWithAgents;
 import mon.lattice.distribution.MetaData;
-import mon.lattice.im.delegate.ControllerAgentNotFoundException;
-import mon.lattice.im.delegate.ZMQControlEndPointMetaData;
+import mon.lattice.control.im.ControllerAgentNotFoundException;
+import mon.lattice.control.im.ZMQControlEndPointMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +55,7 @@ public class ZMQControlPlaneXDRProducerWithControlAgents extends ZMQControlPlane
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.SET_MONITORING_ENDPOINT, args);
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getControllerAgentAddressFromID(controllerAgentID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getControllerAgentAddressFromID(controllerAgentID);
             
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             result = (Boolean) requester.synchronousTransmit(m, mData);

@@ -14,4 +14,8 @@ public class AnnounceMessage extends AbstractAnnounceMessage {
     public AnnounceMessage(ID id, EntityType e) {
         super(id, e, MessageType.ANNOUNCE);
     }
+
+    public AnnounceMessage(ID id, EntityType e, int timeout) {
+        super(id, e, MessageType.ANNOUNCE, timeout);
+    } 
 }

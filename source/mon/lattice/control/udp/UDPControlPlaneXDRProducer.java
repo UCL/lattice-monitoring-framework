@@ -7,11 +7,11 @@ package mon.lattice.control.udp;
 
 import mon.lattice.control.ControlPlaneConsumerException;
 import mon.lattice.control.ControlServiceException;
-import mon.lattice.im.delegate.SocketControlEndPointMetaData;
-import mon.lattice.im.delegate.DCNotFoundException;
-import mon.lattice.im.delegate.DSNotFoundException;
-import mon.lattice.im.delegate.ProbeNotFoundException;
-import mon.lattice.im.delegate.ReporterNotFoundException;
+import mon.lattice.control.im.SocketControlEndPointMetaData;
+import mon.lattice.control.im.DCNotFoundException;
+import mon.lattice.control.im.DSNotFoundException;
+import mon.lattice.control.im.ProbeNotFoundException;
+import mon.lattice.control.im.ReporterNotFoundException;
 import mon.lattice.core.ID;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.Rational;
@@ -215,10 +215,14 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.LOAD_PROBE, args);
         
         try {
-            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromID(dataSourceID);
+            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)controlInformation.getDSAddressFromID(dataSourceID);
             MetaData mData = new UDPControlMetaData(dstAddr.getHost(), dstAddr.getPort());
             //we return the ID of the new created probe as result
             probeID = (ID) synchronousTransmit(m, mData);
+            
+            AnnounceMessage am = new AnnounceMessage(probeID, EntityType.PROBE, 5);
+            controlInformation.notifyAnnounceEvent(am);
+                
         } catch (IOException | DSNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing load probe command " + ex.getMessage());
             throw new ControlServiceException(ex);
@@ -234,9 +238,12 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.UNLOAD_PROBE, args);
         try {
-            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new UDPControlMetaData(dstAddr.getHost(), dstAddr.getPort());
             result = (Boolean) synchronousTransmit(m, mData);
+            
+            DeannounceMessage am = new DeannounceMessage(probeID, EntityType.PROBE, 5);
+            controlInformation.notifyAnnounceEvent(am);
         } catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing unload probe command " + ex.getMessage());
             throw new ControlServiceException(ex);
@@ -269,7 +276,7 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.SET_PROBE_SERVICE_ID, args);
         try {
-            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new UDPControlMetaData(dstAddr.getHost(), dstAddr.getPort());
             result = (Boolean) synchronousTransmit(m, mData);
         } catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
@@ -295,7 +302,7 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.SET_PROBE_GROUP_ID, args);
         try {
-            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new UDPControlMetaData(dstAddr.getHost(), dstAddr.getPort());
             result = (Boolean) synchronousTransmit(m, mData);
         } catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
@@ -321,7 +328,7 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.SET_PROBE_DATA_RATE, args);
         
         try {
-            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new UDPControlMetaData(dstAddr.getHost(), dstAddr.getPort());
             result = (Boolean) synchronousTransmit(m, mData);
         } 
@@ -351,7 +358,7 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.TURN_ON_PROBE, args);
         try {
-            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new UDPControlMetaData(dstAddr.getHost(), dstAddr.getPort());
             result = (Boolean) synchronousTransmit(m, mData);
         } catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
@@ -370,7 +377,7 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.TURN_OFF_PROBE, args);
         try {
-            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new UDPControlMetaData(dstAddr.getHost(), dstAddr.getPort());
             result = (Boolean) synchronousTransmit(m, mData);
             return result;
@@ -411,7 +418,7 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.GET_DS_NAME, args);
         
         try {
-            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromID(id);
+            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)controlInformation.getDSAddressFromID(id);
             MetaData mData = new UDPControlMetaData(dstAddr.getHost(), dstAddr.getPort());            
             name = (String) synchronousTransmit(m, mData);
         } catch (IOException | DSNotFoundException | ControlPlaneConsumerException ex) {
@@ -439,7 +446,7 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.GET_DC_RATE, args);
         
         try {
-            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)infoPlaneDelegate.getDCAddressFromID(dcId);
+            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)controlInformation.getDCAddressFromID(dcId);
             MetaData mData = new UDPControlMetaData(dstAddr.getHost(), dstAddr.getPort());            
             rate = (Rational) synchronousTransmit(m, mData);
         } catch (IOException | DCNotFoundException | ControlPlaneConsumerException ex) {
@@ -461,7 +468,7 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.LOAD_REPORTER, args);
         
         try {
-            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)infoPlaneDelegate.getDCAddressFromID(dataConsumerID);
+            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)controlInformation.getDCAddressFromID(dataConsumerID);
             MetaData mData = new UDPControlMetaData(dstAddr.getHost(), dstAddr.getPort());
             //we return the ID of the new created reporter as result
             reporterID = (ID) synchronousTransmit(m, mData);
@@ -481,7 +488,7 @@ public class UDPControlPlaneXDRProducer extends AbstractUDPControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.UNLOAD_REPORTER, args);
         try {
-            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)infoPlaneDelegate.getDCAddressFromReporterID(reporterID);
+            SocketControlEndPointMetaData dstAddr = (SocketControlEndPointMetaData)controlInformation.getDCAddressFromReporterID(reporterID);
             MetaData mData = new UDPControlMetaData(dstAddr.getHost(), dstAddr.getPort());
             result = (Boolean) synchronousTransmit(m, mData);
         } catch (IOException | DCNotFoundException | ReporterNotFoundException | ControlPlaneConsumerException ex) {

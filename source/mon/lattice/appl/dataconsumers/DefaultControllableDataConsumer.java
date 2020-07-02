@@ -5,8 +5,8 @@
  */
 package mon.lattice.appl.dataconsumers;
 
-import mon.lattice.appl.reporters.AbstractReporterWithInfoPlaneDelegate;
-import mon.lattice.im.delegate.ReporterInformationManager;
+import mon.lattice.appl.reporters.AbstractReporterWithInfoPlane;
+import mon.lattice.appl.reporters.im.ReporterInformationManager;
 import mon.lattice.core.AbstractDataConsumer;
 import mon.lattice.core.MeasurementReceiver;
 import mon.lattice.core.ControllableReporter;
@@ -173,8 +173,8 @@ public final class DefaultControllableDataConsumer extends AbstractDataConsumer 
         
         // setting InfoPlane Delegate reference to allow Probe name and
         // attribute resolution
-        if (l instanceof AbstractReporterWithInfoPlaneDelegate)
-            ((AbstractReporterWithInfoPlaneDelegate)l).setInfoPlaneDelegate(new ReporterInformationManager(this.getInfoPlane()));
+        if (l instanceof AbstractReporterWithInfoPlane)
+            ((AbstractReporterWithInfoPlane)l).setReporterInformation(new ReporterInformationManager(this.getInfoPlane()));
         
         super.addReporter(l);
         reporters.put(l.getId(), l);

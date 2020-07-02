@@ -5,9 +5,9 @@
  */
 package mon.lattice.control.console;
 
-import mon.lattice.management.console.SessionRestHandler;
-import mon.lattice.management.console.UserRestHandler;
-import mon.lattice.management.console.HostRestHandler;
+import mon.lattice.management.deployment.console.SessionRestHandler;
+import mon.lattice.management.deployment.console.UserRestHandler;
+import mon.lattice.management.deployment.console.HostRestHandler;
 import mon.lattice.control.ControlInterface;
 import eu.fivegex.monitoring.control.mapping.MappingsRestHandler;
 import us.monoid.json.JSONObject;

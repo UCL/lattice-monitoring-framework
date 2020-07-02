@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * It is also a DataSourceInteracter so it can, if needed,
  * talk to the DataSource object it gets bound to.
  */
-public class ZMQDataSourceInfoPlane extends AbstractZMQInfoPlane implements InfoPlane, DataSourceDelegateInteracter {
+public class ZMQDataSourceInfoPlane extends AbstractZMQInfoPlane implements DataSourceDelegateInteracter {
     DataSourceDelegate dataSourceDelegate;
     
     // The hostname of the Subscriber.

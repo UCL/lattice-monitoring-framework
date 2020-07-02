@@ -8,9 +8,9 @@ import java.util.Properties;
 import mon.lattice.control.udp.UDPControlPlaneXDRProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import mon.lattice.im.delegate.InfoPlaneDelegateInteracter;
 import mon.lattice.core.plane.ControlPlane;
 import mon.lattice.im.dht.tomp2p.TomP2PDHTRootInfoPlane;
+import mon.lattice.control.im.ControlInformationInteracter;
 
 /**
  *
@@ -41,7 +41,7 @@ public class UDPController extends AbstractJSONRestController {
         InfoPlane infoPlane = new TomP2PDHTRootInfoPlane(infoPlanePort);
         
         // we get the ControlInformationManager from the InfoPlane
-        controlInformationManager = ((InfoPlaneDelegateInteracter) infoPlane).getInfoPlaneDelegate();
+        controlInformationManager = ((ControlInformationInteracter) infoPlane).getControlInformation();
         
 	setInfoPlane(infoPlane);
         
@@ -49,8 +49,8 @@ public class UDPController extends AbstractJSONRestController {
         // as this is implemented in the used info plane implementation
         ControlPlane controlPlane = new UDPControlPlaneXDRProducer(poolSize);
         
-        // setting a reference to the InfoPlaneDelegate on the Control Plane
-        ((InfoPlaneDelegateInteracter) controlPlane).setInfoPlaneDelegate(controlInformationManager);
+        // setting a reference to the ControlInformation on the Control Plane
+        ((ControlInformationInteracter) controlPlane).setControlInformation(controlInformationManager);
         
         setControlPlane(controlPlane);
         

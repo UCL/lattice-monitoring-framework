@@ -17,9 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import mon.lattice.management.ManagementInterface;
 import mon.lattice.control.agents.ControlAgentsInterface;
 import mon.lattice.control.controller.json.AbstractJSONRestController;
+import mon.lattice.management.deployment.DeploymentInterface;
 
 /**
  *
@@ -27,7 +27,7 @@ import mon.lattice.control.controller.json.AbstractJSONRestController;
  */
 class ControllerAgentRestHandler extends BasicRequestHandler {
     ControlAgentsInterface<JSONObject> controllerInstance;
-    ManagementInterface<JSONObject> deploymentControllerInstance;
+    DeploymentInterface<JSONObject> deploymentControllerInstance;
     private Logger LOGGER = LoggerFactory.getLogger(ControllerAgentRestHandler.class);
     
     public ControllerAgentRestHandler() {
@@ -41,7 +41,7 @@ class ControllerAgentRestHandler extends BasicRequestHandler {
         if (controllerObject instanceof ControlAgentsInterface)
             controllerInstance = (ControlAgentsInterface<JSONObject>) controllerObject;
         
-        deploymentControllerInstance = (ManagementInterface<JSONObject>) getManagementConsole().getAssociated();
+        deploymentControllerInstance = (DeploymentInterface<JSONObject>) getManagementConsole().getAssociated();
         
         LOGGER.debug("-------- REQUEST RECEIVED --------\n" + request.getMethod() + " " +  request.getTarget());
         

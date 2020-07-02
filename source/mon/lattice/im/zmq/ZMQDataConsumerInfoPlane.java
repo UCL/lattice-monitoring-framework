@@ -4,7 +4,6 @@ import mon.lattice.core.DataSource;
 import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.Reporter;
-import mon.lattice.core.plane.InfoPlane;
 import java.io.IOException;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.ControllableReporter;
@@ -19,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * It is also a DataSourceInteracter so it can, if needed,
  * talk to the DataSource object it gets bound to.
  */
-public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements InfoPlane, DataConsumerInteracter {
+public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements DataConsumerInteracter {
     ControllableDataConsumer dataConsumer;
     
     // The hostname of the Subscriber.

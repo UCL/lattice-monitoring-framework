@@ -268,13 +268,13 @@ public class TomP2PIMNode extends AbstractDHTIMNode implements AnnounceEventList
     
 
     @Override
-    public void receivedAnnounceEvent(AbstractAnnounceMessage m) {
+    public void notifyAnnounceEvent(AbstractAnnounceMessage m) {
         // this TomP2P IM Node is a listener for announce messages from the DHT
         // it is also a handler of those events as they are passed on to the
         // higher level listener, namely the ControlInformationManager
         
         // notifying the higher level listener
-        listener.receivedAnnounceEvent(m);
+        listener.notifyAnnounceEvent(m);
     }
     
 }

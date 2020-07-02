@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URLEncoder;
 import mon.lattice.control.ControlInterface;
-import mon.lattice.management.ManagementInterface;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import us.monoid.web.Resty;
@@ -17,10 +16,11 @@ import static us.monoid.web.Resty.content;
 import static us.monoid.web.Resty.delete;
 import static us.monoid.web.Resty.form;
 import static us.monoid.web.Resty.put;
+import mon.lattice.management.deployment.DeploymentInterface;
 
 
 
-public class RestClient implements ControlInterface<JSONObject>, ManagementInterface<JSONObject> { // ControlAgentsInterface
+public class RestClient implements ControlInterface<JSONObject>, DeploymentInterface<JSONObject> { // ControlAgentsInterface
     protected String vimURI;
     protected Resty rest;
     protected int port;

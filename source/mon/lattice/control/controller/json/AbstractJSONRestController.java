@@ -8,25 +8,24 @@ package mon.lattice.control.controller.json;
 import mon.lattice.control.console.JSONControllerManagementConsole;
 import mon.lattice.control.console.ManagementConsoleWithPoolSize;
 import mon.lattice.control.console.RestConsoleInterface;
-import mon.lattice.management.ssh.AuthType;
-import mon.lattice.management.ManagementException;
-import mon.lattice.management.ssh.SSHManager;
+import mon.lattice.management.deployment.ssh.AuthType;
+import mon.lattice.management.deployment.DeploymentException;
+import mon.lattice.management.deployment.ssh.SSHDeploymentManager;
 import mon.lattice.core.ID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import mon.lattice.management.ManagementService;
-import mon.lattice.management.ManagementInterface;
 import us.monoid.json.JSONArray;
+import mon.lattice.management.deployment.DeploymentInterface;
 
 /**
  * Extends the AbstractController and implements
  * the deployment functions and a JSON based REST API
  * @author uceeftu
  */
-public abstract class AbstractJSONRestController extends AbstractJSONController implements ManagementInterface<JSONObject>, RestConsoleInterface {
-    protected ManagementService deploymentManager;
+public abstract class AbstractJSONRestController extends AbstractJSONController implements DeploymentInterface<JSONObject>, RestConsoleInterface {
+    protected SSHDeploymentManager deploymentManager;
     protected Boolean usingDeploymentManager = true;
     
     protected String localJarPath;
@@ -71,7 +70,8 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
         
         if (localJarPath != null && jarFileName != null && remoteJarPath != null) {
             if (this.usingDeploymentManager) {
-                deploymentManager = new SSHManager(localJarPath, jarFileName, remoteJarPath, controlInformationManager);
+                deploymentManager = new SSHDeploymentManager(localJarPath, jarFileName, remoteJarPath);
+                deploymentManager.setControlInformation(controlInformationManager);
                 LOGGER.info("Deployment Manager has been activated");
             }
             else {
@@ -95,7 +95,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
                 addedUserID = this.deploymentManager.addUser(username, AuthType.valueOf(type), token);
                 result.put("ID", addedUserID.toString());
                 result.put("success", true);
-            } catch (ManagementException ex) {  
+            } catch (DeploymentException ex) {  
                 result.put("success", false);
                 result.put("msg", "UserException while performing addUser operation: " + ex.getMessage());
             } 
@@ -119,7 +119,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
             try {
                 this.deploymentManager.deleteUser(ID.fromString(userID));
                 result.put("success", true);
-            } catch (ManagementException ex) {
+            } catch (DeploymentException ex) {
                 result.put("success", false);
                 result.put("msg", "Error while performing deleteUser operation: " + ex.getMessage());
             }
@@ -146,7 +146,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
                 addedHostID = this.deploymentManager.addHost(address, Integer.valueOf(port));
                 result.put("ID", addedHostID.toString());
                 result.put("success", true);
-            } catch (ManagementException ex) { 
+            } catch (DeploymentException ex) { 
                 result.put("success", false);
                 result.put("msg", "Error while performing addHost operation: " + ex.getMessage());
             } 
@@ -169,7 +169,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
             try { 
                 this.deploymentManager.removeHost(ID.fromString(hostID));
                 result.put("success", true);                
-            } catch (ManagementException ex) {
+            } catch (DeploymentException ex) {
                 result.put("success", false);
                 result.put("msg", "Error while performing removeHost operation: " + ex.getMessage());
             }
@@ -207,7 +207,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
                     result.put("success", true);
                 }
 
-            } catch (ManagementException ex) {
+            } catch (DeploymentException ex) {
                     result.put("success", false);
                     result.put("msg", "Error while performing createSession operation: " + ex.getMessage());
               }
@@ -230,7 +230,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
             try {
                 deploymentManager.deleteSession(ID.fromString(sessionID));
                 result.put("success", true);
-            } catch (ManagementException ex) {
+            } catch (DeploymentException ex) {
                 result.put("success", false);
                 result.put("msg", "Error while performing deleteSession operation: " + ex.getMessage());
             }
@@ -271,7 +271,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
                     result.put("success", true);
                 }
 
-            } catch (ManagementException ex) {
+            } catch (DeploymentException ex) {
                     result.put("success", false);
                     result.put("msg", "Error while performing startDataSource operation: " + ex.getMessage());
               }
@@ -296,7 +296,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
             try {
                 this.deploymentManager.stopDataSource(ID.fromString(dataSourceID), ID.fromString(sessionID));
                 result.put("success", true);
-            } catch (ManagementException ex) {
+            } catch (DeploymentException ex) {
                 result.put("success", false);
                 result.put("msg", "Error while performing stopDataSource operation: " + ex.getMessage());
               }
@@ -331,7 +331,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
                     result.put("success", true);
                 }
 
-            } catch (ManagementException ex) {
+            } catch (DeploymentException ex) {
                     result.put("success", false);
                     result.put("msg", "Error while performing startDataConsumer operation: " + ex.getMessage());
               }
@@ -355,7 +355,7 @@ public abstract class AbstractJSONRestController extends AbstractJSONController 
             try {
                 this.deploymentManager.stopDataConsumer(ID.fromString(dataConsumerID), ID.fromString(sessionID));
                 result.put("success", true);
-            } catch (ManagementException ex) {
+            } catch (DeploymentException ex) {
                 result.put("success", false);
                 result.put("msg", "Error while performing stopDataConsumer operation: " + ex.getMessage());
               }

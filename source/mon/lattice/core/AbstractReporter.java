@@ -5,8 +5,6 @@
  */
 package mon.lattice.core;
 
-import org.slf4j.LoggerFactory;
-
 /**
  *
  * @author uceeftu
@@ -15,17 +13,19 @@ public abstract class AbstractReporter implements ControllableReporter {
     /**
     * The Reporter ID
     */
-    ID myId;
+    protected ID myId;
     
     /**
     * The Data Consumer ID the reporter is bound to
     */
-    ID dcId;
+    protected ID dcId;
+    
+    
+    protected String name;
         
 
     public AbstractReporter(String name) {
         myId = ID.generate();
-        LoggerFactory.getLogger(AbstractReporter.class).debug("Reporter ID: " + myId);
         this.name = name;
     }
     
@@ -39,7 +39,7 @@ public abstract class AbstractReporter implements ControllableReporter {
     public void setId(ID id) {
         this.myId = id;
     }
-    String name;
+    
 
     @Override
     public String getName() {

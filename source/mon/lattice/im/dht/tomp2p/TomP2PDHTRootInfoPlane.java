@@ -1,6 +1,5 @@
 package mon.lattice.im.dht.tomp2p;
 
-import mon.lattice.core.plane.AnnounceEventListener;
 import mon.lattice.im.dht.AbstractDHTRootInfoPlane;
 
 
@@ -16,15 +15,13 @@ public class TomP2PDHTRootInfoPlane extends AbstractDHTRootInfoPlane {
      * Connect to the DHT root at hostname on port,
      */
     
-     AnnounceEventListener listener;
-    
     public TomP2PDHTRootInfoPlane(String localHostname, int localPort) {
 	rootHost = localHostname;
 	rootPort = localPort;
 
         // from the super class
 	imNode = new TomP2PIMNode(localPort, localHostname, localPort);
-        imNode.addAnnounceEventListener(this.getInfoPlaneDelegate());
+        imNode.addAnnounceEventListener(this.getControlInformation());
     } 
     
     public TomP2PDHTRootInfoPlane(int localPort) {
@@ -34,7 +31,7 @@ public class TomP2PDHTRootInfoPlane extends AbstractDHTRootInfoPlane {
 	imNode = new TomP2PIMNode(localPort);
         rootHost = imNode.getRemoteHostname();
         
-        imNode.addAnnounceEventListener(this.getInfoPlaneDelegate());
+        imNode.addAnnounceEventListener(this.getControlInformation());
     }
     
 }

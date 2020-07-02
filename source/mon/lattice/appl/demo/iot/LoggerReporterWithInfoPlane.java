@@ -1,11 +1,12 @@
 package mon.lattice.appl.demo.iot;
 
 import java.util.List;
-import mon.lattice.core.AbstractReporterWithInfoPlane;
+import mon.lattice.appl.reporters.AbstractReporterWithInfoPlane;
+import mon.lattice.control.im.ProbeAttributeNotFoundException;
+import mon.lattice.control.im.ProbeNotFoundException;
+import mon.lattice.core.ID;
 import mon.lattice.core.Measurement;
-import mon.lattice.core.ProbeAttributeType;
 import mon.lattice.core.ProbeValue;
-import mon.lattice.core.TypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,28 +25,35 @@ public class LoggerReporterWithInfoPlane extends AbstractReporterWithInfoPlane {
     @Override
     public void report(Measurement m) {
         
-        String probename = (String) infoPlane.lookupProbeInfo(m.getProbeID(), "name");
-        LOGGER.info(probename);
+        try {
+            ID probeID = m.getProbeID();
+            String probename = reporterInformation.getProbeName(probeID);
+            LOGGER.info(probename);
        
-        List<ProbeValue> values = m.getValues();
-        for (ProbeValue aValue : values) {
-	    String name = (String) infoPlane.lookupProbeAttributeInfo(m.getProbeID(), aValue.getField(), "name");
-	    String units = (String) infoPlane.lookupProbeAttributeInfo(m.getProbeID(), aValue.getField(), "units");
-            Integer t = (Integer) infoPlane.lookupProbeAttributeInfo(m.getProbeID(), aValue.getField(), "type");
-            
-            try {
-                ProbeAttributeType type = ProbeAttributeType.fromCode(t);
-                LOGGER.info(name + ": " + aValue.getValue() + " " + units + ", type " + type.toString());
-            } catch (TypeException e) {
-                LOGGER.error("Error while retrieving attribute type");
+            List<ProbeValue> values = m.getValues();
+            for (ProbeValue aValue : values)
+                LOGGER.info(reporterInformation.getProbeAttributeName(probeID, aValue.getField()).toString());
+                
             }
-            
-            
-
-	    
-	}        
-    }
-    
-    
-    
+        catch (ProbeNotFoundException pe) {
+            LOGGER.error("Error while retrieving probe Information" + pe.getMessage());   
+        }
+        
+        catch (ProbeAttributeNotFoundException pae) {
+            LOGGER.error("Error while retrieving probe attribute Information" + pae.getMessage());
+                
+        }
+           
+//	    String name = (String) infoPlane.lookupProbeAttributeInfo(m.getProbeID(), aValue.getField(), "name");
+//	    String units = (String) infoPlane.lookupProbeAttributeInfo(m.getProbeID(), aValue.getField(), "units");
+//            Integer t = (Integer) infoPlane.lookupProbeAttributeInfo(m.getProbeID(), aValue.getField(), "type");
+//            
+//            try {
+//                ProbeAttributeType type = ProbeAttributeType.fromCode(t);
+//                LOGGER.info(name + ": " + aValue.getValue() + " " + units + ", type " + type.toString());
+//            } catch (TypeException e) {
+//                LOGGER.error("Error while retrieving attribute type");
+//            }
+                 
+    }    
 }

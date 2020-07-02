@@ -20,6 +20,6 @@ public abstract class AbstractIMNodeWithAnnounce extends AbstractIMNode implemen
 
     @Override
     public void sendMessageToListener(AbstractAnnounceMessage m) {
-        listener.receivedAnnounceEvent(m);
+        listener.notifyAnnounceEvent(m);
     }
 }

@@ -11,7 +11,7 @@ import mon.lattice.control.ControlServiceException;
 import mon.lattice.core.ID;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import mon.lattice.im.delegate.DSNotFoundException;
+import mon.lattice.control.im.DSNotFoundException;
 import mon.lattice.core.Rational;
 import us.monoid.json.JSONArray;
 

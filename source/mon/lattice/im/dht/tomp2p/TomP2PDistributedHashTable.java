@@ -131,7 +131,7 @@ public class TomP2PDistributedHashTable implements ObjectDataReply, AnnounceHand
     @Override
     public Object reply(PeerAddress sender, Object request) throws Exception {
         AbstractAnnounceMessage m = AbstractAnnounceMessage.fromString((String)request);
-        LOGGER.debug("Received " + m.getMessageType() + " message for " + m.getEntity() + 
+        LOGGER.debug("Received " + m.getMessageType() + " message for " + m.getEntityType() + 
                      " with ID " + m.getEntityID() +
                      " from " + sender.getID());            
         sendMessageToListener(AbstractAnnounceMessage.fromString((String)request));
@@ -205,10 +205,10 @@ public class TomP2PDistributedHashTable implements ObjectDataReply, AnnounceHand
     
     public void announce(AbstractAnnounceMessage m) {
         try {
-            LOGGER.debug("About to send " + m.getMessageType() + " message for this " + m.getEntity());
+            LOGGER.debug("About to send " + m.getMessageType() + " message for this " + m.getEntityType());
             FutureDHT futureSend = peer.send(rootPeer.getID()).setObject(AbstractAnnounceMessage.toString(m)).start();
             futureSend.awaitUninterruptibly();
-            LOGGER.debug(m.getMessageType() + " message sent for this " + m.getEntity());
+            LOGGER.debug(m.getMessageType() + " message sent for this " + m.getEntityType());
             
         } catch (IOException e) {
             LOGGER.error("Error while sending " + m.getMessageType() + "message " + e.getMessage());
@@ -227,6 +227,6 @@ public class TomP2PDistributedHashTable implements ObjectDataReply, AnnounceHand
 
     @Override
     public void sendMessageToListener(AbstractAnnounceMessage m) {
-        listener.receivedAnnounceEvent(m);
+        listener.notifyAnnounceEvent(m);
     }
 }

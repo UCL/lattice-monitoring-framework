@@ -17,11 +17,14 @@ import mon.lattice.core.ID;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.Rational;
 import mon.lattice.core.Timestamp;
-import mon.lattice.im.delegate.DCNotFoundException;
-import mon.lattice.im.delegate.DSNotFoundException;
-import mon.lattice.im.delegate.ProbeNotFoundException;
-import mon.lattice.im.delegate.ReporterNotFoundException;
-import mon.lattice.im.delegate.ZMQControlEndPointMetaData;
+import mon.lattice.control.im.DCNotFoundException;
+import mon.lattice.control.im.DSNotFoundException;
+import mon.lattice.control.im.ProbeNotFoundException;
+import mon.lattice.control.im.ReporterNotFoundException;
+import mon.lattice.control.im.ZMQControlEndPointMetaData;
+import mon.lattice.core.EntityType;
+import mon.lattice.core.plane.AnnounceMessage;
+import mon.lattice.core.plane.DeannounceMessage;
 
 
 public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer {    
@@ -64,7 +67,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.LOAD_PROBE, args);
         
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromID(dataSourceID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDSAddressFromID(dataSourceID);
             
             MetaData mData;
             if (dstAddr.getType().equals("zmq")) {
@@ -72,13 +75,12 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
                 probeID = (ID) requester.synchronousTransmit(m, mData);
                 
                 // should wait until the info plane message for that probe is received
-                infoPlaneDelegate.waitForAddedProbe(probeID, 5000);
+                //controlInformationManager.waitForAddedProbe(probeID, 5000);
+                
+                AnnounceMessage am = new AnnounceMessage(probeID, EntityType.PROBE, 5);
+                controlInformation.notifyAnnounceEvent(am);
             }  
         }
-          catch (InterruptedException e) {
-            LOGGER.error("Interrupted while loading probe: " + e.getMessage());
-            throw new ControlServiceException(e);
-          }
           catch (IOException | DSNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing load probe command: " + ex.getMessage());
             throw new ControlServiceException(ex);
@@ -94,16 +96,14 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.UNLOAD_PROBE, args);
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             result = (Boolean) requester.synchronousTransmit(m, mData);
             
-            infoPlaneDelegate.waitForRemovedProbe(probeID, 5000);
+            DeannounceMessage am = new DeannounceMessage(probeID, EntityType.PROBE, 5);
+            controlInformation.notifyAnnounceEvent(am);
         }
-        catch (InterruptedException e) {
-            LOGGER.error("Interrupted while unloading probe: " + e.getMessage());
-            throw new ControlServiceException(e);
-          }
+        
         catch (IOException | DSNotFoundException | ProbeNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing unload probe command " + ex.getMessage());
             throw new ControlServiceException(ex);
@@ -131,7 +131,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.SET_PROBE_SERVICE_ID, args);
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             result = (Boolean) requester.synchronousTransmit(m, mData);
         }
@@ -153,7 +153,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.GET_PROBE_SERVICE_ID, args);
         
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             result = (ID) requester.synchronousTransmit(m, mData);
         }
@@ -181,7 +181,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.SET_PROBE_GROUP_ID, args);
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             result = (Boolean) requester.synchronousTransmit(m, mData);
         }        
@@ -202,7 +202,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.GET_PROBE_DATA_RATE, args);
         
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             result = (Rational) requester.synchronousTransmit(m, mData);
         
@@ -226,7 +226,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.SET_PROBE_DATA_RATE, args);
         
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             result = (Boolean) requester.synchronousTransmit(m, mData);
@@ -257,7 +257,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.TURN_ON_PROBE, args);
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             result = (Boolean) requester.synchronousTransmit(m, mData);
@@ -278,7 +278,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.TURN_OFF_PROBE, args);
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromProbeID(probeID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDSAddressFromProbeID(probeID);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             result = (Boolean) requester.synchronousTransmit(m, mData); 
             return result;
@@ -321,7 +321,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.GET_DS_NAME, args);
         
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDSAddressFromID(id);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDSAddressFromID(id);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             name = (String) requester.synchronousTransmit(m, mData);
             return name;
@@ -350,7 +350,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.GET_DC_RATE, args);
         
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDCAddressFromID(dcId);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDCAddressFromID(dcId);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             rate = (Rational) requester.synchronousTransmit(m, mData);
         }
@@ -374,7 +374,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.LOAD_REPORTER, args);
         
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDCAddressFromID(dataConsumerID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDCAddressFromID(dataConsumerID);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             reporterID = (ID) requester.synchronousTransmit(m, mData);
         }
@@ -394,7 +394,7 @@ public class ZMQControlPlaneXDRProducer extends AbstractZMQControlPlaneProducer 
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.UNLOAD_REPORTER, args);
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getDCAddressFromReporterID(reporterID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getDCAddressFromReporterID(reporterID);
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
             result = (Boolean) requester.synchronousTransmit(m, mData);
         }

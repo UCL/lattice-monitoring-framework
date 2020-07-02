@@ -1,22 +1,22 @@
 package mon.lattice.im.zmq;
 
-import mon.lattice.im.delegate.ControlInformationManager;
-import mon.lattice.im.delegate.InfoPlaneDelegate;
+import mon.lattice.control.im.ControlInformationManager;
 import mon.lattice.core.DataSource;
 import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.Reporter;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.plane.InfoPlane;
-import mon.lattice.im.delegate.InfoPlaneDelegateInteracter;
 import mon.lattice.control.agents.ControllerAgent;
+import mon.lattice.control.im.ControlInformation;
+import mon.lattice.control.im.ControlInformationInteracter;
 
 /**
  * A ZMQControllerInfoPlane is an InfoPlane implementation
  that mainly collects data from the Information Model data.
  */
-public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements InfoPlane, InfoPlaneDelegateInteracter {
-    private InfoPlaneDelegate infoPlaneDelegate;
+public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements ControlInformationInteracter {
+    private ControlInformation controlInformation;
     
     // The local port
     int port;
@@ -27,8 +27,8 @@ public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements Info
      * Constructor for subclasses.
      */
     private ZMQControllerInfoPlane() {
-        setInfoPlaneDelegate(new ControlInformationManager(this));
-        // setting the announce listener to the InfoPlaneDelegate
+        setControlInformation(new ControlInformationManager(this));
+        // setting the announce listener to the ControlInformation
     }
 
 
@@ -40,7 +40,7 @@ public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements Info
 	port = localPort;
         zmqProxy = new ZMQProxy(port);
         zmqSubscriber = new ZMQControllerSubscriber(zmqProxy.getInternalURI(), "info.", zmqProxy.getContext());
-        zmqSubscriber.addAnnounceEventListener(infoPlaneDelegate);
+        zmqSubscriber.addAnnounceEventListener(controlInformation);
     }
     
     
@@ -181,13 +181,13 @@ public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements Info
 
     
     @Override
-    public void setInfoPlaneDelegate(InfoPlaneDelegate im) {
-        this.infoPlaneDelegate = im;
+    public void setControlInformation(ControlInformation im) {
+        this.controlInformation = im;
     }
 
     @Override
-    public InfoPlaneDelegate getInfoPlaneDelegate() {
-        return this.infoPlaneDelegate;
+    public ControlInformation getControlInformation() {
+        return this.controlInformation;
     }
     
 }

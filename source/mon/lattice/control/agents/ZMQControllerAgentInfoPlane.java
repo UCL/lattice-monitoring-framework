@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author uceeftu
  */
-public class ZMQControllerAgentInfoPlane extends AbstractZMQInfoPlane implements InfoPlane, ControllerAgentInteracter {
+public class ZMQControllerAgentInfoPlane extends AbstractZMQInfoPlane implements ControllerAgentInteracter {
     
     // The hostname of the Subscriber.
     String remoteHost;

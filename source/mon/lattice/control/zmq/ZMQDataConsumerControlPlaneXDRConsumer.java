@@ -16,7 +16,6 @@ import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.Rational;
 import java.io.IOException;
 import mon.lattice.core.ControllableReporter;
-import mon.lattice.core.plane.InfoPlaneInteracter;
 
 
 
@@ -27,6 +26,7 @@ public class ZMQDataConsumerControlPlaneXDRConsumer extends AbstractZMQControlPl
         super(router);
     }
 
+    @Override
     public boolean connect() {
 	try {
 	    // only connect if we're not already connected
@@ -84,9 +84,6 @@ public class ZMQDataConsumerControlPlaneXDRConsumer extends AbstractZMQControlPl
             
             ControllableReporter reporter = r.getReporter();
             dataConsumer.addReporter(reporter);
-            
-            if (reporter instanceof InfoPlaneInteracter)
-                ((InfoPlaneInteracter) reporter).setInfoPlane(dataConsumer.getInfoPlane());
             
             return r.getReporter().getId();
         } catch (ReporterLoaderException e) {

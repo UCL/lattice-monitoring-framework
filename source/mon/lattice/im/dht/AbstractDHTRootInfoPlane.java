@@ -6,25 +6,25 @@
 package mon.lattice.im.dht;
 
 import mon.lattice.core.ControllableDataConsumer;
-import mon.lattice.im.delegate.ControlInformationManager;
-import mon.lattice.im.delegate.InfoPlaneDelegate;
+import mon.lattice.control.im.ControlInformationManager;
 import mon.lattice.core.DataSource;
 import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.Reporter;
 import mon.lattice.core.plane.AbstractAnnounceMessage;
 import mon.lattice.core.plane.AnnounceEventListener;
-import mon.lattice.im.delegate.InfoPlaneDelegateInteracter;
 import mon.lattice.control.agents.ControllerAgent;
+import mon.lattice.control.im.ControlInformation;
+import mon.lattice.control.im.ControlInformationInteracter;
 
 /**
  * A TomP2PDHTInfoPlaneConsumer is an InfoPlane implementation
  that collects data from the Information Model data.
  */
 public abstract class AbstractDHTRootInfoPlane extends AbstractDHTInfoPlane 
-                                               implements InfoPlaneDelegateInteracter, AnnounceEventListener  {
+                                               implements ControlInformationInteracter, AnnounceEventListener  {
     
-    private InfoPlaneDelegate infoPlaneDelegate;
+    private ControlInformation controlInformation;
        
     // The hostname of the DHT root.
     protected String rootHost;
@@ -39,7 +39,7 @@ public abstract class AbstractDHTRootInfoPlane extends AbstractDHTInfoPlane
      * Constructor for subclasses.
      */
     public AbstractDHTRootInfoPlane() {
-        setInfoPlaneDelegate(new ControlInformationManager(this));
+        setControlInformation(new ControlInformationManager(this));
     }
 
 
@@ -59,18 +59,18 @@ public abstract class AbstractDHTRootInfoPlane extends AbstractDHTInfoPlane
     }
     
     @Override
-    public void receivedAnnounceEvent(AbstractAnnounceMessage m) {
-        infoPlaneDelegate.receivedAnnounceEvent(m);
+    public void notifyAnnounceEvent(AbstractAnnounceMessage m) {
+        controlInformation.notifyAnnounceEvent(m);
     }
     
     @Override
-    public void setInfoPlaneDelegate(InfoPlaneDelegate im) {
-        this.infoPlaneDelegate = im;
+    public void setControlInformation(ControlInformation im) {
+        this.controlInformation = im;
     }
 
     @Override
-    public InfoPlaneDelegate getInfoPlaneDelegate() {
-        return this.infoPlaneDelegate;
+    public ControlInformation getControlInformation() {
+        return this.controlInformation;
     }
     
     

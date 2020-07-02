@@ -14,4 +14,9 @@ public class DeannounceMessage extends AbstractAnnounceMessage {
     public DeannounceMessage(ID id, EntityType e) {
         super(id, e, MessageType.DEANNOUNCE);
     }
+    
+    public DeannounceMessage(ID id, EntityType e, int timeout) {
+        super(id, e, MessageType.DEANNOUNCE, timeout);
+    }
+    
 }
