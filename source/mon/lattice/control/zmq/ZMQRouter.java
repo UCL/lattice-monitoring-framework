@@ -7,6 +7,7 @@ package mon.lattice.control.zmq;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 /**
@@ -27,8 +28,8 @@ public class ZMQRouter implements Runnable {
     public ZMQRouter(int port) {
         backendPort = port;
         context = ZMQ.context(1);
-        frontend = context.socket(ZMQ.ROUTER);
-        backend = context.socket(ZMQ.ROUTER);
+        frontend = context.socket(SocketType.ROUTER);
+        backend = context.socket(SocketType.ROUTER);
     }
     
     public void bind() {
@@ -57,11 +58,11 @@ public class ZMQRouter implements Runnable {
 
     @Override
     public void run() {
+        ZMQ.Poller items = context.poller(2);
+        items.register(backend, ZMQ.Poller.POLLIN);
+        items.register(frontend, ZMQ.Poller.POLLIN);
+        
         while (!Thread.currentThread().isInterrupted()) {
-            ZMQ.Poller items = new ZMQ.Poller (2);
-            items.register(backend, ZMQ.Poller.POLLIN);
-            items.register(frontend, ZMQ.Poller.POLLIN);
-            
             if (items.poll() < 0)
                 break;
             

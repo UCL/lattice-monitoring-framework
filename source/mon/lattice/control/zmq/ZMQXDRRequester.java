@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import mon.lattice.control.ControlPlaneConsumerException;
 import static mon.lattice.control.zmq.AbstractZMQControlPlaneProducer.LOGGER;
+import mon.lattice.core.ID;
 import mon.lattice.core.plane.ControlOperation;
 import mon.lattice.core.plane.ControlPlaneMessage;
 import mon.lattice.core.plane.MessageType;
@@ -20,6 +21,7 @@ import mon.lattice.distribution.ExposedByteArrayInputStream;
 import mon.lattice.distribution.MetaData;
 import mon.lattice.xdr.XDRDataInputStream;
 import mon.lattice.xdr.XDRDataOutputStream;
+import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 
@@ -64,7 +66,13 @@ public class ZMQXDRRequester extends ZMQRequester {
     
     public Object transmitAndWaitReply(ByteArrayOutputStream byteStream, ZMQControlMetaData MessageMetaData, int seqNo) throws IOException {
         String destination = MessageMetaData.getDestination();
-        //System.out.println(" Sending: '" + "Request " + seqNo + "'" + " to " + destination);
+        
+        ZMQ.Socket sender = context.socket(SocketType.REQ);
+        String identity = ID.generate().toString();
+        sender.setIdentity(identity.getBytes(ZMQ.CHARSET));
+        
+        //sender.setLinger(0);
+	sender.connect("inproc://frontend");
         
         sender.sendMore(destination);
         sender.sendMore("");
@@ -81,6 +89,7 @@ public class ZMQXDRRequester extends ZMQRequester {
         // actual reply
         byte [] reply = sender.recv();
             
+        sender.close();
         
         ByteArrayInputStream theBytes = new ExposedByteArrayInputStream(reply, 0, reply.length);
         ZMQControlMetaData metaData = new ZMQControlMetaData(sourceWorker, reply.length);

@@ -5,6 +5,7 @@
  */
 package mon.lattice.im.zmq;
 
+import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 /**
@@ -25,8 +26,8 @@ public class ZMQProxy extends Thread {
         this.localPort = localPort;
         
         context = ZMQ.context(1);
-        backend = context.socket(ZMQ.XPUB);
-        frontend = context.socket(ZMQ.XSUB);
+        backend = context.socket(SocketType.XPUB);
+        frontend = context.socket(SocketType.XSUB);
     }
 
     public ZMQ.Context getContext() {

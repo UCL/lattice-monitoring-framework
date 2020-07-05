@@ -1,11 +1,9 @@
 package mon.lattice.im.zmq;
 
 import mon.lattice.core.ID;
-import mon.lattice.core.plane.AbstractAnnounceMessage;
-import mon.lattice.core.plane.AnnounceEventListener;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import mon.lattice.im.AbstractIMNode;
+import mon.lattice.im.AbstractIMNodeWithAnnounce;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
@@ -14,6 +12,7 @@ import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import mon.lattice.im.IMSubscriberNode;
+import org.zeromq.SocketType;
 
 /**
  * An ZMQSubscriber is responsible for receiving information about  
@@ -21,7 +20,7 @@ import mon.lattice.im.IMSubscriberNode;
  * using ZMQ.
 **/
 
-public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IMSubscriberNode, Runnable {
+public abstract class AbstractZMQSubscriber extends AbstractIMNodeWithAnnounce implements IMSubscriberNode, Runnable {
     int remotePort = 0;
     int localPort = 0;
     
@@ -42,11 +41,11 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     
     Map<ID, JSONObject> controllerAgents = new ConcurrentHashMap<>();
     
-    AnnounceEventListener listener;
     
-    Thread thread = new Thread(this, "zmq-info-subscriber");;
     
-    static Logger LOGGER = LoggerFactory.getLogger(AbstractZMQSubscriber.class);
+    Thread thread = new Thread(this, "zmq-info-subscriber");
+    
+    private Logger LOGGER = LoggerFactory.getLogger(AbstractZMQSubscriber.class);
 
     
     /**
@@ -67,7 +66,7 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
         messageFilter = filter;
         
         this.context = context;
-        subscriberSocket = this.context.socket(ZMQ.SUB);
+        subscriberSocket = context.socket(SocketType.SUB);
     }
     
     
@@ -80,7 +79,7 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
         messageFilter = filter;
         
         this.context = context;
-        subscriberSocket = this.context.socket(ZMQ.SUB);
+        subscriberSocket = context.socket(SocketType.SUB);
     }
     
     
@@ -104,7 +103,7 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
         messageFilter = filter; 
         
         this.context = context;
-        subscriberSocket = this.context.socket(ZMQ.SUB);
+        subscriberSocket = context.socket(SocketType.SUB);
     }
     
 
@@ -148,21 +147,38 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     }
     
 
-    /**
-     * Disconnect from the DHT peers.
-     */
     @Override
     public boolean disconnect() {
         threadRunning = false;
-        subscriberSocket.close();
-        context.term();
         return true;
     }
-
+    
+    
+    abstract protected void messageHandler(String message);
+     
+    
     @Override
-    public String getRemoteHostname() {
-        return this.remoteHost;
+    public void run() {
+        subscriberSocket.subscribe(messageFilter.getBytes());
+        
+        LOGGER.info("Listening for messages");
+        
+        threadRunning = true;
+        try {
+            while (threadRunning) {
+                String header = subscriberSocket.recvStr();
+                String content = subscriberSocket.recvStr();
+                LOGGER.debug(header + " : " + content);
+                messageHandler(content);
+            }
+            } catch (ZMQException e) {
+                subscriberSocket.close();
+                LOGGER.debug(e.getMessage());
+            }
+        subscriberSocket.close();
+        context.term();
     }
+    
     
     
     @Override
@@ -219,7 +235,7 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     public Object getProbeAttributeInfo(ID probeID, Integer field, String info) {
         try {
             JSONObject probeAttribute = probeAttributes.get(probeID);
-            Object probeAttributeInfo = probeAttribute.getJSONObject(field.toString()).get(info);
+            Object probeAttributeInfo = probeAttribute.getJSONObject(field.toString()).get(info);            
             return probeAttributeInfo;
         } catch (JSONException | NullPointerException e) {
             LOGGER.error("Error while retrieving Attribute info '" + info + "': " + e.getMessage());
@@ -240,7 +256,7 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
         }
     }
     
-    //@Override
+    @Override
     public Object getControllerAgentInfo(ID controllerAgentID, String info) {
         try {
             JSONObject controllerAgent = controllerAgents.get(controllerAgentID);
@@ -269,52 +285,12 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNode implements IM
     
     @Override
     public Object getProbesOnDataSource(ID dataSourceID) {
-        JSONArray probesOnDS = new JSONArray();
+        JSONObject dataSourceInfo = this.dataSources.get(dataSourceID);
         try {
-            for (ID probeID : probes.keySet()) {
-                if (probes.get(probeID).get("datasource").equals(dataSourceID.toString()))
-                    probesOnDS.put(probeID.toString());
-                }
-                    
-            } catch (JSONException e) {
-                LOGGER.error("Error while retrieving Probe info" + e.getMessage());
-                return null;
-            }
-        return probesOnDS;       
+            return dataSourceInfo.getJSONArray("probes");
+        } catch (JSONException e) {
+            return new JSONArray();
+        }
     }
     
-    
-    @Override
-    public void run() {
-        subscriberSocket.subscribe(messageFilter.getBytes());
-        
-        LOGGER.info("Listening for messages");
-        
-        threadRunning = true;
-        try {
-            while (threadRunning) {
-                String header = subscriberSocket.recvStr();
-                String content = subscriberSocket.recvStr();
-                LOGGER.debug(header + " : " + content);
-                messageHandler(content);
-            }
-            } catch (ZMQException e) {
-                subscriberSocket.close();
-                LOGGER.debug(e.getMessage());
-            }
-    }
-    
-    
-    abstract protected void messageHandler(String message);
-    
-    
-    @Override
-    public void addAnnounceEventListener(AnnounceEventListener l) {
-        listener = l;
-    }
-
-    @Override
-    public void sendMessage(AbstractAnnounceMessage m) {
-        listener.receivedAnnounceEvent(m);
-    }
 }

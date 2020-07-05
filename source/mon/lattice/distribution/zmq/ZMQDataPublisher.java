@@ -8,6 +8,8 @@ package mon.lattice.distribution.zmq;
 import mon.lattice.distribution.Transmitting;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 /**
@@ -20,7 +22,7 @@ public class ZMQDataPublisher {
     
     Transmitting transmitting;
     
-    ZMQ.Context context;
+    ZContext context;
     ZMQ.Socket publisherSocket;
     
 
@@ -29,14 +31,13 @@ public class ZMQDataPublisher {
         this.subscriberPort = subscriberPort;
         this.transmitting = transmitting;
         
-        context = ZMQ.context(1);
-        publisherSocket = context.socket(ZMQ.PUB);
+        context = new ZContext(1);
+        publisherSocket = context.createSocket(SocketType.PUB);
     }
     
     public void connect() throws IOException {
         String uri = "tcp://" + subscriberHost + ":" + subscriberPort;
         publisherSocket.setLinger(0);
-        publisherSocket.setHWM(0);
         publisherSocket.connect(uri);
         try {
             Thread.sleep(1000);
@@ -46,8 +47,7 @@ public class ZMQDataPublisher {
     
     
     public void end() throws IOException {
-        publisherSocket.close();
-        context.term();
+        context.destroy();
     }
     
     

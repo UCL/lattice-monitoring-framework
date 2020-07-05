@@ -24,11 +24,19 @@ public abstract class AbstractAnnounceMessage implements Serializable {
     protected ID entityID;
     protected MessageType messageType; // subclass will set this either to Announce or Deannounce
     protected EntityType entity;
+    protected int replyTimeout = 0;
 
     public AbstractAnnounceMessage(ID id, EntityType entity, MessageType messageType) {
         this.entityID = id;
         this.entity = entity;
         this.messageType = messageType;
+    }
+    
+    public AbstractAnnounceMessage(ID id, EntityType entity, MessageType messageType, int timeout) {
+        this.entityID = id;
+        this.entity = entity;
+        this.messageType = messageType;
+        this.replyTimeout = timeout;
     }
 
     public ID getEntityID() {
@@ -39,9 +47,14 @@ public abstract class AbstractAnnounceMessage implements Serializable {
         return messageType;
     }
 
-    public EntityType getEntity() {
+    public EntityType getEntityType() {
         return entity;
     }
+    
+    public int getReplyTimeout() {
+        return replyTimeout;
+    }
+    
     
     public static String toString(AbstractAnnounceMessage o) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

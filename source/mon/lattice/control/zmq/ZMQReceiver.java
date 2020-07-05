@@ -12,6 +12,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.slf4j.LoggerFactory;
+import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQException;
 
@@ -21,7 +23,7 @@ import org.zeromq.ZMQException;
  */
 public class ZMQReceiver implements Runnable {
     Receiving receiver = null;
-    ZMQ.Context context;
+    ZContext context;
     ZMQ.Socket receiverSocket;
     String routerAddress;
     int routerPort;
@@ -40,8 +42,8 @@ public class ZMQReceiver implements Runnable {
     
     public ZMQReceiver(Receiving receiver, String routerAddress, int port) {
         this.receiver = receiver;
-        this.context = ZMQ.context(1);
-        this.receiverSocket = context.socket(ZMQ.REQ);
+        this.context = new ZContext(1);
+        this.receiverSocket = context.createSocket(SocketType.REQ);
         this.routerAddress = routerAddress;
         this.routerPort = port;
     }
@@ -65,7 +67,6 @@ public class ZMQReceiver implements Runnable {
     
     public void end()  throws IOException {
         threadRunning = false;
-        context.term();
     }
     
     
@@ -151,6 +152,7 @@ public class ZMQReceiver implements Runnable {
 	    }
 	}
         receiverSocket.close();
+        context.destroy();
     }    
     
 }

@@ -13,17 +13,17 @@ import mon.lattice.control.ControlServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import mon.lattice.control.controller.json.ZMQController;
-import mon.lattice.management.ManagementException;
+import mon.lattice.management.deployment.DeploymentException;
 import mon.lattice.core.ID;
 import mon.lattice.core.Rational;
 import mon.lattice.core.plane.ControlPlane;
 import mon.lattice.core.plane.InfoPlane;
-import mon.lattice.im.delegate.InfoPlaneDelegateInteracter;
 import mon.lattice.im.zmq.ZMQControllerInfoPlane;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import mon.lattice.core.plane.ControllerControlPlaneWithAgents;
+import mon.lattice.control.im.ControlInformationInteracter;
 
 /**
  *
@@ -52,21 +52,19 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
         controlLocalPort = Integer.parseInt(pr.getProperty("control.localport"));
         infoPlanePort = Integer.parseInt(pr.getProperty("info.localport"));
         
-        poolSize = Integer.parseInt(pr.getProperty("control.poolsize"));
-        
         // ZMQController is the root of the infoPlane - other nodes use it to perform bootstrap
         InfoPlane infoPlane = new ZMQControllerInfoPlane(infoPlanePort);
         
         // we get the ControlInformationManager from the InfoPlane
-        controlInformationManager = ((InfoPlaneDelegateInteracter) infoPlane).getInfoPlaneDelegate();
+        controlInformationManager = ((ControlInformationInteracter) infoPlane).getControlInformation();
         
 	setInfoPlane(infoPlane);
         
         // create a ZMQ control plane producer
-        ControlPlane controlPlane = new ZMQControlPlaneXDRProducerWithControlAgents(poolSize, controlLocalPort);
+        ControlPlane controlPlane = new ZMQControlPlaneXDRProducerWithControlAgents(controlLocalPort);
         
-        // setting a reference to the InfoPlaneDelegate on the Control Plane
-        ((InfoPlaneDelegateInteracter) controlPlane).setInfoPlaneDelegate(controlInformationManager);
+        // setting a reference to the ControlInformation on the Control Plane
+        ((ControlInformationInteracter) controlPlane).setControlInformation(controlInformationManager);
         setControlPlane(controlPlane);
         
         connect();
@@ -83,7 +81,7 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
             try {
                 this.deploymentManager.stopControllerAgent(ID.fromString(mmID), ID.fromString(sessionID));
                 result.put("success", true);
-            } catch (ManagementException ex) {
+            } catch (DeploymentException ex) {
                 result.put("success", false);
                 result.put("msg", "DeploymentException while performing stopControllerAgent operation: " + ex.getMessage());
               }
@@ -118,7 +116,7 @@ public class ZMQJSONControllerWithControlAgents extends ZMQController implements
                     result.put("success", true);
                 }
 
-            } catch (ManagementException ex) {
+            } catch (DeploymentException ex) {
                     result.put("success", false);
                     result.put("msg", "DeploymentException while performing startControllerAgent operation: " + ex.getMessage());
               }

@@ -15,7 +15,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An abstract Data Source.
@@ -76,8 +80,13 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
     /*
      * The End ?
      */
-    boolean theEnd = false;
-    Object monitor = new Object();
+    //boolean theEnd = false;
+    //Object monitor = new Object();
+    CountDownLatch latch = new CountDownLatch(1);
+    
+    
+    private Logger LOGGER = LoggerFactory.getLogger(AbstractDataSource.class);
+    
 
     /**
      * Construct a DataSource.
@@ -125,22 +134,13 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
     protected synchronized void stopQueueHandlingThread() {
 	if (threadRunning) {
 	    threadRunning = false;
+            // this will interrupt the thread if it is waiting on the Queue
 	    myThread.interrupt();
-
-            //waitFor();
+            
+            LOGGER.info("Waiting for the thread to terminate");
+            waitFor();
 	}
     }
-
-    
-    /**
-     * Add a new probe from its ProbeLoader object
-     */
-    /*
-    public ID addProbe(ProbeLoader p) {  
-        addProbe(p.getProbe());
-        return p.getProbe().getID();
-    }  
-    */
     
     
     /**
@@ -828,9 +828,8 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
 		m = (ProbeMeasurement)measurementQueue.take();
 		//System.err.println("-" + m.getProbeID() + "." + m.getSequenceNo());
 	    } catch (InterruptedException ie) {
-		//System.err.println("InterruptedException Can't take Measurement " + m + " from queue");
-		// loop round
-		continue;
+                LOGGER.info("Caught Interrupted Exeception (queue)");
+                break;
 	    }
     
 	    // now send it
@@ -839,10 +838,24 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
 
                     msg = measurementMessage((ProbeMeasurement)m);
                     int retVal = dataSourceDelegate.sendData(msg);
-
-                    sendSuccess(msg);
+                    if (retVal > 0)
+                        sendSuccess(msg);
                 }
-            } catch (Exception ex) {
+            } 
+            
+            catch (IOException e) {
+                LOGGER.info("Caught IOException (sendData)");
+                break;
+	        
+            }
+            
+            catch (InterruptedException ie) {
+                LOGGER.info("Caught Interrupted Exception (sendData)");
+                break;
+	        
+            } 
+            
+            catch (Exception ex) {
                 sendFailure(msg, ex);
             }
 	}
@@ -850,41 +863,26 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
  	// code to run at end of thread
 	endThreadBody();
 
-        //theEnd();
-	//System.out.println("exit thread loop for " + getName());
+        theEnd();
    }
 
     /**
      * Wait for this thread
      */
     private void waitFor() {
-          try {
-            synchronized(monitor) {
-                theEnd = true;
-                monitor.wait();
-            }
-          } catch (InterruptedException ie) {
-          }
+        try {
+            latch.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.error("Interrupted while waiting");
+        }
     }
+    
     
     /**
      * Notify this thread
      */
     private void theEnd() {
-        // hang around until the other thread does waitFor()
-        while (!theEnd) {
-            try {
-                Thread.sleep(100);
-            } catch (Exception e) {
-            
-            }
-        }
-
-        // now notify it
-        synchronized(monitor) {
-            monitor.notify();
-        }
-        
+        latch.countDown();
     }
 
 
@@ -901,10 +899,11 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
         if (msg.getType().equals(MessageType.MEASUREMENT)) {
             // extract Measurement from message object
             ProbeMeasurement m = ((MeasurementMessage)msg).getMeasurement();
-            System.out.println("Failed to send Measurement: " + 
+            LOGGER.error("Failed to send Measurement: " + 
                                "seq: " + m.getSequenceNo() + " probeid: " + m.getProbeID() + " serviceid: " + m.getServiceID() + " groupid: " + m.getGroupID() + " timestamp: " +  m.getTimestamp() + " delta: " + m.getDeltaTime()  + " because => " + ex.getMessage());
         }
-        //ex.printStackTrace();
+        
+        LOGGER.error("SendFailure: " + ex.getMessage());
     }
 
 
@@ -1006,6 +1005,7 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
     public boolean disconnect() {
         // stop QueueHandling
         stopQueueHandlingThread();
+        LOGGER.info("Stop Queue Handling");
 
 	return dataSourceDelegate.disconnect();
     }
@@ -1014,14 +1014,18 @@ public abstract class AbstractDataSource implements DataSource, PlaneInteracter,
      * The code to run at the begining of the thread body.
      * Used to set things up.
      */
-    public void beginThreadBody() {}
+    public void beginThreadBody() {
+        LOGGER.info("Sending loop started");
+    }
 
 
     /**
      * The code to run at the end of the thread body.
      * Used to tidy things up.
      */
-    public void endThreadBody() {}
+    public void endThreadBody() {
+        LOGGER.info("Sending loop terminated");
+    }
 
     /**
      * To String

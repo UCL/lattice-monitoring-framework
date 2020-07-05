@@ -103,7 +103,7 @@ public class IotTopology {
         reporterClassName = configuration.getProperty("rep.class");
         
         
-        if (reporterClassName.contains("BufferedRestReporterWithCallback")) {
+        if (reporterClassName.contains("RestReporterWithCallback")) {
             reporterAddress = configuration.getProperty("rep.address");
             reporterPort = configuration.getProperty("rep.port");
             reporterURI = configuration.getProperty("rep.uri");
@@ -112,7 +112,7 @@ public class IotTopology {
             reporterCallbackPort = configuration.getProperty("rep.callback.port");
             reporterCallbackURI = configuration.getProperty("rep.callback.uri");
             
-        } else if (reporterClassName.contains("BufferedRestReporter")) {
+        } else if (reporterClassName.contains("RestReporter")) {
             reporterAddress = configuration.getProperty("rep.address");
             reporterPort = configuration.getProperty("rep.port");
             reporterURI = configuration.getProperty("rep.uri");
@@ -214,11 +214,12 @@ public class IotTopology {
     
     private void loadSensor(String dataSourceID, String probeName, List<String> probes)  {
         String probeClassName = "mon.lattice.appl.demo.iot.SensorEmulatorProbe";
-        String probeAttributeName = "temperature";
+        String probeAttributeName = "Temperature";
+        String units = "Celsius";
         
         Integer value = ThreadLocalRandom.current().nextInt(valueMin, valueMax);
         try {
-            JSONObject out = restClient.loadProbe(dataSourceID, probeClassName, probeName + "+" + probeAttributeName + "+" + value + "+" + rate);
+            JSONObject out = restClient.loadProbe(dataSourceID, probeClassName, probeName + "+" + probeAttributeName + "+" + value + "+" + rate + "+" + units);
             String probeID = out.getString("createdProbeID");
             probes.add(probeID);
         } catch (JSONException je) {
@@ -245,7 +246,7 @@ public class IotTopology {
         
         try { 
             
-            if (reporterClassName.contains("BufferedRestReporterWithCallback"))
+            if (reporterClassName.contains("RestReporterWithCallback"))
                 out = restClient.loadReporter(dataConsumerID, reporterClassName, 
                                                                 reporterName + "+" +
                                                                 reporterBufferSize + "+" +
@@ -257,7 +258,7 @@ public class IotTopology {
                                                                 reporterCallbackURI
                                                                 );
             
-            else if (reporterClassName.contains("BufferedRestReporter"))
+            else if (reporterClassName.contains("RestReporter"))
                 out = restClient.loadReporter(dataConsumerID, reporterClassName, 
                                                                 reporterName + "+" +
                                                                 reporterBufferSize + "+" +

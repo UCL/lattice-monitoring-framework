@@ -5,16 +5,12 @@ import mon.lattice.core.Probe;
 import mon.lattice.core.ID;
 import mon.lattice.core.plane.InfoPlane;
 import java.io.Serializable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public abstract class AbstractZMQInfoPlane implements InfoPlane  {
     
     AbstractZMQSubscriber zmqSubscriber;
     AbstractZMQPublisher zmqPublisher;
-    
-    static Logger LOGGER = LoggerFactory.getLogger(AbstractZMQInfoPlane.class);
     
     public AbstractZMQInfoPlane() {
     }

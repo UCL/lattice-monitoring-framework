@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mon.lattice.control.controller.json;
 
 import mon.lattice.core.plane.InfoPlane;
@@ -13,9 +8,9 @@ import java.util.Properties;
 import mon.lattice.control.zmq.ZMQControlPlaneXDRProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import mon.lattice.im.delegate.InfoPlaneDelegateInteracter;
 import mon.lattice.im.zmq.ZMQControllerInfoPlane;
 import mon.lattice.core.plane.ControlPlane;
+import mon.lattice.control.im.ControlInformationInteracter;
 
 /**
  *
@@ -36,21 +31,19 @@ public class ZMQController extends AbstractJSONRestController {
         controlLocalPort = Integer.parseInt(pr.getProperty("control.localport"));
         infoPlanePort = Integer.parseInt(pr.getProperty("info.localport"));
         
-        poolSize = Integer.parseInt(pr.getProperty("control.poolsize"));
-        
         // ZMQController is the root of the infoPlane - other nodes use it to perform bootstrap
         InfoPlane infoPlane = new ZMQControllerInfoPlane(infoPlanePort);
         
         // we get the ControlInformationManager from the InfoPlane
-        controlInformationManager = ((InfoPlaneDelegateInteracter) infoPlane).getInfoPlaneDelegate();
+        controlInformationManager = ((ControlInformationInteracter) infoPlane).getControlInformation();
         
 	setInfoPlane(infoPlane);
         
         // create a ZMQ control plane producer
-        ControlPlane controlPlane = new ZMQControlPlaneXDRProducer(poolSize, controlLocalPort);
+        ControlPlane controlPlane = new ZMQControlPlaneXDRProducer(controlLocalPort);
         
-        // setting a reference to the InfoPlaneDelegate on the Control Plane
-        ((InfoPlaneDelegateInteracter) controlPlane).setInfoPlaneDelegate(controlInformationManager);
+        // setting a reference to the ControlInformation on the Control Plane
+        ((ControlInformationInteracter) controlPlane).setControlInformation(controlInformationManager);
         setControlPlane(controlPlane);
         
         connect();

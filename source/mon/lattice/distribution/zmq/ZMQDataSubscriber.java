@@ -13,6 +13,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import org.slf4j.LoggerFactory;
+import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQException;
 
@@ -23,7 +25,7 @@ import org.zeromq.ZMQException;
 public class ZMQDataSubscriber implements Runnable {
     Receiving receiver;
     
-    ZMQ.Context context;
+    ZContext context;
     ZMQ.Socket subscriberSocket;
     
     String remoteHost = null;
@@ -48,8 +50,8 @@ public class ZMQDataSubscriber implements Runnable {
         this.receiver = receiver;
         this.localPort = port;
         
-        context = ZMQ.context(1);
-        subscriberSocket = context.socket(ZMQ.SUB);
+        context = new ZContext(1);
+        subscriberSocket = context.createSocket(SocketType.SUB);
     }
     
     
@@ -59,13 +61,13 @@ public class ZMQDataSubscriber implements Runnable {
         this.remotePort = remotePort;
     }
     
-    public ZMQDataSubscriber(Receiving receiver, String uri, ZMQ.Context ctx) {
+    public ZMQDataSubscriber(Receiving receiver, String uri, ZContext ctx) {
         this.receiver = receiver;
         this.remoteURI = uri;
         
         context = ctx;
-        subscriberSocket = context.socket(ZMQ.SUB);
-        subscriberSocket.setRcvHWM(0);
+        subscriberSocket = context.createSocket(SocketType.SUB);
+        //subscriberSocket.setRcvHWM(0);
     }
     
     
@@ -95,7 +97,6 @@ public class ZMQDataSubscriber implements Runnable {
     
     public void end() throws InterruptedException {
         threadRunning = false;
-        context.term();
     }
     
     protected boolean receive() {
@@ -165,6 +166,7 @@ public class ZMQDataSubscriber implements Runnable {
 	    }
 	}
         subscriberSocket.close();
+        context.destroy();
     }
     
 }

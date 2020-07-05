@@ -11,6 +11,8 @@ import java.io.IOException;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.control.agents.ControllerAgent;
 import mon.lattice.core.plane.InfoPlane;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A ZMQDataSourceInfoPlane is an InfoPlane implementation
@@ -18,14 +20,16 @@ import mon.lattice.core.plane.InfoPlane;
  * It is also a DataSourceInteracter so it can, if needed,
  * talk to the DataSource object it gets bound to.
  */
-public class ZMQDataSourceInfoPlane extends AbstractZMQInfoPlane implements InfoPlane, DataSourceDelegateInteracter {
+public class ZMQDataSourceInfoPlane extends AbstractZMQInfoPlane implements DataSourceDelegateInteracter {
     DataSourceDelegate dataSourceDelegate;
     
     // The hostname of the Subscriber.
-    String remoteHost;
+    String remoteHostname;
 
     // The port of the Subscriber
     int remotePort;
+    
+    private Logger LOGGER = LoggerFactory.getLogger(ZMQDataSourceInfoPlane.class);
     
     /**
      * Construct a ZMQDataSourceInfoPlane.
@@ -34,9 +38,9 @@ public class ZMQDataSourceInfoPlane extends AbstractZMQInfoPlane implements Info
      */
     
     public ZMQDataSourceInfoPlane(String remoteHostname, int remotePort) {
-	remoteHost = remoteHostname;
+	this.remoteHostname = remoteHostname;
 	this.remotePort = remotePort;
-        zmqPublisher = new ZMQPublisherWithNoMessageOnRemoveProbe(remoteHost, this.remotePort);
+        zmqPublisher = new ZMQDataSourcePublisher(this.remoteHostname, this.remotePort);
     }
      
      

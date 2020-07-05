@@ -5,8 +5,8 @@ import mon.lattice.control.Transmitter;
 import mon.lattice.control.SynchronousTransmitting;
 import java.io.IOException;
 import static mon.lattice.control.zmq.AbstractZMQControlPlaneProducer.LOGGER;
-import mon.lattice.core.ID;
 import org.zeromq.ZMQ;
+
 
 /**
  * This is a UDP sender for monitoring messages
@@ -14,20 +14,14 @@ import org.zeromq.ZMQ;
 public abstract class ZMQRequester implements SynchronousTransmitting, Transmitter {
     
     ZMQ.Context context;
-    ZMQ.Socket sender;
-    
-    String identity;
     
     
     /**
     * Construct a sender from an existing ZMQ Context
     */
     
-    public ZMQRequester(ZMQ.Context ctx) throws IOException {
+    public ZMQRequester(ZMQ.Context ctx) {
         context = ctx;
-        sender = context.socket(ZMQ.REQ);
-        identity = ID.generate().toString();
-        sender.setIdentity(identity.getBytes(ZMQ.CHARSET));
     }
     
     
@@ -41,10 +35,8 @@ public abstract class ZMQRequester implements SynchronousTransmitting, Transmitt
      * Connect to the internal socket
      */
     @Override
-    public void connect()  throws IOException {
-        sender.setLinger(0);
-        sender.setHWM(0);
-	sender.connect("inproc://frontend");
+    public void connect() {
+
     }
 
     /**
@@ -52,7 +44,6 @@ public abstract class ZMQRequester implements SynchronousTransmitting, Transmitt
      */
     @Override
     public void end() throws IOException {
-	sender.close();
         context.term();
     }
     
@@ -62,4 +53,6 @@ public abstract class ZMQRequester implements SynchronousTransmitting, Transmitt
         LOGGER.debug("just transmitted Control Message with seqNo: " + id);
         return true;
     }
+    
+    
 }

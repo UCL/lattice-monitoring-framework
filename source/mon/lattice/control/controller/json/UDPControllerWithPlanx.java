@@ -15,9 +15,9 @@ import java.util.Properties;
 import mon.lattice.control.udp.UDPControlPlaneXDRProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import mon.lattice.im.delegate.InfoPlaneDelegateInteracter;
 import mon.lattice.core.plane.ControlPlane;
 import mon.lattice.im.dht.planx.PlanxDHTRootInfoPlane;
+import mon.lattice.control.im.ControlInformationInteracter;
 
 /**
  *
@@ -56,24 +56,20 @@ public class UDPControllerWithPlanx extends AbstractJSONRestController {
         }
         
         // we get the ControlInformationManager from the InfoPlane
-        controlInformationManager = ((InfoPlaneDelegateInteracter) infoPlane).getInfoPlaneDelegate();
+        controlInformationManager = ((ControlInformationInteracter) infoPlane).getControlInformation();
         
         // setting the InfoPlane to send announce events to the ControlInformationManager
         //((PlanxDHTRootInfoPlane) infoPlane).addAnnounceEventListener(controlInformationManager);
         
 	setInfoPlane(infoPlane);
         
-        // create a control plane producer 
+        // create a control plane producer  with announce listening (port 8888)
         // announcePort to listen for announce Messages from DSs/DCs
         // maxPoolSize to instantiate a pool of UDP Transmitters (each transmitter is not connected to any specific DS)
         ControlPlane controlPlane = new UDPControlPlaneXDRProducer(8888, poolSize);
         
-        // create a control plane producer without announce listening capabilities 
-        // as this is implemented in the used info plane implementation
-        //ControlPlane controlPlane = new UDPControlPlaneXDRProducer(poolSize);
-        
-        // setting a reference to the InfoPlaneDelegate on the Control Plane
-        ((InfoPlaneDelegateInteracter) controlPlane).setInfoPlaneDelegate(controlInformationManager);
+        // setting a reference to the ControlInformation on the Control Plane
+        ((ControlInformationInteracter) controlPlane).setControlInformation(controlInformationManager);
         ((UDPControlPlaneXDRProducer) controlPlane).addAnnounceEventListener(controlInformationManager);
         setControlPlane(controlPlane);
         

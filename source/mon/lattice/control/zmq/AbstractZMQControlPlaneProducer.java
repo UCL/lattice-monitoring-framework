@@ -5,12 +5,12 @@
  */
 package mon.lattice.control.zmq;
 
-import mon.lattice.im.delegate.InfoPlaneDelegate;
-import mon.lattice.im.delegate.InfoPlaneDelegateInteracter;
 import mon.lattice.core.plane.ControllerControlPlane;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import mon.lattice.control.im.ControlInformation;
+import mon.lattice.control.im.ControlInformationInteracter;
 
 /**
  * UDP based request-reply protocol to send control messages to Data Sources
@@ -21,12 +21,12 @@ import org.slf4j.LoggerFactory;
  * @author uceeftu
  */
 public abstract class AbstractZMQControlPlaneProducer implements 
-        ControllerControlPlane, /*SynchronousTransmitting,*/ InfoPlaneDelegateInteracter  {
+        ControllerControlPlane, ControlInformationInteracter  {
     
     ZMQRouter zmqRouter;
     int localControlPort;
     
-    protected InfoPlaneDelegate infoPlaneDelegate;
+    protected ControlInformation controlInformation;
     
     static Logger LOGGER = LoggerFactory.getLogger("ZMQControlPlaneProducer");
     
@@ -72,13 +72,13 @@ public abstract class AbstractZMQControlPlaneProducer implements
     
 
     @Override
-    public InfoPlaneDelegate getInfoPlaneDelegate() {
-        return infoPlaneDelegate;
+    public ControlInformation getControlInformation() {
+        return controlInformation;
     }
 
     @Override
-    public void setInfoPlaneDelegate(InfoPlaneDelegate im) {
-        this.infoPlaneDelegate = im;
+    public void setControlInformation(ControlInformation im) {
+        this.controlInformation = im;
     }
     
 }

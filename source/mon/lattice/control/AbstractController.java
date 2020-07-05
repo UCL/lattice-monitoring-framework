@@ -8,7 +8,7 @@ package mon.lattice.control;
 import java.util.Properties;
 import mon.lattice.core.AbstractPlaneInteracter;
 import mon.lattice.core.plane.ControllerControlPlane;
-import mon.lattice.im.delegate.InfoPlaneDelegate;
+import mon.lattice.control.im.ControlInformation;
 
 /**
  *
@@ -17,7 +17,7 @@ import mon.lattice.im.delegate.InfoPlaneDelegate;
  */
 public abstract class AbstractController<ReturnType> extends AbstractPlaneInteracter implements ControlInterface<ReturnType>  {        
     
-    protected InfoPlaneDelegate controlInformationManager;    
+    protected ControlInformation controlInformationManager;    
     protected Properties pr;
   
     abstract public void initPlanes(); 
@@ -28,7 +28,7 @@ public abstract class AbstractController<ReturnType> extends AbstractPlaneIntera
     }
     
     
-    public InfoPlaneDelegate getInfoPlaneDelegate() {
+    public ControlInformation getInfoPlaneDelegate() {
         return controlInformationManager;
     }
     

@@ -7,8 +7,6 @@ package mon.lattice.control.udp;
 
 import mon.lattice.control.SynchronousTransmitting;
 import mon.lattice.control.ControlPlaneConsumerException;
-import mon.lattice.im.delegate.InfoPlaneDelegate;
-import mon.lattice.im.delegate.InfoPlaneDelegateInteracter;
 import mon.lattice.core.plane.AbstractAnnounceMessage;
 import mon.lattice.core.plane.AnnounceEventListener;
 import mon.lattice.core.plane.ControllerControlPlane;
@@ -19,8 +17,11 @@ import mon.lattice.distribution.udp.UDPReceiver;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.util.Map;
+import mon.lattice.im.AnnounceHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import mon.lattice.control.im.ControlInformation;
+import mon.lattice.control.im.ControlInformationInteracter;
 
 /**
  * UDP based request-reply protocol to send control messages to Data Sources
@@ -31,14 +32,14 @@ import org.slf4j.LoggerFactory;
  * @author uceeftu
  */
 public abstract class AbstractUDPControlPlaneProducer implements 
-        ControllerControlPlane, SynchronousTransmitting, Receiving, InfoPlaneDelegateInteracter  {
+        ControllerControlPlane, SynchronousTransmitting, Receiving, ControlInformationInteracter, AnnounceHandler  {
     
     UDPReceiver AnnounceListener;
     UDPTransmitterPool controlTransmittersPool;
     int maxPoolSize;
     int announceListenerPort;
     
-    InfoPlaneDelegate infoPlaneDelegate;
+    ControlInformation controlInformation;
     AnnounceEventListener listener;
     
     static Logger LOGGER = LoggerFactory.getLogger("UDPControlPlaneProducer");
@@ -118,22 +119,24 @@ public abstract class AbstractUDPControlPlaneProducer implements
     
 
     @Override
-    public InfoPlaneDelegate getInfoPlaneDelegate() {
-        return infoPlaneDelegate;
+    public ControlInformation getControlInformation() {
+        return controlInformation;
     }
 
     @Override
-    public void setInfoPlaneDelegate(InfoPlaneDelegate im) {
-        this.infoPlaneDelegate = im;
+    public void setControlInformation(ControlInformation im) {
+        this.controlInformation = im;
     }
     
     
+    @Override
     public void addAnnounceEventListener(AnnounceEventListener l) {
         listener = l;
     }
 
-    protected void fireEvent(AbstractAnnounceMessage m) {
-        listener.receivedAnnounceEvent(m);
+    @Override
+    public void sendMessageToListener(AbstractAnnounceMessage m) {
+        listener.notifyAnnounceEvent(m);
     }
     
 }

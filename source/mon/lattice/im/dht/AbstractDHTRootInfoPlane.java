@@ -6,29 +6,26 @@
 package mon.lattice.im.dht;
 
 import mon.lattice.core.ControllableDataConsumer;
-import mon.lattice.im.delegate.ControlInformationManager;
-import mon.lattice.im.delegate.InfoPlaneDelegate;
+import mon.lattice.control.im.ControlInformationManager;
 import mon.lattice.core.DataSource;
-import mon.lattice.core.ID;
 import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.Reporter;
 import mon.lattice.core.plane.AbstractAnnounceMessage;
 import mon.lattice.core.plane.AnnounceEventListener;
-import mon.lattice.im.delegate.InfoPlaneDelegateInteracter;
 import mon.lattice.control.agents.ControllerAgent;
+import mon.lattice.control.im.ControlInformation;
+import mon.lattice.control.im.ControlInformationInteracter;
 
 /**
  * A TomP2PDHTInfoPlaneConsumer is an InfoPlane implementation
  that collects data from the Information Model data.
  */
 public abstract class AbstractDHTRootInfoPlane extends AbstractDHTInfoPlane 
-                                               implements InfoPlaneDelegateInteracter, AnnounceEventListener  {
+                                               implements ControlInformationInteracter, AnnounceEventListener  {
     
-    private InfoPlaneDelegate infoPlaneDelegate;
-    
-    AnnounceEventListener listener;
-    
+    private ControlInformation controlInformation;
+       
     // The hostname of the DHT root.
     protected String rootHost;
 
@@ -42,7 +39,7 @@ public abstract class AbstractDHTRootInfoPlane extends AbstractDHTInfoPlane
      * Constructor for subclasses.
      */
     public AbstractDHTRootInfoPlane() {
-        setInfoPlaneDelegate(new ControlInformationManager(this));
+        setControlInformation(new ControlInformationManager(this));
     }
 
 
@@ -61,79 +58,23 @@ public abstract class AbstractDHTRootInfoPlane extends AbstractDHTInfoPlane
 	return true;
     }
     
-    
     @Override
-    public void receivedAnnounceEvent(AbstractAnnounceMessage m) {
-        infoPlaneDelegate.receivedAnnounceEvent(m);
-    }
-    
-    @Override
-    public void setInfoPlaneDelegate(InfoPlaneDelegate im) {
-        this.infoPlaneDelegate = im;
-    }
-
-    @Override
-    public InfoPlaneDelegate getInfoPlaneDelegate() {
-        return this.infoPlaneDelegate;
-    }
-    
-    public void addAnnounceEventListener(AnnounceEventListener l) {
-        this.listener=l;
-    }
-    
-    protected void fireEvent(AbstractAnnounceMessage m) {
-        listener.receivedAnnounceEvent(m);
+    public void notifyAnnounceEvent(AbstractAnnounceMessage m) {
+        controlInformation.notifyAnnounceEvent(m);
     }
     
     @Override
-    public Object lookupProbesOnDataSource(ID dataSourceID) {
-        throw new UnsupportedOperationException("Not supported yet"); //To change body of generated methods, choose Tools | Templates.
+    public void setControlInformation(ControlInformation im) {
+        this.controlInformation = im;
+    }
+
+    @Override
+    public ControlInformation getControlInformation() {
+        return this.controlInformation;
     }
     
-    @Override
-    public Object lookupControllerAgentInfo(ID controllerAgentID, String info) {
-        throw new UnsupportedOperationException("Not supported yet"); //To change body of generated methods, choose Tools | Templates.
-    }
+    
 
-    @Override
-    public Object lookupDataSourceInfo(DataSource dataSource, String info) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object lookupDataSourceInfo(ID dataSourceID, String info) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object lookupProbeAttributeInfo(Probe probe, int field, String info) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object lookupProbeAttributeInfo(ID probeID, int field, String info) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object lookupProbeInfo(Probe probe, String info) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object lookupProbeInfo(ID probeID, String info) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object lookupDataConsumerInfo(ID dataConsumerID, String info) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object lookupReporterInfo(ID reporterID, String info) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
 
     

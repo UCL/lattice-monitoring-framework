@@ -1,8 +1,3 @@
-// TomP2PDHTRootInfoPlane.java
-// Author: Stuart Clayman
-// Email: sclayman@ee.ucl.ac.uk
-// Date: Sept 2009
-
 package mon.lattice.im.dht.tomp2p;
 
 import mon.lattice.im.dht.AbstractDHTRootInfoPlane;
@@ -19,13 +14,14 @@ public class TomP2PDHTRootInfoPlane extends AbstractDHTRootInfoPlane {
      * Construct a DHTInfoPlane.
      * Connect to the DHT root at hostname on port,
      */
+    
     public TomP2PDHTRootInfoPlane(String localHostname, int localPort) {
 	rootHost = localHostname;
 	rootPort = localPort;
 
         // from the super class
 	imNode = new TomP2PIMNode(localPort, localHostname, localPort);
-        imNode.addAnnounceEventListener(this);
+        imNode.addAnnounceEventListener(this.getControlInformation());
     } 
     
     public TomP2PDHTRootInfoPlane(int localPort) {
@@ -35,6 +31,7 @@ public class TomP2PDHTRootInfoPlane extends AbstractDHTRootInfoPlane {
 	imNode = new TomP2PIMNode(localPort);
         rootHost = imNode.getRemoteHostname();
         
-        imNode.addAnnounceEventListener(this);
-    } 
+        imNode.addAnnounceEventListener(this.getControlInformation());
+    }
+    
 }

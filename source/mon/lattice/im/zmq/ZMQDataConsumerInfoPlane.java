@@ -4,12 +4,13 @@ import mon.lattice.core.DataSource;
 import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.Reporter;
-import mon.lattice.core.plane.InfoPlane;
 import java.io.IOException;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.ControllableReporter;
 import mon.lattice.core.DataConsumerInteracter;
 import mon.lattice.control.agents.ControllerAgent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A ZMQDataSourceInfoPlane is an InfoPlane implementation
@@ -17,7 +18,7 @@ import mon.lattice.control.agents.ControllerAgent;
  * It is also a DataSourceInteracter so it can, if needed,
  * talk to the DataSource object it gets bound to.
  */
-public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements InfoPlane, DataConsumerInteracter {
+public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements DataConsumerInteracter {
     ControllableDataConsumer dataConsumer;
     
     // The hostname of the Subscriber.
@@ -25,6 +26,8 @@ public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements In
 
     // The port of the Subscriber
     int remotePort;
+    
+    private Logger LOGGER = LoggerFactory.getLogger(ZMQDataConsumerInfoPlane.class);
     
     /**
      * Construct a ZMQDataConsumerInfoPlane.
@@ -34,8 +37,10 @@ public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements In
     
     public ZMQDataConsumerInfoPlane(String remoteHostname, int remotePort) {
 	remoteHost = remoteHostname;
-	this.remotePort = remotePort;        zmqPublisher = new ZMQPublisherWithNoMessageOnRemoveProbe(remoteHost, remotePort);
-        zmqSubscriber = new ZMQSubscriberWithNoMessageOnRemoveProbe(remoteHost, remotePort + 1, "info.probe", zmqPublisher.getContext()); //reusing context
+	this.remotePort = remotePort;        
+        zmqPublisher = new ZMQDataConsumerPublisher(remoteHost, remotePort);
+        // TODO: check the topics it should subscribe to
+        zmqSubscriber = new ZMQDataConsumerSubscriber(remoteHost, remotePort + 1, "info.", zmqPublisher.getContext());
         
     }
      

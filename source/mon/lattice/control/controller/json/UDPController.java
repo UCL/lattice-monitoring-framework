@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mon.lattice.control.controller.json;
 
 import mon.lattice.core.plane.InfoPlane;
@@ -13,9 +8,9 @@ import java.util.Properties;
 import mon.lattice.control.udp.UDPControlPlaneXDRProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import mon.lattice.im.delegate.InfoPlaneDelegateInteracter;
 import mon.lattice.core.plane.ControlPlane;
 import mon.lattice.im.dht.tomp2p.TomP2PDHTRootInfoPlane;
+import mon.lattice.control.im.ControlInformationInteracter;
 
 /**
  *
@@ -46,25 +41,17 @@ public class UDPController extends AbstractJSONRestController {
         InfoPlane infoPlane = new TomP2PDHTRootInfoPlane(infoPlanePort);
         
         // we get the ControlInformationManager from the InfoPlane
-        controlInformationManager = ((InfoPlaneDelegateInteracter) infoPlane).getInfoPlaneDelegate();
-        
-        // setting the InfoPlane to send announce events to the ControlInformationManager
-        ((TomP2PDHTRootInfoPlane) infoPlane).addAnnounceEventListener(controlInformationManager);
+        controlInformationManager = ((ControlInformationInteracter) infoPlane).getControlInformation();
         
 	setInfoPlane(infoPlane);
-        
-        // create a control plane producer 
-        // announcePort to listen for announce Messages from DSs/DCs
-        // maxPoolSize to instantiate a pool of UDP Transmitters (each transmitter is not connected to any specific DS)
-        //ControlPlane controlPlane = new UDPControlPlaneXDRProducer(8888, poolSize);
         
         // create a control plane producer without announce listening capabilities 
         // as this is implemented in the used info plane implementation
         ControlPlane controlPlane = new UDPControlPlaneXDRProducer(poolSize);
         
-        // setting a reference to the InfoPlaneDelegate on the Control Plane
-        ((InfoPlaneDelegateInteracter) controlPlane).setInfoPlaneDelegate(controlInformationManager);
-        ((UDPControlPlaneXDRProducer) controlPlane).addAnnounceEventListener(controlInformationManager);
+        // setting a reference to the ControlInformation on the Control Plane
+        ((ControlInformationInteracter) controlPlane).setControlInformation(controlInformationManager);
+        
         setControlPlane(controlPlane);
         
         connect();

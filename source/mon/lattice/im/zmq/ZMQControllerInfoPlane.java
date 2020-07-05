@@ -1,27 +1,22 @@
 package mon.lattice.im.zmq;
 
-import mon.lattice.im.delegate.ControlInformationManager;
-import mon.lattice.im.delegate.InfoPlaneDelegate;
+import mon.lattice.control.im.ControlInformationManager;
 import mon.lattice.core.DataSource;
 import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.Reporter;
 import mon.lattice.core.ControllableDataConsumer;
-import mon.lattice.core.plane.AbstractAnnounceMessage;
-import mon.lattice.core.plane.AnnounceEventListener;
 import mon.lattice.core.plane.InfoPlane;
-import mon.lattice.im.delegate.InfoPlaneDelegateInteracter;
 import mon.lattice.control.agents.ControllerAgent;
-import mon.lattice.core.ID;
+import mon.lattice.control.im.ControlInformation;
+import mon.lattice.control.im.ControlInformationInteracter;
 
 /**
  * A ZMQControllerInfoPlane is an InfoPlane implementation
  that mainly collects data from the Information Model data.
  */
-public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements InfoPlane, InfoPlaneDelegateInteracter, AnnounceEventListener  {
-    private InfoPlaneDelegate infoPlaneDelegate;
-    
-    AnnounceEventListener listener;
+public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements ControlInformationInteracter {
+    private ControlInformation controlInformation;
     
     // The local port
     int port;
@@ -32,9 +27,8 @@ public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements Info
      * Constructor for subclasses.
      */
     private ZMQControllerInfoPlane() {
-        setInfoPlaneDelegate(new ControlInformationManager(this));
-        // setting the announce listener to the InfoPlaneDelegate
-        listener = infoPlaneDelegate;
+        setControlInformation(new ControlInformationManager(this));
+        // setting the announce listener to the ControlInformation
     }
 
 
@@ -45,8 +39,8 @@ public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements Info
         this();
 	port = localPort;
         zmqProxy = new ZMQProxy(port);
-        zmqSubscriber = new ZMQSubscriberWithNoMessageOnRemoveProbe(zmqProxy.getInternalURI(), "info.", zmqProxy.getContext());
-        zmqSubscriber.addAnnounceEventListener(listener);
+        zmqSubscriber = new ZMQControllerSubscriber(zmqProxy.getInternalURI(), "info.", zmqProxy.getContext());
+        zmqSubscriber.addAnnounceEventListener(controlInformation);
     }
     
     
@@ -184,99 +178,16 @@ public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements Info
     public boolean removeControllerAgentInfo(ControllerAgent agent) {
         return false;
     }
-    
-    
-    
+
     
     @Override
-    public boolean containsDataSource(ID dataSourceID, int timeout) {
-        return zmqSubscriber.containsDataSource(dataSourceID, timeout); 
-    }
-    
-    @Override
-    public boolean containsDataConsumer(ID dataConsumerID, int timeout) {
-        return zmqSubscriber.containsDataConsumer(dataConsumerID, timeout);
+    public void setControlInformation(ControlInformation im) {
+        this.controlInformation = im;
     }
 
     @Override
-    public boolean containsControllerAgent(ID controllerAgentID, int timeout) {
-        return zmqSubscriber.containsControllerAgent(controllerAgentID, timeout);
-    }
-    
-    @Override
-    public Object lookupDataSourceInfo(DataSource dataSource, String info) {
-        return zmqSubscriber.getDataSourceInfo(dataSource.getID(), info);
-    }
-
-    @Override
-    public Object lookupDataSourceInfo(ID dataSourceID, String info) {
-        return zmqSubscriber.getDataSourceInfo(dataSourceID, info);
-    }
-
-    @Override
-    public Object lookupProbeInfo(Probe probe, String info) {
-        return zmqSubscriber.getProbeInfo(probe.getID(), info);
-    }
-
-    @Override
-    public Object lookupProbeInfo(ID probeID, String info) {
-        return zmqSubscriber.getProbeInfo(probeID, info);
-    }
-
-    @Override
-    public Object lookupProbeAttributeInfo(Probe probe, int field, String info) {
-        return zmqSubscriber.getProbeAttributeInfo(probe.getID(), field, info);
-    }
-
-    @Override
-    public Object lookupProbeAttributeInfo(ID probeID, int field, String info) {
-        return zmqSubscriber.getProbeAttributeInfo(probeID, field, info);
-    }
-
-    @Override
-    public Object lookupDataConsumerInfo(ID dataConsumerID, String info) {
-        return zmqSubscriber.getDataConsumerInfo(dataConsumerID, info);
-    }
-    
-    @Override
-    public Object lookupControllerAgentInfo(ID controllerAgentID, String info) {
-        return zmqSubscriber.getControllerAgentInfo(controllerAgentID, info);
-    }
-
-    @Override
-    public Object lookupReporterInfo(ID reporterID, String info) {
-        return zmqSubscriber.getReporterInfo(reporterID, info);
-    }
-    
-    @Override
-    public Object lookupProbesOnDataSource(ID dataSourceID) {
-        return zmqSubscriber.getProbesOnDataSource(dataSourceID);
-    }
-    
-    
-    
-    @Override
-    public void receivedAnnounceEvent(AbstractAnnounceMessage m) {
-        infoPlaneDelegate.receivedAnnounceEvent(m);
-    }
-    
-    @Override
-    public void setInfoPlaneDelegate(InfoPlaneDelegate im) {
-        this.infoPlaneDelegate = im;
-    }
-
-    @Override
-    public InfoPlaneDelegate getInfoPlaneDelegate() {
-        return this.infoPlaneDelegate;
-    }
-    
-    
-    public void addAnnounceEventListener(AnnounceEventListener l) {
-        this.listener=l;
-    }
-    
-    protected void fireEvent(AbstractAnnounceMessage m) {
-        listener.receivedAnnounceEvent(m);
+    public ControlInformation getControlInformation() {
+        return this.controlInformation;
     }
     
 }

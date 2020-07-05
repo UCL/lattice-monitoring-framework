@@ -12,15 +12,14 @@ import mon.lattice.control.ControlPlaneConsumerException;
 import mon.lattice.control.ControlServiceException;
 import mon.lattice.control.zmq.ZMQControlMetaData;
 import mon.lattice.control.zmq.ZMQControlPlaneXDRProducer;
-import mon.lattice.control.zmq.ZMQXDRRequester;
 import mon.lattice.core.ID;
 import mon.lattice.core.Rational;
 import mon.lattice.core.plane.ControlOperation;
 import mon.lattice.core.plane.ControlPlaneMessage;
 import mon.lattice.core.plane.ControllerControlPlaneWithAgents;
 import mon.lattice.distribution.MetaData;
-import mon.lattice.im.delegate.ControllerAgentNotFoundException;
-import mon.lattice.im.delegate.ZMQControlEndPointMetaData;
+import mon.lattice.control.im.ControllerAgentNotFoundException;
+import mon.lattice.control.im.ZMQControlEndPointMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +31,8 @@ public class ZMQControlPlaneXDRProducerWithControlAgents extends ZMQControlPlane
 
     private static Logger LOGGER = LoggerFactory.getLogger(ZMQControlPlaneXDRProducerWithControlAgents.class);
     
-    public ZMQControlPlaneXDRProducerWithControlAgents(int maxPoolSize, int port) {
-        super(maxPoolSize, port);
+    public ZMQControlPlaneXDRProducerWithControlAgents(int port) {
+        super(port);
     }
 
     @Override
@@ -56,20 +55,13 @@ public class ZMQControlPlaneXDRProducerWithControlAgents extends ZMQControlPlane
         
         ControlPlaneMessage m=new ControlPlaneMessage(ControlOperation.SET_MONITORING_ENDPOINT, args);
         try {
-            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)infoPlaneDelegate.getControllerAgentAddressFromID(controllerAgentID);
+            ZMQControlEndPointMetaData dstAddr = (ZMQControlEndPointMetaData)controlInformation.getControllerAgentAddressFromID(controllerAgentID);
             
             MetaData mData = new ZMQControlMetaData(dstAddr.getId().toString());
-            
-            ZMQXDRRequester connection = controlTransmittersPool.getConnection();
-            result = (Boolean) connection.synchronousTransmit(m, mData);
-            controlTransmittersPool.releaseConnection(connection);
-            
+            result = (Boolean) requester.synchronousTransmit(m, mData);
         } 
-          catch (InterruptedException iex) {
-            LOGGER.error("Waiting thread interrupted " + iex.getMessage());
-            throw new ControlServiceException(iex);     
-            
-        } catch (IOException | ControllerAgentNotFoundException | ControlPlaneConsumerException ex) {
+        
+        catch (IOException | ControllerAgentNotFoundException | ControlPlaneConsumerException ex) {
             LOGGER.error("Error while performing set Monitoring Reporting Endpoint command " + ex.getMessage());
             throw new ControlServiceException(ex);
           }

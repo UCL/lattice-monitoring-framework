@@ -1,6 +1,8 @@
 package mon.lattice.appl.demo.iot;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import mon.lattice.appl.RestClient;
+import mon.lattice.core.ID;
 import us.monoid.json.JSONException;
 
 
@@ -109,6 +112,16 @@ public class IotEmulator {
     }
     
     
+    void writeCompletedTimestamp(Long timestamp) throws IOException {
+        ID id = ID.generate();
+        File logFile = new File("/tmp/" + "timestamp-" + id.toString() + ".log");
+        FileWriter fw = new FileWriter(logFile);
+        fw.write(timestamp.toString());
+        System.out.println("\nTimestamp written to: " + logFile.getName());
+        fw.close();
+    }
+    
+    
     public static void main(String[] args) {
         IotEmulator iot = null;
         List<IotTopology> iotList = new ArrayList<>();
@@ -161,7 +174,7 @@ public class IotEmulator {
                 IotTopology t = new IotTopology(id,
                                                 iot.userID,
                                                 iot.hostID,
-                                                iot.dsNumber,
+                                                iot.dsNumber,                     
                                                 iot.nSensors,
                                                 iot.rate,
                                                 iot.waitMin,
@@ -184,6 +197,8 @@ public class IotEmulator {
                 t.currentThread.join();
             
             tEnd = System.currentTimeMillis();
+            
+            iot.writeCompletedTimestamp(tEnd/1000);
             
             System.out.print("\n*** Deployment Completed in " + (tEnd - tStart)/1000 + " secs ***\n");
             
