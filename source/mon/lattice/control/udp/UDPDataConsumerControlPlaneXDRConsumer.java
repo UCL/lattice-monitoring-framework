@@ -88,7 +88,7 @@ public class UDPDataConsumerControlPlaneXDRConsumer extends AbstractUDPControlPl
             ReporterLoader r = new ReporterLoader(reporterClassName, reporterArgs);
             dataConsumer.addReporter(r.getReporter());
             return r.getReporter().getId();
-        } catch (ReporterLoaderException e) {
+        } catch (Exception e) {
             throw new ControlServiceException(e);
         }
     }
@@ -96,7 +96,11 @@ public class UDPDataConsumerControlPlaneXDRConsumer extends AbstractUDPControlPl
     @Override
     public boolean unloadReporter(ID reporterID) throws ControlServiceException {
         LOGGER.info("** invoking unloadReporter **");
-        dataConsumer.removeReporter(dataConsumer.getReporterById(reporterID));
-        return true;
+        try {
+            dataConsumer.removeReporter(dataConsumer.getReporterById(reporterID));
+            return true;
+        } catch (Exception e) {
+            throw new ControlServiceException(e);
+        }
     }
 }

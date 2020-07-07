@@ -3,26 +3,27 @@ package mon.lattice.distribution.zmq;
 import mon.lattice.distribution.Receiving;
 import mon.lattice.distribution.MetaData;
 import mon.lattice.distribution.DataPlaneMessageXDRDecoder;
-import mon.lattice.xdr.XDRDataInputStream;
-import mon.lattice.core.plane.MessageType;
 import mon.lattice.core.plane.DataPlane;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.MeasurementReporting;
 import mon.lattice.core.TypeException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import org.slf4j.LoggerFactory;
 
-public class ZMQDataPlaneConsumer extends AbstractZMQDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
+/**
+ * A ZMQDataPlaneConsumerWithNames is a DataPlane implementation
+ * that receives XDR encoded Measurements via ZMQ.
+ * The probe name and attributes name are received with the measurement
+ */
+public class ZMQDataPlaneConsumerWithNames extends AbstractZMQDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
     /**
-     * Construct a UDPDataPlaneConsumerNoNames.
+     * Construct a ZMQDataPlaneConsumerWithNames.
      */
-    public ZMQDataPlaneConsumer(int port) {
+    public ZMQDataPlaneConsumerWithNames(int port) {
         super(port);
     }
 
-    public ZMQDataPlaneConsumer(String remoteHost, int port) {
+    public ZMQDataPlaneConsumerWithNames(String remoteHost, int port) {
         super(remoteHost, port);
     }
 

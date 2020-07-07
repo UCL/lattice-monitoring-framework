@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mon.lattice.appl.datasources;
 
 import java.io.IOException;
@@ -19,6 +14,12 @@ public class ZMQDataSourceDaemonWithWS extends AbstractZMQDataSourceDaemon {
         super(myID, myDSName, dataConsumerName, dataConsumerPort, infoPlaneRootName, infoPlaneRootPort, controlHostAddress, controlHostPort);
     }
 
+    
+    /** Initialises the objects used for the info and control planes via calling
+    * the parent class; then sets the data plane to WS XDR with Names. 
+    * 
+    * @throws IOException 
+    */
     @Override
     public void init() throws IOException {
         super.init();

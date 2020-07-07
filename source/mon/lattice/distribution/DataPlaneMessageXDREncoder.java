@@ -12,7 +12,6 @@ import mon.lattice.core.ProbeMeasurement;
 import mon.lattice.core.TypeException;
 import mon.lattice.core.ID;
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 

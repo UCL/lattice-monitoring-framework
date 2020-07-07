@@ -15,9 +15,11 @@ import us.monoid.json.JSONObject;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.web.Content;
+
 /**
  * A BufferReporter groups and sends the Measurements to a specific function.
  */
+@Deprecated
 public class BufferedRestReporter extends AbstractReporter {
     /**
      * In a BufferReporter, report() groups and sends the Measurement to a specific function.

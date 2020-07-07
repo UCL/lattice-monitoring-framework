@@ -14,6 +14,11 @@ package mon.lattice.core;
  * 
  */
 public interface ControllableReporter extends Reporter {
+    
+    public void init() throws Exception;
+    
+    public void cleanup() throws Exception;
+    
     public ID getId();
        
     public void setId(ID id);

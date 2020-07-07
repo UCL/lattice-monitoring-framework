@@ -5,7 +5,6 @@
  */
 package mon.lattice.appl.dataconsumers;
 
-import mon.lattice.appl.reporters.AbstractReporterWithInfoPlane;
 import mon.lattice.appl.reporters.im.ReporterInformationManager;
 import mon.lattice.core.AbstractDataConsumer;
 import mon.lattice.core.MeasurementReceiver;
@@ -17,6 +16,7 @@ import java.util.Map;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.Rational;
 import java.util.Collection;
+import mon.lattice.appl.reporters.im.ReporterInformationInteracter;
 
 /**
  * Extends AbstractDataConsumer functionalities adding remote control
@@ -159,26 +159,28 @@ public final class DefaultControllableDataConsumer extends AbstractDataConsumer 
     }
 
     @Override
-    public void removeReporter(ControllableReporter l) {
-        super.removeReporter(l);
-        reporters.remove(l.getId());
-        getInfoPlane().removeReporterInfo(l);
+    public void removeReporter(ControllableReporter r) throws Exception {
+        r.cleanup();
+        super.removeReporter(r);
+        reporters.remove(r.getId());
+        getInfoPlane().removeReporterInfo(r);
         
     }
 
     @Override
-    public void addReporter(ControllableReporter l) {
+    public void addReporter(ControllableReporter r) throws Exception {
         //setting Data Consumer ID in the Reporter
-        l.setDcId(myID);
+        r.setDcId(myID);
         
-        // setting InfoPlane Delegate reference to allow Probe name and
-        // attribute resolution
-        if (l instanceof AbstractReporterWithInfoPlane)
-            ((AbstractReporterWithInfoPlane)l).setReporterInformation(new ReporterInformationManager(this.getInfoPlane()));
+        // set ReporterInformation Manager to allow Probe name and
+        // attributes resolution
+        if (r instanceof ReporterInformationInteracter)
+            ((ReporterInformationInteracter)r).setReporterInformation(new ReporterInformationManager(this.getInfoPlane()));
         
-        super.addReporter(l);
-        reporters.put(l.getId(), l);
-        getInfoPlane().addReporterInfo(l);
+        r.init();
+        super.addReporter(r);
+        reporters.put(r.getId(), r);
+        getInfoPlane().addReporterInfo(r);
     }
 
     @Override
@@ -186,6 +188,7 @@ public final class DefaultControllableDataConsumer extends AbstractDataConsumer 
         return reporters.get(reporterID);
     }
     
+    @Override
     public Collection<ControllableReporter> getReportersCollection() {
 	return reporters.values();
     }

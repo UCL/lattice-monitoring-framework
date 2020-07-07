@@ -11,7 +11,7 @@ package mon.lattice.appl.dataconsumers;
  */
 
 import mon.lattice.control.zmq.ZMQDataConsumerControlPlaneXDRConsumer;
-import mon.lattice.distribution.zmq.ZMQDataPlaneConsumer;
+import mon.lattice.distribution.zmq.ZMQDataPlaneConsumerWithNames;
 import mon.lattice.im.zmq.ZMQDataConsumerInfoPlane;
 import mon.lattice.core.DataConsumerInteracter;
 import mon.lattice.core.ID;
@@ -108,7 +108,7 @@ public final class ZMQControllableDataConsumerWithConnectDaemon extends Thread {
         
         // set up data plane listening on *:port
 	//consumer.setDataPlane(new UDPDataPlaneConsumer(dataPort));
-        consumer.setDataPlane(new ZMQDataPlaneConsumer(remoteDataHost, dataPort));
+        consumer.setDataPlane(new ZMQDataPlaneConsumerWithNames(remoteDataHost, dataPort));
         //consumer.setDataPlane(new ZMQDataPlaneConsumerAndForwarder(dataPort));
        
         //InfoPlane infoPlane = new TomP2PDHTDataConsumerInfoPlane(remoteInfoHost, remoteInfoPort, localInfoPort);

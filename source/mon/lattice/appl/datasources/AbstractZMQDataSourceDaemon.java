@@ -65,6 +65,12 @@ public abstract class AbstractZMQDataSourceDaemon extends Daemon {
      
 
 
+    /** Initialises the objects utilised for the info and control planes.
+    * The measurements distribution (data plane) should be specified in the
+    * method implementation of the subclasses.
+    * 
+    * @throws IOException 
+    */
     @Override
     public void init() throws IOException {
         entityType = "data-source-";

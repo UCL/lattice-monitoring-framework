@@ -18,7 +18,6 @@ import mon.lattice.core.data.map.DefaultMMap;
 import mon.lattice.core.data.list.DefaultMList;
 import mon.lattice.core.data.list.MList;
 import mon.lattice.core.Measurement;
-import mon.lattice.core.ConsumerMeasurement;
 import mon.lattice.core.ProbeAttributeType;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.DefaultProbeValue;
@@ -106,11 +105,6 @@ public class MeasurementDecoderXDR {
 
         ID groupID = new ID(groupIDMSB, groupIDLSB);
 
-        // check if names are sent
-        if (hasNames) {
-            String name = in.readUTF();
-        }
-
         //System.err.print(probeID + ": " + mType + " @ " + ts + ". ");
 
 	// read attributes
@@ -152,10 +146,8 @@ public class MeasurementDecoderXDR {
 	    // save this value
 	    attrValues.add(new DefaultProbeValue(key, value));
 	}
-
-	// System.err.println();
-
-	return new ConsumerMeasurementWithMetaData(seqNo, probeID, mType, ts, mDelta, serviceID, groupID, attrValues);
+        
+        return new ConsumerMeasurementWithMetaData(seqNo, probeID, mType, ts, mDelta, serviceID, groupID, attrValues);
     }
 
     /**

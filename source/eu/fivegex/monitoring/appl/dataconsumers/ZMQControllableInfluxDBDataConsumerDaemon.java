@@ -13,7 +13,7 @@ package eu.fivegex.monitoring.appl.dataconsumers;
 import eu.fivegex.monitoring.appl.reporters.InfluxDBReporter;
 import mon.lattice.appl.reporters.LoggerReporter;
 import mon.lattice.control.zmq.ZMQDataConsumerControlPlaneXDRConsumer;
-import mon.lattice.distribution.zmq.ZMQDataPlaneConsumer;
+import mon.lattice.distribution.zmq.ZMQDataPlaneConsumerWithNames;
 import mon.lattice.im.zmq.ZMQDataConsumerInfoPlane;
 import mon.lattice.core.DataConsumerInteracter;
 import mon.lattice.core.ID;
@@ -105,7 +105,7 @@ public final class ZMQControllableInfluxDBDataConsumerDaemon extends Thread {
         
         // set up data plane listening on *:port
 	//consumer.setDataPlane(new UDPDataPlaneConsumer(dataPort));
-        consumer.setDataPlane(new ZMQDataPlaneConsumer(dataPort));
+        consumer.setDataPlane(new ZMQDataPlaneConsumerWithNames(dataPort));
         //consumer.setDataPlane(new ZMQDataPlaneConsumerAndForwarder(dataPort));
        
         //InfoPlane infoPlane = new DHTDataConsumerInfoPlane(remoteInfoHost, remoteInfoPort, localInfoPort);

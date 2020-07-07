@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A Reporter for testing the retrieval of entries from the
- * Information Plane
+ * Information Plane.
  */
 public class LoggerReporterWithInfoPlane extends AbstractReporterWithInfoPlane {
     

@@ -2,31 +2,29 @@ package mon.lattice.distribution.zmq;
 
 import mon.lattice.distribution.TransmittingData;
 import mon.lattice.distribution.DataPlaneMessageXDREncoder;
-import mon.lattice.core.plane.MeasurementMessage;
 import mon.lattice.core.plane.DataPlaneMessage;
 import mon.lattice.core.plane.DataPlane;
 import mon.lattice.core.DataSourceDelegateInteracter;
-import mon.lattice.core.ProbeMeasurement;
 import mon.lattice.core.TypeException;
-import mon.lattice.core.ID;
 import java.io.ByteArrayOutputStream;
 import java.net.InetSocketAddress;
 
 /**
- * A UDPDataPlaneProducerNoNames is a DataPlane implementation
- * that sends Measurements by UDP.
+ * A ZMQDataPlaneProducerWithNames is a DataPlane implementation
+ * that sends XDR encoded Measurements via ZMQ.
+ * The probe name and attributes name are sent within the measurement.
  * It is also a DataSourceDelegateInteracter so it can, if needed,
  * talk to the DataSource object it gets bound to.
  */
-public class ZMQDataPlaneProducer extends AbstractZMQDataPlaneProducer implements DataPlane, DataSourceDelegateInteracter, TransmittingData {
+public class ZMQDataPlaneProducerWithNames extends AbstractZMQDataPlaneProducer implements DataPlane, DataSourceDelegateInteracter, TransmittingData {
     /**
      * Construct a ZMQDataPlaneProducer
      */
-    public ZMQDataPlaneProducer(String remoteHost, int remotePort) {
+    public ZMQDataPlaneProducerWithNames(String remoteHost, int remotePort) {
         super(remoteHost, remotePort);
     }
     
-    public ZMQDataPlaneProducer(InetSocketAddress inetSockAddr) {
+    public ZMQDataPlaneProducerWithNames(InetSocketAddress inetSockAddr) {
         super(inetSockAddr.getAddress().getHostAddress(), inetSockAddr.getPort());
     }
     

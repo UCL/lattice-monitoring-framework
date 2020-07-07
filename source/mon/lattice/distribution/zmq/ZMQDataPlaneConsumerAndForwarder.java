@@ -3,15 +3,12 @@ package mon.lattice.distribution.zmq;
 import mon.lattice.distribution.Receiving;
 import mon.lattice.distribution.MetaData;
 import mon.lattice.distribution.DataPlaneMessageXDRDecoder;
-import mon.lattice.xdr.XDRDataInputStream;
-import mon.lattice.core.plane.MessageType;
 import mon.lattice.core.plane.DataPlane;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.MeasurementReporting;
 import mon.lattice.core.TypeException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 
 public class ZMQDataPlaneConsumerAndForwarder extends AbstractZMQDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
     /**
