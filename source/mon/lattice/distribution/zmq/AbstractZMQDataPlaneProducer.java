@@ -11,8 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An AbstractUDPDataPlaneProducer is a DataPlane implementation
- * that sends Measurements by UDP.
+ * An AbstractZMQDataPlaneProducer is a DataPlane implementation
+ * that sends Measurements via ZMQ.
+ * The type of messaging encoding is left for implementation in the subclasses.
  * It is also a DataSourceDelegateInteracter so it can, if needed,
  * talk to the DataSource object it gets bound to.
  */

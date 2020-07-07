@@ -64,5 +64,16 @@ public abstract class AbstractReporter implements ControllableReporter {
     
     @Override
     public abstract void report(Measurement m);
+
+    
+    /* The implementation is left to the subclasses */
+    
+    @Override
+    public void init() throws Exception {}
+
+    @Override
+    public void cleanup() throws Exception {}
+    
+    
     
 }

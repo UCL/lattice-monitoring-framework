@@ -1,34 +1,33 @@
 package mon.lattice.appl.datasources;
 
-import mon.lattice.distribution.zmq.ZMQDataPlaneProducerWithNames;
-import mon.lattice.core.ID;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import mon.lattice.core.ID;
+import mon.lattice.distribution.ws.WSDataPlaneProducerJSON;
 
 
+public class ZMQDataSourceDaemonWithWSAndJSON extends AbstractZMQDataSourceDaemon {
 
-public class ZMQDataSourceDaemon extends AbstractZMQDataSourceDaemon {
-
-    public ZMQDataSourceDaemon(String myID, String myDSName, String dataConsumerName, int dataConsumerPort, String infoPlaneRootName, int infoPlaneRootPort, String controlHostAddress, int controlHostPort) throws UnknownHostException {
+    public ZMQDataSourceDaemonWithWSAndJSON(String myID, String myDSName, String dataConsumerName, int dataConsumerPort, String infoPlaneRootName, int infoPlaneRootPort, String controlHostAddress, int controlHostPort) throws UnknownHostException {
         super(myID, myDSName, dataConsumerName, dataConsumerPort, infoPlaneRootName, infoPlaneRootPort, controlHostAddress, controlHostPort);
     }
-    
 
+    
     /** Initialises the objects used for the info and control planes via calling
-    * the parent class; then sets the data plane to ZMQ XDR with Names. 
+    * the parent class; then sets the data plane to WS JSON (with Names). 
     * 
     * @throws IOException 
     */
     @Override
     public void init() throws IOException {
         super.init();
-        dataSource.setDataPlane(new ZMQDataPlaneProducerWithNames(dataConsumerPair));
+        dataSource.setDataPlane(new WSDataPlaneProducerJSON(dataConsumerPair)); 
     }
     
     
-    public static void main(String [] args) {
+    public static void main(String[] args) {
         try {
             String dsID = ID.generate().toString();
             String dsName = null;
@@ -72,11 +71,11 @@ public class ZMQDataSourceDaemon extends AbstractZMQDataSourceDaemon {
                     dsName = InetAddress.getLocalHost().getHostName();
                     break;
                 default:
-                    System.err.println("use: ZMQDataSourceDaemon [UUID] dcAddress dcPort infoHost infoPort controllerHost controllerPort");
+                    System.err.println("use: ZMQDataSourceDaemonWithWS [UUID] dcAddress dcPort infoHost infoPort controllerHost controllerPort");
                     System.exit(1);
             }
             
-            ZMQDataSourceDaemon dataSourceDaemon = new ZMQDataSourceDaemon(
+            ZMQDataSourceDaemonWithWSAndJSON dataSourceDaemon = new ZMQDataSourceDaemonWithWSAndJSON(
                                                             dsID,
                                                             dsName, 
                                                             dataConsumerAddr, 

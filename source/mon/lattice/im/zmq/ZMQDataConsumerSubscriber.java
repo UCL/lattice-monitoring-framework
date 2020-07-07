@@ -59,12 +59,15 @@ public class ZMQDataConsumerSubscriber extends AbstractZMQSubscriber implements 
                 
                 else if (operation.equals("remove")) {
                     JSONObject dataSource = dataSources.get(entityID);
-                    JSONArray dsProbes = dataSource.getJSONArray("probes");
-
-                    for (int i=0; i<dsProbes.length(); i++) {
-                        ID probeID = ID.fromString(dsProbes.getString(i));
-                        probes.remove(probeID);
-                        probeAttributes.remove(probeID);
+                    
+                    if (dataSource.has("probes")) {
+                        JSONArray dsProbes = dataSource.getJSONArray("probes");
+                        
+                        for (int i=0; i<dsProbes.length(); i++) {
+                            ID probeID = ID.fromString(dsProbes.getString(i));
+                            probes.remove(probeID);
+                            probeAttributes.remove(probeID);
+                        }
                     }
 
                     dataSources.remove(entityID);
@@ -91,6 +94,14 @@ public class ZMQDataConsumerSubscriber extends AbstractZMQSubscriber implements 
                     
                     ID dataSourceID = ID.fromString(probeInfo.getString("datasource"));
                     JSONObject dataSource = dataSources.get(dataSourceID);
+                    
+                    // this Data Source is not in the map
+                    // this may happen if the Data Consumer was started afterwards
+                    if (dataSource == null) {
+                        dataSource = new JSONObject();
+                        dataSources.put(dataSourceID, dataSource);
+                    }
+                    
                     dataSource.append("probes", entityID.toString());
 
                     JSONArray embeddedAttributes = msgObj.getJSONArray("attributes");

@@ -7,7 +7,6 @@ package mon.lattice.control.zmq;
 
 import mon.lattice.control.ControlServiceException;
 import mon.lattice.control.ReporterLoader;
-import mon.lattice.control.ReporterLoaderException;
 import mon.lattice.core.DataConsumerInteracter;
 import mon.lattice.core.ID;
 import mon.lattice.core.plane.DataConsumerControlPlane;
@@ -86,7 +85,7 @@ public class ZMQDataConsumerControlPlaneXDRConsumer extends AbstractZMQControlPl
             dataConsumer.addReporter(reporter);
             
             return r.getReporter().getId();
-        } catch (ReporterLoaderException e) {
+        } catch (Exception e) {
             throw new ControlServiceException(e);
         }
     }
@@ -94,7 +93,11 @@ public class ZMQDataConsumerControlPlaneXDRConsumer extends AbstractZMQControlPl
     @Override
     public boolean unloadReporter(ID reporterID) throws ControlServiceException {
         LOGGER.info("** invoking unloadReporter **");
-        dataConsumer.removeReporter(dataConsumer.getReporterById(reporterID));
-        return true;
+        try {
+            dataConsumer.removeReporter(dataConsumer.getReporterById(reporterID));
+            return true;
+        } catch (Exception e) {
+            throw new ControlServiceException(e);
+        }
     }
 }

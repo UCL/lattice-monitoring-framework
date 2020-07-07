@@ -1,8 +1,3 @@
-// AbstractUDPDataPlaneConsumer.java
-// Author: Stuart Clayman
-// Email: sclayman@ee.ucl.ac.uk
-// Date: Feb 2010
-
 package mon.lattice.distribution.zmq;
 
 import mon.lattice.distribution.MetaData;
@@ -18,6 +13,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
+/**
+ * An AbstractZMQDataPlaneConsumer is a DataPlane implementation
+ * that receives Measurements via ZMQ.
+ * The type of messaging encoding is left for implementation in the subclasses.
+ */
 public abstract class AbstractZMQDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
     ZMQDataSubscriber subscriber;
     

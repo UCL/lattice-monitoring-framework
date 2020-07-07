@@ -5,31 +5,36 @@
  */
 package mon.lattice.appl.dataconsumers;
 
+/**
+ *
+ * @author uceeftu
+ */
+
+import mon.lattice.core.ID;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Scanner;
-import mon.lattice.core.ID;
-import mon.lattice.distribution.ws.WSDataPlaneConsumerWithNames;
+import mon.lattice.distribution.zmq.ZMQDataPlaneConsumerJSON;
 
 
-public class ZMQControllableDataConsumerDaemonWithWS extends AbstractZMQControllableDataConsumerDaemon {
+public class ZMQControllableDataConsumerDaemonJSON extends AbstractZMQControllableDataConsumerDaemon {
 
-    public ZMQControllableDataConsumerDaemonWithWS(String myID, int dataPort, String infoPlaneRootName, int infoPlaneRootPort, String controlAddr, int controlPort) throws UnknownHostException {
+    public ZMQControllableDataConsumerDaemonJSON(String myID, int dataPort, String infoPlaneRootName, int infoPlaneRootPort, String controlAddr, int controlPort) throws UnknownHostException {
         super(myID, dataPort, infoPlaneRootName, infoPlaneRootPort, controlAddr, controlPort);
     }
 
-    
     /** Initialises the objects used for the info and control planes via calling
-     * the parent class; then sets the data plane to WS XDR with Names. 
-     * 
-     * @throws IOException 
-     */
+    * the parent class; then sets the data plane to ZMQ JSON (with Names). 
+    * 
+    * @throws IOException 
+    */
     @Override
     public void init() throws IOException {
         super.init();
-        consumer.setDataPlane(new WSDataPlaneConsumerWithNames(dataPort));
+        consumer.setDataPlane(new ZMQDataPlaneConsumerJSON(dataPort));
     }
+    
     
     public static void main(String[] args) {
         try {
@@ -69,10 +74,10 @@ public class ZMQControllableDataConsumerDaemonWithWS extends AbstractZMQControll
                     controlEndPoint = infoHost;
                     break;
                 default:
-                    LOGGER.error("usage: ControllableDataConsumerDaemonWithWS [dcID] localdataPort infoRemoteHost infoRemotePort controlLocalPort");
+                    LOGGER.error("usage: ControllableDataConsumerDaemon [dcID] localdataPort infoRemoteHost infoRemotePort controlLocalPort");
                     System.exit(1);
             }
-            ZMQControllableDataConsumerDaemonWithWS dataConsumer = new ZMQControllableDataConsumerDaemonWithWS(dcID, 
+            ZMQControllableDataConsumerDaemonJSON dataConsumer = new ZMQControllableDataConsumerDaemonJSON(dcID, 
                                                                                    dataPort, 
                                                                                    infoHost, 
                                                                                    infoRemotePort,
@@ -87,5 +92,7 @@ public class ZMQControllableDataConsumerDaemonWithWS extends AbstractZMQControll
         } 
     }
     
-    
+
 }
+
+

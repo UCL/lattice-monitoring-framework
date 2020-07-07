@@ -315,7 +315,7 @@ public abstract class AbstractDataConsumer extends AbstractPlaneInteracter imple
     }
 
     /**
-     * The code to run at the begining of the thread body.
+     * The code to run at the beginning of the thread body.
      * Used to set things up.
      */
     public void beginThreadBody() {}

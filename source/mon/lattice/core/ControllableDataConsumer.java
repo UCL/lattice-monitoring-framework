@@ -45,13 +45,13 @@ public interface ControllableDataConsumer extends PlaneInteracter {
     /**
      * Add a reporter to this Data Consumer
      */
-    public void addReporter(ControllableReporter l);
+    public void addReporter(ControllableReporter l) throws Exception ;
     
     
     /**
      * Remove a reporter from this Data Consumer
      */
-    public void removeReporter(ControllableReporter l);
+    public void removeReporter(ControllableReporter l) throws Exception ;
 	
 
     /**

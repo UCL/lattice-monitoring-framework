@@ -5,22 +5,13 @@
 
 package mon.lattice.distribution;
 
-import mon.lattice.distribution.MessageMetaData;
-import mon.lattice.distribution.MetaData;
-import mon.lattice.distribution.MeasurementDecoderXDR;
-import mon.lattice.distribution.ConsumerMeasurementWithMetaData;
 import mon.lattice.xdr.XDRDataInputStream;
-import mon.lattice.core.plane.DataPlaneMessage;
-import mon.lattice.core.plane.MeasurementMessage;
 import mon.lattice.core.plane.MessageType;
-import mon.lattice.core.ProbeMeasurement;
 import mon.lattice.core.TypeException;
 import mon.lattice.core.ID;
 import mon.lattice.core.Measurement;
-import mon.lattice.core.ConsumerMeasurement;
 import java.util.HashMap;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.DataInput;
 import java.io.IOException;
 
@@ -111,7 +102,12 @@ public class DataPlaneMessageXDRDecoder {
 
         case MEASUREMENT:
             // decode the bytes into a measurement object
-            MeasurementDecoderXDR decoder = new MeasurementDecoderXDR();
+            MeasurementDecoderXDR decoder;
+            if (withNames)
+                decoder = new MeasurementDecoderWithNamesXDR();
+            else
+                decoder = new MeasurementDecoderXDR();
+            
             Measurement measurement = decoder.decode(dataIn);
 
             if (measurement instanceof ConsumerMeasurementWithMetaData) {

@@ -10,7 +10,7 @@ package mon.lattice.appl.dataconsumers;
  * @author uceeftu
  */
 
-import mon.lattice.distribution.zmq.ZMQDataPlaneConsumer;
+import mon.lattice.distribution.zmq.ZMQDataPlaneConsumerWithNames;
 import mon.lattice.core.ID;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -24,10 +24,15 @@ public class ZMQControllableDataConsumerDaemon extends AbstractZMQControllableDa
         super(myID, dataPort, infoPlaneRootName, infoPlaneRootPort, controlAddr, controlPort);
     }
 
+    /** Initialises the objects used for the info and control planes via calling
+    * the parent class; then sets the data plane to ZMQ XDR with Names. 
+    * 
+    * @throws IOException 
+    */
     @Override
     public void init() throws IOException {
         super.init();
-        consumer.setDataPlane(new ZMQDataPlaneConsumer(dataPort));
+        consumer.setDataPlane(new ZMQDataPlaneConsumerWithNames(dataPort));
     }
     
     

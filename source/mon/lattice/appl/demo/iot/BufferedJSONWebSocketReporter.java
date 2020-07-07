@@ -1,47 +1,68 @@
-//author: Alina and Francesco
-// edits: Stuart Clayman
-
 package mon.lattice.appl.demo.iot;
 
 import java.io.IOException;
-import mon.lattice.core.AbstractReporter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import mon.lattice.core.Measurement;
 import mon.lattice.distribution.ConsumerMeasurementToJSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.monoid.web.Resty;
-import us.monoid.json.JSONObject;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
-import us.monoid.web.Content;
+import us.monoid.json.JSONObject;
+
 /**
- * A BufferReporter groups Measurements into a JSONArray of a given size
- * before sending them to a specific function via REST.
- */
-public class BufferedJSONRestReporter extends AbstractReporter {
+* A BufferedJSONWebSocketReporter groups the measurements into a JSONArray
+* before sending them.
+*/
 
+public class BufferedJSONWebSocketReporter extends WebSocketReporter {
+    
+    private Logger LOGGER = LoggerFactory.getLogger(BufferedJSONWebSocketReporter.class);
+    
     Integer bufferSize;
-    String uri;
-
-    Resty resty = new Resty();
+    //String dstUri;
+    
     JSONArray array = new JSONArray();
-    private Logger LOGGER = LoggerFactory.getLogger(BufferedJSONRestReporter.class);
+    
+
+    public BufferedJSONWebSocketReporter(String reporterName, InetSocketAddress dstAddr) throws IOException {
+        super(reporterName, dstAddr);
+    }
+
+    public BufferedJSONWebSocketReporter(String reporterName, InetAddress addr, int port) throws IOException {
+        super(reporterName, addr, port);
+    }
     
     
-    public BufferedJSONRestReporter(String reporterName, String bufferSize, String ip, String port, String method) {
-        super(reporterName); 
+    public BufferedJSONWebSocketReporter(String reporterName, String bufferSize, String ip, String port, String method) throws IOException {
+        super(reporterName, InetAddress.getByName(ip), Integer.valueOf(port)); 
         this.bufferSize = Integer.valueOf(bufferSize);
-        this.uri = "http://" + ip + ":" + port + method;
+        //this.uri = "http://" + ip + ":" + port + method;
+    }
+
+    
+    @Override
+    public void init() throws IOException {
+        LOGGER.info("Connecting");
+        super.connect();
+    }
+    
+    
+    @Override
+    public void cleanup() throws IOException {
+        LOGGER.info("Disconnecting");
+        super.disconnect();
     }
     
     
     protected void sendRequest() throws IOException, JSONException {
-        Content payload = new Content("application/json", array.toString().getBytes());
         long tStart = System.currentTimeMillis();
-        JSONArray result = resty.json(uri, payload).array();
+        // now send it
+        socket.send(array.toString().getBytes());
         long tReporting = System.currentTimeMillis() - tStart;
         LOGGER.info("time (msec): " + tReporting);
-        LOGGER.info("result: " + result.toString());
+        //LOGGER.info("result: " + result.toString());
     }
     
 
@@ -51,7 +72,7 @@ public class BufferedJSONRestReporter extends AbstractReporter {
             
         else {
             // Send the grouped data and reinitialise the buffer and the counter
-            LOGGER.debug("builder result: " + array.toString());
+            LOGGER.info("builder result: " + array.toString());
                     
             try {
                 sendRequest();
@@ -89,8 +110,10 @@ public class BufferedJSONRestReporter extends AbstractReporter {
     */
     @Override
     public void report(Measurement m) {
-        
 	LOGGER.debug("Received measurement: " + m.toString());
         addToBuffer(m);
     }
+    
+    
+    
 }

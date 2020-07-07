@@ -1,30 +1,30 @@
 package mon.lattice.appl.datasources;
 
-import mon.lattice.distribution.zmq.ZMQDataPlaneProducerWithNames;
 import mon.lattice.core.ID;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import mon.lattice.distribution.zmq.ZMQDataPlaneProducerJSON;
 
 
 
-public class ZMQDataSourceDaemon extends AbstractZMQDataSourceDaemon {
+public class ZMQDataSourceDaemonJSON extends AbstractZMQDataSourceDaemon {
 
-    public ZMQDataSourceDaemon(String myID, String myDSName, String dataConsumerName, int dataConsumerPort, String infoPlaneRootName, int infoPlaneRootPort, String controlHostAddress, int controlHostPort) throws UnknownHostException {
+    public ZMQDataSourceDaemonJSON(String myID, String myDSName, String dataConsumerName, int dataConsumerPort, String infoPlaneRootName, int infoPlaneRootPort, String controlHostAddress, int controlHostPort) throws UnknownHostException {
         super(myID, myDSName, dataConsumerName, dataConsumerPort, infoPlaneRootName, infoPlaneRootPort, controlHostAddress, controlHostPort);
     }
     
 
     /** Initialises the objects used for the info and control planes via calling
-    * the parent class; then sets the data plane to ZMQ XDR with Names. 
+    * the parent class; then sets the data plane to ZMQ JSON (with Names). 
     * 
     * @throws IOException 
     */
     @Override
     public void init() throws IOException {
         super.init();
-        dataSource.setDataPlane(new ZMQDataPlaneProducerWithNames(dataConsumerPair));
+        dataSource.setDataPlane(new ZMQDataPlaneProducerJSON(dataConsumerPair));
     }
     
     
@@ -76,7 +76,7 @@ public class ZMQDataSourceDaemon extends AbstractZMQDataSourceDaemon {
                     System.exit(1);
             }
             
-            ZMQDataSourceDaemon dataSourceDaemon = new ZMQDataSourceDaemon(
+            ZMQDataSourceDaemonJSON dataSourceDaemon = new ZMQDataSourceDaemonJSON(
                                                             dsID,
                                                             dsName, 
                                                             dataConsumerAddr, 
