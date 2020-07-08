@@ -13,9 +13,14 @@ import mon.lattice.core.ID;
  */
 public abstract class AbstractSession {
     protected ID id;
-    protected Host host;
-    protected User user;
+    protected final Host host;
+    protected final User user;
 
+    public AbstractSession(Host host, User user) {
+        this.host = host;
+        this.user = user;
+    }
+    
     public ID getId() {
         return id;
     }

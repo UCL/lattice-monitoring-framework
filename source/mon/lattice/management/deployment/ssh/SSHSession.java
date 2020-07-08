@@ -25,7 +25,7 @@ import mon.lattice.core.ID;
  *
  * @author uceeftu
  */
-public class SSHSession extends AbstractSession { //extends Host {
+public class SSHSession extends AbstractSession {
     static final JSch jsch = new JSch();
     
     Session SSHSessionHandler;
@@ -34,8 +34,7 @@ public class SSHSession extends AbstractSession { //extends Host {
     Logger LOGGER = LoggerFactory.getLogger(SSHSession.class);
        
     public SSHSession(Host host, User user) {
-        this.host = host;
-        this.user = user; 
+        super(host, user);
         id = ID.generate();
     }
 
@@ -54,6 +53,7 @@ public class SSHSession extends AbstractSession { //extends Host {
         SSHSessionHandler = jsch.getSession(user.getUsername(), host.getAddress(), host.getPort());
         SSHSessionHandler.setConfig("PreferredAuthentications", "publickey");
         SSHSessionHandler.setConfig("StrictHostKeyChecking", "no"); //ignore unknown hosts
+        SSHSessionHandler.setServerAliveInterval(5*60*1000); // 5 minutes
         SSHSessionHandler.connect(3000);
         LOGGER.info("Created Session using: " + user.getUsername() + " and " + ((SSHUserWithKey) user).getIdentityFile());
     }
