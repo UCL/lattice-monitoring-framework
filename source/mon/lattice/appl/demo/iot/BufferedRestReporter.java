@@ -3,6 +3,8 @@
 package mon.lattice.appl.demo.iot;
 
 import java.io.IOException;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import mon.lattice.core.AbstractReporter;
 import mon.lattice.core.Measurement;
 import org.slf4j.Logger;
@@ -26,52 +28,60 @@ public class BufferedRestReporter extends AbstractReporter {
      */
     Integer bufferSize;
     String uri;
+    
+    BlockingQueue<Measurement> queue;
+    Thread worker;
+    
+    int maxQueueLength;
+    boolean fullQueue = false;
 
     Resty resty = new Resty();
     JSONArray array = new JSONArray();
+    
     private Logger LOGGER = LoggerFactory.getLogger(BufferedRestReporter.class);
+
+
     
-    
+        
     public BufferedRestReporter(String reporterName, String bufferSize, String ip, String port, String method) {
+        this(reporterName, bufferSize, ip, port, method, "1000000"); // default max size 1M
+    }      
+    
+    
+    public BufferedRestReporter(String reporterName, String bufferSize, String ip, String port, String method, String maxQueueLength) {
         super(reporterName); 
         this.bufferSize = Integer.valueOf(bufferSize);
         this.uri = "http://" + ip + ":" + port + method;
+        this.maxQueueLength = Integer.valueOf(maxQueueLength);
+        this.queue = new LinkedBlockingQueue(this.maxQueueLength);
     }
     
     
-   protected void sendRequest() throws IOException, JSONException {
-        LOGGER.debug(array.toString());
-        Content payload = new Content("application/json", array.toString().getBytes());
-        long tStart = System.currentTimeMillis();
-        JSONArray result = resty.json(uri, payload).array();
-        long tEnd = System.currentTimeMillis();
-        long tReporting = tEnd - tStart;
-        LOGGER.info("time (msec): " + tEnd/1000 + "," + tReporting);
-        LOGGER.debug("result: " + result.toString());
-   }
+    @Override
+    public void init() throws Exception {
+        worker = new Thread(() -> this.dequeue(), this.getClass().getName() + "-worker-thread");
+        worker.start();
+    }
     
-
-   protected void addToBuffer(Measurement m) {
-	    if (array.length() <= bufferSize)
-		array.put(processMeasurement(m));
-            
-            else {
-                    // Send the grouped data and reinitialise the buffer and the counter
-                    LOGGER.debug("builder result: " + array.toString());
-                    
-                    try {
-                        sendRequest();
-                    } catch (IOException | JSONException e) {
-                            LOGGER.error("IOException Error while sending Measurement: " + e.getMessage());
-                    } finally {
-                            array = new JSONArray();
-                            array.put(processMeasurement(m));
-                    }
-		}
-	}
-
-   protected JSONObject processMeasurement(Measurement m)
-        {
+    
+    @Override
+    public void cleanup() throws Exception {
+        worker.interrupt();
+    }
+    
+    
+    @Override
+    public void report(Measurement m) {
+	LOGGER.debug("Received measurement: " + m.toString());
+        
+        if (!queue.offer(m) && !fullQueue) {
+            LOGGER.error("*** Queue is full! ***");
+            fullQueue = true;
+        }
+    }
+    
+    
+    private JSONObject processMeasurement(Measurement m) {
         Timestamp t = m.getTimestamp();
         JSONObject obj = new JSONObject();
 
@@ -90,13 +100,57 @@ public class BufferedRestReporter extends AbstractReporter {
             }
         }    
         return obj;
-	}
+    }
     
-   
-    @Override
-    public void report(Measurement m) {
-        
-	LOGGER.debug("Received measurement: " + m.toString());
-        addToBuffer(m);
+    
+    private void sendRequest() throws IOException, JSONException {
+        LOGGER.debug(array.toString());
+        Content payload = new Content("application/json", array.toString().getBytes());
+        long tStart = System.currentTimeMillis();
+        JSONArray result = resty.json(uri, payload).array();
+        long tEnd = System.currentTimeMillis();
+        long tReporting = tEnd - tStart;
+        LOGGER.info("time (msec): " + tEnd/1000 + "," + tReporting);
+        LOGGER.debug("result: " + result.toString());
+    }
+    
+
+    private void addToBuffer(Measurement m) {
+        if (array.length() <= bufferSize)
+	    array.put(processMeasurement(m));
+            
+        else {
+            // Send the grouped data and reinitialise the buffer and the counter
+            LOGGER.debug("builder result: " + array.toString());
+
+            try {
+                if (queue.size() > 0.8*maxQueueLength)
+                    LOGGER.warn("Queue size: " + queue.size());
+                sendRequest();
+            } catch (IOException | JSONException e) {
+                LOGGER.error("Error while sending Measurement: " + e.getMessage());
+              }
+            finally {
+                array = new JSONArray();
+                array.put(processMeasurement(m));
+                }
+            }
+    }
+    
+    
+    
+    private void dequeue() {
+        LOGGER.info("Started " + Thread.currentThread().getName());
+        Measurement m;
+        while (!Thread.interrupted()) {
+            try {
+                m = queue.take();
+                addToBuffer(m);
+            } catch (InterruptedException ie) {
+                LOGGER.info("Interrupted while waiting for a measurement");
+                LOGGER.info("Terminated " + Thread.currentThread().getName());
+            }
+        }
+        LOGGER.info("Terminated " + Thread.currentThread().getName());
     }
 }

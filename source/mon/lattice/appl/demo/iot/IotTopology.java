@@ -232,12 +232,9 @@ public class IotTopology {
     
     
     private void activateSensor(String dataSourceID, String probeID) {// throws InterruptedException {
-        // waiting a random time in msecs before activating the sensor / probe
-        //int randomWait = ThreadLocalRandom.current().nextInt(waitMin, waitMax);
-        //Thread.sleep(randomWait);
         try {
-        restClient.setProbeServiceID(probeID, getRandomEntityID());
-        restClient.turnOnProbe(probeID);
+            restClient.setProbeServiceID(probeID, getRandomEntityID());
+            restClient.turnOnProbe(probeID);
         } catch (JSONException je) {
             System.err.println("Topology " + topologyId + ": Error while activating Probe: " + probeID + " on DataSource " + dataSourceID);
         }
