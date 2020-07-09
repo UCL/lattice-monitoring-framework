@@ -18,10 +18,9 @@ import us.monoid.json.JSONObject;
 
 public class BufferedJSONWebSocketReporter extends WebSocketReporter {
     
-    private Logger LOGGER = LoggerFactory.getLogger(BufferedJSONWebSocketReporter.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(BufferedJSONWebSocketReporter.class);
     
     Integer bufferSize;
-    //String dstUri;
     
     JSONArray array = new JSONArray();
     
@@ -38,7 +37,6 @@ public class BufferedJSONWebSocketReporter extends WebSocketReporter {
     public BufferedJSONWebSocketReporter(String reporterName, String bufferSize, String ip, String port, String method) throws IOException {
         super(reporterName, InetAddress.getByName(ip), Integer.valueOf(port)); 
         this.bufferSize = Integer.valueOf(bufferSize);
-        //this.uri = "http://" + ip + ":" + port + method;
     }
 
     
@@ -62,7 +60,6 @@ public class BufferedJSONWebSocketReporter extends WebSocketReporter {
         socket.send(array.toString().getBytes());
         long tReporting = System.currentTimeMillis() - tStart;
         LOGGER.info("time (msec): " + tReporting);
-        //LOGGER.info("result: " + result.toString());
     }
     
 

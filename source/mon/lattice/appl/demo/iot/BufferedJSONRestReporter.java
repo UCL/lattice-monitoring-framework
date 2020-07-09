@@ -4,83 +4,46 @@
 package mon.lattice.appl.demo.iot;
 
 import java.io.IOException;
-import mon.lattice.core.AbstractReporter;
 import mon.lattice.core.Measurement;
-import mon.lattice.distribution.ConsumerMeasurementToJSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.monoid.web.Resty;
-import us.monoid.json.JSONObject;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
-import us.monoid.web.Content;
+
+
 /**
  * A BufferReporter groups Measurements into a JSONArray of a given size
  * before sending them to a specific function via REST.
  */
-public class BufferedJSONRestReporter extends AbstractReporter {
+public class BufferedJSONRestReporter extends JSONRestReporter {
 
     Integer bufferSize;
-    String uri;
-
-    Resty resty = new Resty();
     JSONArray array = new JSONArray();
-    private Logger LOGGER = LoggerFactory.getLogger(BufferedJSONRestReporter.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(BufferedJSONRestReporter.class);
     
     
     public BufferedJSONRestReporter(String reporterName, String bufferSize, String ip, String port, String method) {
-        super(reporterName); 
+        super(reporterName, ip, port, method); 
         this.bufferSize = Integer.valueOf(bufferSize);
-        this.uri = "http://" + ip + ":" + port + method;
-    }
-    
-    
-    protected void sendRequest() throws IOException, JSONException {
-        Content payload = new Content("application/json", array.toString().getBytes());
-        long tStart = System.currentTimeMillis();
-        JSONArray result = resty.json(uri, payload).array();
-        long tReporting = System.currentTimeMillis() - tStart;
-        LOGGER.info("time (msec): " + tReporting);
-        LOGGER.info("result: " + result.toString());
     }
     
 
-    protected void addToBuffer(Measurement m) {
+    protected void processMeasurement(Measurement m) {
         if (array.length() <= bufferSize)
-            array.put(processMeasurement(m));
-            
+            array.put(encodeMeasurement(m));
         else {
             // Send the grouped data and reinitialise the buffer and the counter
             LOGGER.debug("builder result: " + array.toString());
                     
             try {
-                sendRequest();
+                sendRequest(array.toString().getBytes());
             } catch (IOException | JSONException e) {
                 LOGGER.error("IOException Error while sending Measurement: " + e.getMessage());
             } finally {
                 array = new JSONArray();
-                array.put(processMeasurement(m));
+                array.put(encodeMeasurement(m));
             }
         }
-    }
-
-    protected JSONObject processMeasurement(Measurement m) {
-        JSONObject obj = new JSONObject();
-
-        try {
-            // encode the measurement as JSON, ready for transmission
-            ConsumerMeasurementToJSON encoder = new ConsumerMeasurementToJSON(m);
-
-            // encode into an existing JSONObject
-            encoder.encode(obj);
-        } catch (Exception e) {
-            for (StackTraceElement stackTrace : e.getStackTrace()) {
-                LOGGER.error(stackTrace.toString());
-            }
-        }
-    
-        return obj;
-
     }
     
     
@@ -91,6 +54,6 @@ public class BufferedJSONRestReporter extends AbstractReporter {
     public void report(Measurement m) {
         
 	LOGGER.debug("Received measurement: " + m.toString());
-        addToBuffer(m);
+        processMeasurement(m);
     }
 }

@@ -17,6 +17,7 @@ import us.monoid.json.JSONObject;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.web.Content;
+import us.monoid.web.Resty.Option;
 
 /**
  * A BufferReporter groups and sends the Measurements to a specific function.
@@ -35,7 +36,7 @@ public class BufferedRestReporter extends AbstractReporter {
     int maxQueueLength;
     boolean fullQueue = false;
 
-    Resty resty = new Resty();
+    Resty resty = new Resty(Option.timeout(0));
     JSONArray array = new JSONArray();
     
     private Logger LOGGER = LoggerFactory.getLogger(BufferedRestReporter.class);
@@ -59,7 +60,7 @@ public class BufferedRestReporter extends AbstractReporter {
     
     @Override
     public void init() throws Exception {
-        worker = new Thread(() -> this.dequeue(), this.getClass().getName() + "-worker-thread");
+        worker = new Thread(() -> this.dequeue(), getName() + "-worker-thread");
         worker.start();
     }
     

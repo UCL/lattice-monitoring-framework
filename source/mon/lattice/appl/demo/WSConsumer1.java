@@ -7,7 +7,6 @@ package mon.lattice.appl.demo;
 
 import mon.lattice.appl.dataconsumers.BasicConsumer;
 import mon.lattice.distribution.ws.WSDataPlaneConsumerWithNames;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Scanner;
 

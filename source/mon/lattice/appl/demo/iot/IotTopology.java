@@ -116,7 +116,11 @@ public class IotTopology {
             reporterAddress = configuration.getProperty("rep.address");
             reporterPort = configuration.getProperty("rep.port");
             reporterURI = configuration.getProperty("rep.uri");
-            reporterBufferSize = Integer.valueOf(configuration.getProperty("rep.buffersize"));
+            
+            if (reporterClassName.contains("JSONRestReporter"))
+                reporterBufferSize = 0;
+            else
+                reporterBufferSize = Integer.valueOf(configuration.getProperty("rep.buffersize"));
             
         } else if (reporterClassName.contains("VoidReporter"))
             reporterResponseTime = Integer.valueOf(configuration.getProperty("rep.response"));
@@ -259,13 +263,22 @@ public class IotTopology {
                                                                 );
             
             else if (reporterClassName.contains("RestReporter"))
-                out = restClient.loadReporter(dataConsumerID, reporterClassName, 
-                                                                reporterName + "+" +
-                                                                reporterBufferSize + "+" +
-                                                                reporterAddress + "+" +
-                                                                reporterPort + "+" +
-                                                                reporterURI
-                                                                );
+                if (reporterClassName.contains("JSONRestReporter"))
+                    out = restClient.loadReporter(dataConsumerID, reporterClassName, 
+                                                                    reporterName + "+" +
+                                                                    reporterAddress + "+" +
+                                                                    reporterPort + "+" +
+                                                                    reporterURI
+                                                                    );
+                
+                else
+                    out = restClient.loadReporter(dataConsumerID, reporterClassName, 
+                                                                    reporterName + "+" +
+                                                                    reporterBufferSize + "+" +
+                                                                    reporterAddress + "+" +
+                                                                    reporterPort + "+" +
+                                                                    reporterURI
+                                                                    );
             
             else if (reporterClassName.contains("VoidReporter"))
                 out = restClient.loadReporter(dataConsumerID, reporterClassName, 

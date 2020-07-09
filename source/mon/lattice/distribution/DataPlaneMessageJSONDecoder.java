@@ -5,24 +5,13 @@
 
 package mon.lattice.distribution;
 
-import mon.lattice.distribution.MessageMetaData;
-import mon.lattice.distribution.MetaData;
-import mon.lattice.distribution.MeasurementDecoderJSON;
-import mon.lattice.distribution.ConsumerMeasurementWithMetaData;
-import mon.lattice.core.plane.DataPlaneMessage;
-import mon.lattice.core.plane.MeasurementMessage;
 import mon.lattice.core.plane.MessageType;
-import mon.lattice.core.ProbeMeasurement;
 import mon.lattice.core.TypeException;
 import mon.lattice.core.ID;
 import mon.lattice.core.Measurement;
-import mon.lattice.core.ConsumerMeasurement;
 import java.util.HashMap;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.IOException;
 import us.monoid.json.JSONObject;
-import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 
 

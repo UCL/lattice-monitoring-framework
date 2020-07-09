@@ -1,10 +1,8 @@
 package mon.lattice.control.im;
 
-/**
- *
- * @author Francesco Tusa
- * 
- */
-public interface ControlEndPointMetadata {
+import mon.lattice.distribution.MetaData;
+
+
+public interface ControlEndPointMetadata extends MetaData {
     String getType();
 }

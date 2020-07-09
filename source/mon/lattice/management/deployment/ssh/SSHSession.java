@@ -66,8 +66,7 @@ public class SSHSession extends AbstractSession {
     
     
     public void deployJar() throws SftpException, JSchException   {
-        synchronized(host) 
-        {
+        synchronized(host) {
             if (host.isJarDeployed())
                 return;
             

@@ -18,7 +18,7 @@ public class BufferedJSONRestReporterWithCallback extends BufferedJSONRestReport
 
     String callbackURI;
     
-    private Logger LOGGER = LoggerFactory.getLogger(BufferedJSONRestReporterWithCallback.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(BufferedJSONRestReporterWithCallback.class);
     
     
     public BufferedJSONRestReporterWithCallback(String reporterName, String bufferSize, String ip, String port, String method, String callbackHost, String callbackPort, String callbackMethod) {
@@ -28,10 +28,10 @@ public class BufferedJSONRestReporterWithCallback extends BufferedJSONRestReport
     }
     
    @Override 
-   protected void sendRequest() throws IOException, JSONException {
+   protected void sendRequest(byte [] data) throws IOException, JSONException {
         String requestID = ID.generate() + ":" + System.currentTimeMillis();
         resty.withHeader("X-Call-Id", requestID);
-        Content payload = new Content("application/json", array.toString().getBytes());
+        Content payload = new Content("application/json", data);
         long tStart = System.currentTimeMillis();
         resty.json(uri, payload);
         long tReporting = System.currentTimeMillis() - tStart;
