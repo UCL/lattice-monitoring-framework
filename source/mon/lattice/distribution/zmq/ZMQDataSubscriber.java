@@ -1,17 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mon.lattice.distribution.zmq;
 
 import mon.lattice.core.TypeException;
 import mon.lattice.distribution.ExposedByteArrayInputStream;
 import mon.lattice.distribution.Receiving;
-import mon.lattice.distribution.udp.UDPTransmissionMetaData;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
@@ -146,7 +139,7 @@ public class ZMQDataSubscriber implements Runnable {
 		// and the address it came in on
 		try {
                     // construct the transmission meta data
-                    UDPTransmissionMetaData metaData = new UDPTransmissionMetaData(length, InetAddress.getLocalHost(), InetAddress.getLocalHost(), 0); // FIXME
+                    ZMQTransmissionMetaData metaData = new ZMQTransmissionMetaData(length, subscriberSocket.getRcvHWM(), subscriberSocket.getIdentity());
 		    receiver.received(byteStream, metaData);
 		} catch (IOException ioe) {
 		    receiver.error(ioe);

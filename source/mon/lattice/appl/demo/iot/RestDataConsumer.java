@@ -4,8 +4,6 @@ import java.io.IOException;
 import mon.lattice.appl.dataconsumers.*;
 import java.net.InetAddress;
 import java.util.Scanner;
-import mon.lattice.appl.reporters.PrintReporter;
-import mon.lattice.core.Reporter;
 
 /**
  * This receives measurements from a UDP Data Plane.
@@ -17,45 +15,60 @@ public class RestDataConsumer {
     /*
      * Construct a SimpleConsumerUDP
      */
-    public RestDataConsumer(String addr, int dataPort) throws IOException {
-	// set up a BasicConsumer
+    
+    public RestDataConsumer(int dataPort, String endPoint) throws IOException {
+	// set up a BasicConsumer (with a built-in PrintReporter)
 	consumer = new BasicConsumer();
 
 	// set up data plane
-	consumer.setDataPlane(new JSONRestDataPlaneConsumer(addr, dataPort));
+	consumer.setDataPlane(new JSONRestDataPlaneConsumer(dataPort, endPoint));
 
 	consumer.connect();
-        
-        Reporter r = new PrintReporter();
-        
-        consumer.addReporter(r);
+    }
+    
+    
+    public RestDataConsumer(String addr, int dataPort, String endPoint) throws IOException {
+	// set up a BasicConsumer (with a built-in PrintReporter)
+	consumer = new BasicConsumer();
 
+	// set up data plane
+	consumer.setDataPlane(new JSONRestDataPlaneConsumer(addr, dataPort, endPoint));
+
+	consumer.connect();
     }
 
     public static void main(String [] args) {
-        String currentHost="localhost";
+        String bindAddress;
         int port = 9999;
+        String endPoint ="reporter";
         try {
-            currentHost = InetAddress.getLoopbackAddress().getHostName();
-            
-            if (args.length == 0) {
-                new RestDataConsumer(currentHost, port);
-                System.err.println("RestDataConsumer listening on " + currentHost + "/" + port);
-            } else if (args.length == 2) {
-                String addr = args[0];
-
-                Scanner sc = new Scanner(args[1]);
-                port = sc.nextInt();
-
-                new RestDataConsumer(addr, port);
-
-                System.err.println("RestDataConsumer listening on " + addr + "/" + port);
-            } else {
-                System.err.println("usage: RestDataConsumer localhost port");
-                System.exit(1);
+            switch (args.length) {
+                case 0:
+                    new RestDataConsumer(port, endPoint);
+                    System.err.println("RestDataConsumer listening on http://*" + ":" + port + "/" + endPoint + "/");
+                    break;
+                case 2:
+                    Scanner sc = new Scanner(args[0]);
+                    port = sc.nextInt();
+                    endPoint = args[1];
+                    new RestDataConsumer(port, endPoint);
+                    System.err.println("RestDataConsumer listening on http://*" + ":" + port + "/" + endPoint + "/");
+                    break;
+                case 3:
+                    sc = new Scanner(args[0]);
+                    port = sc.nextInt();
+                    endPoint = args[1];
+                    bindAddress = args[2];
+                    new RestDataConsumer(bindAddress, port, endPoint);
+                    System.err.println("RestDataConsumer listening on http://" + bindAddress + ":" + port + "/" + endPoint + "/");
+                    break;
+                default:
+                    System.err.println("usage: RestDataConsumer [port] [endPoint] [bind address]");
+                    System.exit(1);
             }
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
+            System.exit(1);
         }
     }
 

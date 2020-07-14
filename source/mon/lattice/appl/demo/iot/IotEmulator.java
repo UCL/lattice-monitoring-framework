@@ -168,7 +168,7 @@ public class IotEmulator {
             tStart = System.currentTimeMillis();
             
             // creating requested sensors topologies
-            for (int id=1; id <= iot.topologies; id++) {
+            for (int id=0; id < iot.topologies; id++) {
                 System.out.println("*** Creating Topology " + id + " ***");
                 
                 IotTopology t = new IotTopology(id,

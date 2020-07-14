@@ -20,12 +20,12 @@ public class JSONRestDataPlaneConsumer extends AbstractRestDataPlaneConsumer {
     
     private static Logger LOGGER = LoggerFactory.getLogger(JSONRestDataPlaneConsumer.class);;
 
-    public JSONRestDataPlaneConsumer(int port) throws IOException {
-        super(port);
+    public JSONRestDataPlaneConsumer(int port, String endP) throws IOException {
+        super(port, endP);
     }
 
-    public JSONRestDataPlaneConsumer(String remoteHost, int port) throws IOException {
-        super(remoteHost, port);
+    public JSONRestDataPlaneConsumer(String remoteHost, int port, String endP) throws IOException {
+        super(remoteHost, port, endP);
     }
     
     
@@ -38,6 +38,7 @@ public class JSONRestDataPlaneConsumer extends AbstractRestDataPlaneConsumer {
             String name = path.getName();
             String[] segments = path.getSegments();
             JSONObject reply = new JSONObject();
+            String reqEndPoint;
             
             long time = System.currentTimeMillis();
 
@@ -46,16 +47,29 @@ public class JSONRestDataPlaneConsumer extends AbstractRestDataPlaneConsumer {
             response.setDate("Date", time);
             response.setDate("Last-Modified", time);
             
-            if (method.equals("POST") && name == null && segments.length == 1) {
-                ByteArrayInputStream bis = new ByteArrayInputStream(request.getContent().getBytes());
-                received(bis, null); // metadata is not used
-                reply.put("Accepted", true);
-            } 
-            
+            if (method.equals("POST")) {
+                if (name == null && segments.length == 1) {
+                    reqEndPoint = segments[0];
+                    if (reqEndPoint.equals(endPoint)) {
+                        ByteArrayInputStream bis = new ByteArrayInputStream(request.getContent().getBytes());
+                        received(bis, null); // metadata is not used
+                        reply.put("Accepted", true);
+                    }
+                    else {
+                        reply.put("Accepted", false);
+                        LOGGER.error("EndPoint " + reqEndPoint + " is not valid");  
+                    }
+                }
+                else {
+                    reply.put("Accepted", false);
+                    LOGGER.error("Malformed URI");    
+                }
+            }
             else {
                 reply.put("Accepted", false);
                 LOGGER.error("POST is the only supported method");
             }
+            
             body.println(reply);
             body.close();
         } catch(IOException | TypeException | JSONException e) {

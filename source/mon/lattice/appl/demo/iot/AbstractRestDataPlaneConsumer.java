@@ -30,7 +30,9 @@ public abstract class AbstractRestDataPlaneConsumer implements DataPlane, Measur
     Container container;
     Server server;
     Connection connection;
-    SocketAddress address;
+    InetSocketAddress address;
+    
+    String endPoint;
 
     //String address;
     int port;
@@ -46,8 +48,9 @@ public abstract class AbstractRestDataPlaneConsumer implements DataPlane, Measur
     /**
      * Construct a AbstractUDPDataPlaneConsumer.
      */
-    public AbstractRestDataPlaneConsumer(int port) throws IOException {
+    public AbstractRestDataPlaneConsumer(int port, String endP) throws IOException {
         this.port = port;
+        endPoint = endP;
 	seqNoMap = new HashMap<ID, Integer>();
         container = this;
         server = new ContainerServer(container);
@@ -58,12 +61,15 @@ public abstract class AbstractRestDataPlaneConsumer implements DataPlane, Measur
     /**
      * Construct a AbstractUDPDataPlaneConsumer connecting to a remote address.
      */
-    public AbstractRestDataPlaneConsumer(String host, int port) throws IOException {
+    public AbstractRestDataPlaneConsumer(String host, int port, String endP) throws IOException {
         this.port = port;
+        endPoint = endP;
 	seqNoMap = new HashMap<ID, Integer>();
         container = this;
         server = new ContainerServer(container);
         address = new InetSocketAddress(host, port);
+        if (address.isUnresolved())
+            throw new IOException("Cannot solve " + host);
     }
 
     /**
