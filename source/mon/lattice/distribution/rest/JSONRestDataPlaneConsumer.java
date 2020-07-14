@@ -1,11 +1,11 @@
-package mon.lattice.appl.demo.iot;
+package mon.lattice.distribution.rest;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.TypeException;
-import mon.lattice.distribution.MeasurementDecoderJSON;
+import mon.lattice.distribution.DataPlaneMessageJSONDecoder;
 import mon.lattice.distribution.MetaData;
 import org.simpleframework.http.Path;
 import org.simpleframework.http.Request;
@@ -15,7 +15,11 @@ import org.slf4j.LoggerFactory;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 
-
+/**
+ * A JSONRestDataPlaneConsumer is a DataPlane implementation
+ * that receives Measurements via REST.
+ * The message encoding is based on JSON.
+ */
 public class JSONRestDataPlaneConsumer extends AbstractRestDataPlaneConsumer {
     
     private static Logger LOGGER = LoggerFactory.getLogger(JSONRestDataPlaneConsumer.class);;
@@ -52,7 +56,12 @@ public class JSONRestDataPlaneConsumer extends AbstractRestDataPlaneConsumer {
                     reqEndPoint = segments[0];
                     if (reqEndPoint.equals(endPoint)) {
                         ByteArrayInputStream bis = new ByteArrayInputStream(request.getContent().getBytes());
-                        received(bis, null); // metadata is not used
+                        RestTransmissionMetaData metaData = new RestTransmissionMetaData(request.getContentLength(),
+                                                                                         request.getClientAddress().getAddress(),
+                                                                                         address.getAddress(), 
+                                                                                         request.getClientAddress().getPort()
+                                                                                        );
+                        received(bis, metaData);
                         reply.put("Accepted", true);
                     }
                     else {
@@ -69,7 +78,6 @@ public class JSONRestDataPlaneConsumer extends AbstractRestDataPlaneConsumer {
                 reply.put("Accepted", false);
                 LOGGER.error("POST is the only supported method");
             }
-            
             body.println(reply);
             body.close();
         } catch(IOException | TypeException | JSONException e) {
@@ -79,17 +87,9 @@ public class JSONRestDataPlaneConsumer extends AbstractRestDataPlaneConsumer {
 
     @Override
     public void received(ByteArrayInputStream bis, MetaData metaData) throws IOException, TypeException {
-        try {
-            int avail = bis.available();
-            byte[] bytes = new byte[avail];
-            bis.read(bytes, 0, avail);
-            String str = new String(bytes);
-
-            JSONObject json = new JSONObject(str);
-            LOGGER.debug(json.toString());
-            
-            MeasurementDecoderJSON decoder = new MeasurementDecoderJSON();
-            Measurement measurement = decoder.decode(json);
+        try {            
+            DataPlaneMessageJSONDecoder decoder = new DataPlaneMessageJSONDecoder(getSeqNoMap());
+            Measurement measurement = decoder.decode(bis, metaData);
 
             report(measurement);
 

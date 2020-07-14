@@ -3,6 +3,7 @@
 
 package mon.lattice.appl.demo.iot;
 
+import mon.lattice.appl.reporters.JSONRestReporter;
 import java.io.IOException;
 import mon.lattice.core.Measurement;
 import org.slf4j.Logger;
@@ -27,33 +28,29 @@ public class BufferedJSONRestReporter extends JSONRestReporter {
         this.bufferSize = Integer.valueOf(bufferSize);
     }
     
-
-    protected void processMeasurement(Measurement m) {
+    
+    /**
+    * In a BufferedJSONRestReporter, report() groups and sends the Measurements
+    * as a JSONArray via REST.
+    * 
+    * @param m the received Measurement
+    */
+    @Override
+    public void report(Measurement m) {
+	LOGGER.debug("Received measurement: " + m.toString());
         if (array.length() <= bufferSize)
             array.put(encodeMeasurement(m));
         else {
             // Send the grouped data and reinitialise the buffer and the counter
-            LOGGER.debug("builder result: " + array.toString());
-                    
+            LOGGER.debug("Array: " + array.toString());   
             try {
-                sendRequest(array.toString().getBytes());
+                sendData(array.toString().getBytes());
             } catch (IOException | JSONException e) {
-                LOGGER.error("IOException Error while sending Measurement: " + e.getMessage());
+                LOGGER.error("Error while sending Measurement: " + e.getMessage());
             } finally {
                 array = new JSONArray();
                 array.put(encodeMeasurement(m));
             }
         }
-    }
-    
-    
-    /**
-    * In a BufferReporter, report() groups and sends the Measurement to a specific function.
-    */
-    @Override
-    public void report(Measurement m) {
-        
-	LOGGER.debug("Received measurement: " + m.toString());
-        processMeasurement(m);
     }
 }

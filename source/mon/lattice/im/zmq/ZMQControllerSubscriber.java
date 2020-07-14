@@ -96,19 +96,21 @@ public class ZMQControllerSubscriber extends AbstractZMQSubscriber implements Ru
                 else if (operation.equals("remove")) {
                     JSONObject dataSource = dataSources.get(entityID);
                     
-                    if (dataSource.has("probes")) {
-                        JSONArray dsProbes = dataSource.getJSONArray("probes");
-                    
-                        for (int i=0; i<dsProbes.length(); i++) {
-                            ID probeID = ID.fromString(dsProbes.getString(i));
-                            probes.remove(probeID);
-                            sendMessageToListener(new DeannounceMessage(probeID, EntityType.PROBE));
-                            probeAttributes.remove(probeID);
-                        }
-                    }
+                    if (dataSource != null) {
+                        if (dataSource.has("probes")) {
+                            JSONArray dsProbes = dataSource.getJSONArray("probes");
 
-                    dataSources.remove(entityID);
-                    sendMessageToListener(new DeannounceMessage(entityID, EntityType.DATASOURCE));
+                            for (int i=0; i<dsProbes.length(); i++) {
+                                ID probeID = ID.fromString(dsProbes.getString(i));
+                                probes.remove(probeID);
+                                sendMessageToListener(new DeannounceMessage(probeID, EntityType.PROBE));
+                                probeAttributes.remove(probeID);
+                            }
+                        }
+
+                        dataSources.remove(entityID);
+                        sendMessageToListener(new DeannounceMessage(entityID, EntityType.DATASOURCE));
+                    }
                         
                 }   
             } catch (JSONException e) {

@@ -6,7 +6,6 @@ import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.Reporter;
 import mon.lattice.core.ControllableDataConsumer;
-import mon.lattice.core.plane.InfoPlane;
 import mon.lattice.control.agents.ControllerAgent;
 import mon.lattice.control.im.ControlInformation;
 import mon.lattice.control.im.ControlInformationInteracter;

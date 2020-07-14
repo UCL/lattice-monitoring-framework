@@ -1,19 +1,19 @@
-package mon.lattice.appl.demo.iot;
+package mon.lattice.appl.dataconsumers;
 
+import mon.lattice.distribution.rest.JSONRestDataPlaneConsumer;
 import java.io.IOException;
 import mon.lattice.appl.dataconsumers.*;
-import java.net.InetAddress;
 import java.util.Scanner;
 
 /**
- * This receives measurements from a UDP Data Plane.
+ * This receives measurements from a REST Data Plane.
  */
 public class RestDataConsumer {
     // The Basic consumer
     BasicConsumer consumer;
 
     /*
-     * Construct a SimpleConsumerUDP
+     * Construct a RestDataConsumer
      */
     
     public RestDataConsumer(int dataPort, String endPoint) throws IOException {

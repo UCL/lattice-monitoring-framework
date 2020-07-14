@@ -63,7 +63,8 @@ public class IotTopology {
     Map<String, List<String>> dataSourceProbesIDs = new HashMap<>();
     
     Thread currentThread;
-    
+
+    ReporterLoader reporterLoader;
 
     public IotTopology(int topologyId,
                        String userID,
@@ -102,28 +103,8 @@ public class IotTopology {
         dcClassName = configuration.getProperty("dc.class");
         reporterClassName = configuration.getProperty("rep.class");
         
-        
-        if (reporterClassName.contains("RestReporterWithCallback")) {
-            reporterAddress = configuration.getProperty("rep.address");
-            reporterPort = configuration.getProperty("rep.port");
-            reporterURI = configuration.getProperty("rep.uri");
-            reporterBufferSize = Integer.valueOf(configuration.getProperty("rep.buffersize"));
-            reporterCallbackHost = configuration.getProperty("rep.callback.host");
-            reporterCallbackPort = configuration.getProperty("rep.callback.port");
-            reporterCallbackURI = configuration.getProperty("rep.callback.uri");
-            
-        } else if (reporterClassName.contains("RestReporter")) {
-            reporterAddress = configuration.getProperty("rep.address");
-            reporterPort = configuration.getProperty("rep.port");
-            reporterURI = configuration.getProperty("rep.uri");
-            
-            if (reporterClassName.contains("JSONRestReporter"))
-                reporterBufferSize = 0;
-            else
-                reporterBufferSize = Integer.valueOf(configuration.getProperty("rep.buffersize"));
-            
-        } else if (reporterClassName.contains("VoidReporter"))
-            reporterResponseTime = Integer.valueOf(configuration.getProperty("rep.response"));
+        // Loading reporter parameters is delegated to LoadReporter class
+        reporterLoader = new ReporterLoader(reporterClassName);
         
         // in order to allocate a different Data Consumer reporterPort for each topology 
         // we add the topology ID to the value read from the conf file
@@ -245,58 +226,9 @@ public class IotTopology {
     }
     
     
-    private String loadReporter(String reporterName) {
-        JSONObject out;
-        
-        try { 
-            
-            if (reporterClassName.contains("RestReporterWithCallback"))
-                out = restClient.loadReporter(dataConsumerID, reporterClassName, 
-                                                                reporterName + "+" +
-                                                                reporterBufferSize + "+" +
-                                                                reporterAddress + "+" +
-                                                                reporterPort + "+" +
-                                                                reporterURI + "+" +
-                                                                reporterCallbackHost + "+" +
-                                                                reporterCallbackPort + "+" +
-                                                                reporterCallbackURI
-                                                                );
-            
-            else if (reporterClassName.contains("RestReporter"))
-                if (reporterClassName.contains("JSONRestReporter"))
-                    out = restClient.loadReporter(dataConsumerID, reporterClassName, 
-                                                                    reporterName + "+" +
-                                                                    reporterAddress + "+" +
-                                                                    reporterPort + "+" +
-                                                                    reporterURI
-                                                                    );
-                
-                else
-                    out = restClient.loadReporter(dataConsumerID, reporterClassName, 
-                                                                    reporterName + "+" +
-                                                                    reporterBufferSize + "+" +
-                                                                    reporterAddress + "+" +
-                                                                    reporterPort + "+" +
-                                                                    reporterURI
-                                                                    );
-            
-            else if (reporterClassName.contains("VoidReporter"))
-                out = restClient.loadReporter(dataConsumerID, reporterClassName, 
-                                            reporterName + "+" +
-                                            reporterResponseTime
-                                            );
-            
-            else
-                throw new IOException("Reporter class not supported");
-                
-            
-            reporterID = out.getString("createdReporterID"); 
-        }
-
-        catch (JSONException | IOException e) {
-            System.err.println("Error while activating Reporter " + reporterName + ": " + e.getMessage());
-        } 
-        return reporterID;
+    private String loadReporter(String reporterName) throws IOException {
+        reporterLoader.parseName();
+        return reporterLoader.loadReporter(reporterName);
     }
     
     
@@ -364,6 +296,124 @@ public class IotTopology {
     void stopDeployment() {
         currentThread = new Thread( () -> this.deleteTopology() );
         currentThread.start();
+    }
+    
+    
+    
+    class ReporterLoader {
+        
+        String fqClassName;
+        String className;
+        
+        public ReporterLoader(String name) {
+            fqClassName = name;
+        }
+        
+        public void parseName() {
+            String[] fqClassNameTokens = fqClassName.split("\\.");
+            className = fqClassNameTokens[fqClassNameTokens.length-1];
+        }
+        
+        private void setDestinationParams() {
+            reporterAddress = configuration.getProperty("rep.address");
+            reporterPort = configuration.getProperty("rep.port");
+        }
+        
+        private void setCallbackParams() {
+            reporterCallbackHost = configuration.getProperty("rep.callback.host");
+            reporterCallbackPort = configuration.getProperty("rep.callback.port");
+            reporterCallbackURI = configuration.getProperty("rep.callback.uri");
+        }
+       
+        private String startReporter(String... args) throws IOException {
+            try {
+                StringBuilder arguments = new StringBuilder();
+                int i;
+                for (i=0; i<args.length-1; i++) {
+                    arguments.append(args[i]);
+                    arguments.append("+");
+                }
+                
+                arguments.append(args[i]);
+
+                JSONObject reporter = restClient.loadReporter(dataConsumerID, fqClassName, arguments.toString());
+                return reporter.getString("createdReporterID");
+            } catch (JSONException e) {
+                throw new IOException("Error while activating Reporter " + className + ": " + e.getMessage());
+            }
+        }
+        
+        
+        public String loadReporter(String reporterName) throws IOException {
+            
+            switch(className) {
+                /* JSON REST Reporters */
+                case "BufferedJSONRestReporterWithCallback":
+                    setDestinationParams();
+                    setCallbackParams();
+                    reporterURI = configuration.getProperty("rep.uri");
+                    reporterBufferSize = Integer.valueOf(configuration.getProperty("rep.buffersize"));
+
+                    return startReporter(reporterName, 
+                                        reporterBufferSize.toString(), 
+                                        reporterAddress, 
+                                        reporterPort,
+                                        reporterURI,
+                                        reporterCallbackHost,
+                                        reporterCallbackPort,
+                                        reporterCallbackURI);
+                    
+                case "BufferedJSONRestReporter":
+                case "BufferedRestReporter": // will be removed  
+                    setDestinationParams();
+                    reporterURI = configuration.getProperty("rep.uri");
+                    reporterBufferSize = Integer.valueOf(configuration.getProperty("rep.buffersize"));
+                    
+                    return startReporter(reporterName, 
+                                        reporterBufferSize.toString(), 
+                                        reporterAddress, 
+                                        reporterPort,
+                                        reporterURI);
+                    
+                case "JSONRestReporter":
+                    setDestinationParams();
+                    reporterURI = configuration.getProperty("rep.uri");
+                    
+                    return startReporter(reporterName,
+                                        reporterAddress, 
+                                        reporterPort,
+                                        reporterURI);
+                    
+                /* JSON WebSocket Reporters */    
+                case "BufferedJSONWebSocketReporter":
+                    setDestinationParams();
+                    reporterBufferSize = Integer.valueOf(configuration.getProperty("rep.buffersize"));
+                    
+                    return startReporter(reporterName, 
+                                        reporterBufferSize.toString(), 
+                                        reporterAddress, 
+                                        reporterPort);   
+                    
+                    
+                case "JSONWebSocketReporter":
+                    setDestinationParams();
+                    reporterURI = configuration.getProperty("rep.uri");
+                    
+                    return startReporter(reporterName,
+                                        reporterAddress, 
+                                        reporterPort);
+                    
+                
+                /* Other Reporters */  
+                case "VoidReporter":
+                    reporterResponseTime = Integer.valueOf(configuration.getProperty("rep.response"));
+                    return startReporter(reporterName,
+                                  reporterResponseTime.toString());
+                    
+                default:
+                    throw new IOException("Reporter class: " + fqClassName + " is not supported");
+            }        
+        }
     }
     
 }

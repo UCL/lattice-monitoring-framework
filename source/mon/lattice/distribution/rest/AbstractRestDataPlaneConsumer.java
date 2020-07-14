@@ -1,4 +1,4 @@
-package mon.lattice.appl.demo.iot;
+package mon.lattice.distribution.rest;
 
 import mon.lattice.distribution.MetaData;
 import mon.lattice.distribution.Receiving;
@@ -12,7 +12,6 @@ import mon.lattice.core.TypeException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.HashMap;
 import org.simpleframework.http.core.Container;
 import org.simpleframework.http.core.ContainerServer;

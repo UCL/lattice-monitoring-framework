@@ -5,6 +5,7 @@
 
 package mon.lattice.appl.demo.iot;
 
+import mon.lattice.appl.reporters.JSONWebSocketReporter;
 import mon.lattice.core.AbstractDataConsumer;
 import mon.lattice.core.PlaneInteracter;
 import mon.lattice.core.MeasurementReceiver;
@@ -18,15 +19,15 @@ import java.io.IOException;
  * It uses a WebSocketReporter which is a Reporter specially defined to do the job.
  */
 public class DataConsumerWSForwarder extends AbstractDataConsumer implements PlaneInteracter, MeasurementReceiver {
-    // The WebSocketReporter
-    WebSocketReporter reporter;
+    // The JSONWebSocketReporter
+    JSONWebSocketReporter reporter;
     
     /**
      * Construct a DataConsumerWSForwarder
      */
     public DataConsumerWSForwarder(String reporterName, InetSocketAddress dstAddr) throws IOException {
 	// The default way to report a measurement is to print it
-	reporter =  new WebSocketReporter(reporterName, dstAddr);
+	reporter =  new JSONWebSocketReporter(reporterName, dstAddr);
         
 	addReporter(reporter);
     }

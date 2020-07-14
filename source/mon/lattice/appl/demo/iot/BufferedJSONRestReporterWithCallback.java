@@ -8,14 +8,12 @@ import org.slf4j.LoggerFactory;
 import mon.lattice.core.ID;
 import us.monoid.json.JSONException;
 import us.monoid.web.Content;
+
 /**
- * A BufferReporter groups and sends the Measurements to a specific function.
+ * A BufferedJSONRestReporterWithCallback groups and asynchronously sends the 
+ * Measurements as a JSONArray to a specific function.
  */
 public class BufferedJSONRestReporterWithCallback extends BufferedJSONRestReporter {
-    /**
-     * In a BufferReporter, report() groups and sends the Measurement to a specific function.
-     */
-
     String callbackURI;
     
     private static Logger LOGGER = LoggerFactory.getLogger(BufferedJSONRestReporterWithCallback.class);
@@ -26,9 +24,18 @@ public class BufferedJSONRestReporterWithCallback extends BufferedJSONRestReport
         this.callbackURI = "http://" + callbackHost + ":" + callbackPort + callbackMethod;
         resty.withHeader("X-Callback-Url", callbackURI);
     }
+   
     
-   @Override 
-   protected void sendRequest(byte [] data) throws IOException, JSONException {
+    /**
+     * Sends the provided array of bytes to the asynchronous endpoint represented
+     * by the @uri member and sets the callback address to @callbackURI in the request header.
+     * 
+     * @param data
+     * @throws IOException
+     * @throws JSONException 
+     */
+    @Override 
+    protected void sendData(byte [] data) throws IOException, JSONException {
         String requestID = ID.generate() + ":" + System.currentTimeMillis();
         resty.withHeader("X-Call-Id", requestID);
         Content payload = new Content("application/json", data);
