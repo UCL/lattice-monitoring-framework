@@ -30,9 +30,14 @@ public class ZMQController extends AbstractJSONRestController {
     public void initPlanes() {
         controlLocalPort = Integer.parseInt(pr.getProperty("control.localport"));
         infoPlanePort = Integer.parseInt(pr.getProperty("info.localport"));
+        infoPoolSize = Integer.parseInt(pr.getProperty("info.poolsize"));
         
         // ZMQController is the root of the infoPlane - other nodes use it to perform bootstrap
-        InfoPlane infoPlane = new ZMQControllerInfoPlane(infoPlanePort);
+        InfoPlane infoPlane;
+        if (infoPoolSize == 0)
+            infoPlane = new ZMQControllerInfoPlane(infoPlanePort);
+        else
+            infoPlane = new ZMQControllerInfoPlane(infoPlanePort, infoPoolSize);
         
         // we get the ControlInformationManager from the InfoPlane
         controlInformationManager = ((ControlInformationInteracter) infoPlane).getControlInformation();

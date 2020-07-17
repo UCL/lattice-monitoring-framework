@@ -43,12 +43,21 @@ public class ZMQControllerInfoPlane extends AbstractZMQInfoPlane implements Cont
     }
     
     
+    public ZMQControllerInfoPlane(int localPort, int workers) {
+        this();
+	port = localPort;
+        zmqProxy = new ZMQProxy(port);
+        zmqSubscriber = new ZMQControllerSubscriberWithWorkers(zmqProxy.getInternalURI(), "info.", zmqProxy.getContext(), workers);
+        zmqSubscriber.addAnnounceEventListener(controlInformation);
+    }
+    
+    
     /**
      * Connect to a delivery mechanism.
      */
     @Override
     public boolean connect() {
-	return zmqProxy.startProxy() && zmqSubscriber.connectAndListen();
+	return zmqProxy.startProxy() && zmqSubscriber.connect();
     }
 
     

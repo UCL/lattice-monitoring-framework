@@ -1,9 +1,6 @@
 package mon.lattice.im.zmq;
 
 import mon.lattice.core.ID;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import mon.lattice.im.AbstractIMNodeWithAnnounce;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
@@ -20,7 +17,7 @@ import org.zeromq.SocketType;
  * using ZMQ.
 **/
 
-public abstract class AbstractZMQSubscriber extends AbstractIMNodeWithAnnounce implements IMSubscriberNode, Runnable {
+public abstract class AbstractZMQSubscriber extends AbstractZMQIMNode implements IMSubscriberNode, Runnable {
     int remotePort = 0;
     int localPort = 0;
     
@@ -32,21 +29,10 @@ public abstract class AbstractZMQSubscriber extends AbstractIMNodeWithAnnounce i
     
     boolean threadRunning = false;
     
-    Map<ID, JSONObject> dataSources = new ConcurrentHashMap<>();
-    Map<ID, JSONObject> probes = new ConcurrentHashMap<>();
-    Map<ID, JSONObject> probeAttributes = new ConcurrentHashMap<>();
-    
-    Map<ID, JSONObject> dataConsumers = new ConcurrentHashMap<>();
-    Map<ID, JSONObject> reporters = new ConcurrentHashMap<>();
-    
-    Map<ID, JSONObject> controllerAgents = new ConcurrentHashMap<>();
-    
-    
-    
     Thread thread = new Thread(this, "zmq-info-subscriber");
     
-    private Logger LOGGER = LoggerFactory.getLogger(AbstractZMQSubscriber.class);
-
+    private static Logger LOGGER = LoggerFactory.getLogger(AbstractZMQSubscriber.class);
+    
     
     /**
      * Construct a ZMQSubscriber given a remote host, a remote 

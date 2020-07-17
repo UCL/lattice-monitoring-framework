@@ -10,7 +10,6 @@ import mon.lattice.core.Reporter;
 import java.io.IOException;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.control.agents.ControllerAgent;
-import mon.lattice.core.plane.InfoPlane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

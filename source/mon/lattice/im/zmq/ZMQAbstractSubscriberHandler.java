@@ -23,7 +23,7 @@ public abstract class ZMQAbstractSubscriberHandler {
     abstract void parseControllerAgentInfo(JSONObject msgObj);
     
     
-    void messageDispatcher(String message) {
+    public void messageDispatcher(String message) {
             JSONObject messageObject = null;
             String entityType = null;
             

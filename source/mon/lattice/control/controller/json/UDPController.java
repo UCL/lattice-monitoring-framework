@@ -36,7 +36,7 @@ public class UDPController extends AbstractJSONRestController {
         usingDeploymentManager = Boolean.valueOf(pr.getProperty("deployment.enabled", "false"));
         
         //announceListeningPort = Integer.parseInt(pr.getProperty("control.announceport"));
-        poolSize = Integer.parseInt(pr.getProperty("control.poolsize"));
+        controlPoolSize = Integer.parseInt(pr.getProperty("control.poolsize"));
         
         InfoPlane infoPlane = new TomP2PDHTRootInfoPlane(infoPlanePort);
         
@@ -47,7 +47,7 @@ public class UDPController extends AbstractJSONRestController {
         
         // create a control plane producer without announce listening capabilities 
         // as this is implemented in the used info plane implementation
-        ControlPlane controlPlane = new UDPControlPlaneXDRProducer(poolSize);
+        ControlPlane controlPlane = new UDPControlPlaneXDRProducer(controlPoolSize);
         
         // setting a reference to the ControlInformation on the Control Plane
         ((ControlInformationInteracter) controlPlane).setControlInformation(controlInformationManager);

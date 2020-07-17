@@ -10,7 +10,9 @@ import mon.lattice.control.im.DSNotFoundException;
 import mon.lattice.core.ID;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import mon.lattice.control.im.AbstractControlEndPointMetaData;
@@ -30,6 +32,7 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import mon.lattice.control.im.ControlInformation;
 import mon.lattice.control.im.ControlInformationInteracter;
+import mon.lattice.control.im.LatchTimeoutException;
 import mon.lattice.core.EntityType;
 import mon.lattice.core.plane.AnnounceMessage;
 import mon.lattice.core.plane.DeannounceMessage;
@@ -166,7 +169,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
         try {
             session.startEntity(dataSource);
         
-            // we are supposed to wait here until either the announce message sent by the DS 
+            // we are supposed to wait here until either the announce probeMessage sent by the DS 
             // on the Info Plane is received by the Announcelistener thread
 
             AnnounceMessage m = new AnnounceMessage(dataSource.getId(), EntityType.DATASOURCE, 10);
@@ -183,7 +186,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
 
             deployedDataSources.put(dataSource.getId(), dataSource);
             LOGGER.info("Started Data Source: " + dataSource.getId());
-        } catch (SessionException | DSNotFoundException e) {
+        } catch (SessionException | DSNotFoundException | LatchTimeoutException e) {
             throw new DeploymentException(e); 
         }
         
@@ -204,7 +207,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
         try {
             session.startEntity(dataConsumer);
 
-            // we are supposed to wait here until either the announce message sent by the DC 
+            // we are supposed to wait here until either the announce probeMessage sent by the DC 
             // is received from the Announcelistener thread or the timeout is reached (5 secs)
             
             AnnounceMessage m = new AnnounceMessage(dataConsumer.getId(), EntityType.DATACONSUMER, 10);
@@ -221,10 +224,10 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
 
             deployedDataConsumers.put(dataConsumer.getId(), dataConsumer);
             LOGGER.info("Started Data Consumer: " + dataConsumer.getId());
-        } catch (SessionException | DCNotFoundException e) {
+        }  
+          catch (SessionException | DCNotFoundException | LatchTimeoutException e) {
             throw new DeploymentException(e);
-            
-        }
+        } 
         
         return dataConsumer.getId();
         
@@ -244,7 +247,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
         try {
             session.startEntity(controllerAgent);
             
-            // we are supposed to wait here until either the announce message sent by the Controller Agent 
+            // we are supposed to wait here until either the announce probeMessage sent by the Controller Agent 
             // is received from the Announcelistener thread or the timeout is reached (5 secs)
             
             AnnounceMessage m = new AnnounceMessage(controllerAgent.getId(), EntityType.CONTROLLERAGENT, 10);
@@ -261,7 +264,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
 
             deployedControllerAgents.put(controllerAgent.getId(), controllerAgent);
             LOGGER.info("Started Controller Agent: " + controllerAgent.getId());
-        } catch (SessionException | ControllerAgentNotFoundException e) {
+        } catch (SessionException | ControllerAgentNotFoundException | LatchTimeoutException e) {
             throw new DeploymentException(e);
             
         }
@@ -325,20 +328,46 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
             throw new DeploymentException(new SessionException("ID " + sessionID + " is not a valid Session ID"));
         
         Host host = session.getHost();
-                
-        try { 
+        
+        List<DeannounceMessage> probesDeannounce = getProbesToDeannounce(dataSourceID);
+   
+        try {    
             session.stopEntity(dataSource);
             host.removeDataSource(dataSourceID);
             
-            DeannounceMessage m = new DeannounceMessage(dataSource.getId(), EntityType.DATASOURCE, 5);
-            controlInformation.notifyAnnounceEvent(m);
+            DeannounceMessage dataSourceMessage = new DeannounceMessage(dataSource.getId(), EntityType.DATASOURCE, 10);
+            controlInformation.notifyAnnounceEvent(dataSourceMessage);
+            
+            // now de-announcing all the related probes on the control plane
+            for (DeannounceMessage probeMessage : probesDeannounce)
+                controlInformation.notifyAnnounceEvent(probeMessage);
             
             LOGGER.info("Stopped Data Source: " + dataSourceID);
             return (deployedDataSources.remove(dataSourceID) != null);
-        } catch (SessionException e) {
+        } catch (SessionException | LatchTimeoutException e) {
             throw new DeploymentException(e);
         }
         
+    }
+    
+    
+    private List<DeannounceMessage> getProbesToDeannounce(ID dataSourceID) {
+        JSONArray probesOnDS=null;
+        List<DeannounceMessage> probesDeannounce = new ArrayList();
+        try {  
+            probesOnDS = controlInformation.getProbesOnDS(dataSourceID);
+            
+            for (int i=0; i < probesOnDS.length(); i++) {
+                ID probeID = ID.fromString(probesOnDS.getString(i));
+                probesDeannounce.add(new DeannounceMessage(probeID, EntityType.PROBE, 0));
+            }
+            
+        } catch(DSNotFoundException dse) {
+            LOGGER.info("Could not retrieve probes list for Data Source " + dataSourceID);
+        } catch(JSONException je) {
+            LOGGER.info("Error while retrieving probe ID");
+        }
+        return probesDeannounce;
     }
 
     
@@ -358,12 +387,12 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
             session.stopEntity(dataConsumer);
             host.removeDataConsumer(dataConsumerID);
             
-            DeannounceMessage m = new DeannounceMessage(dataConsumer.getId(), EntityType.DATACONSUMER, 5);
+            DeannounceMessage m = new DeannounceMessage(dataConsumer.getId(), EntityType.DATACONSUMER, 10);
             controlInformation.notifyAnnounceEvent(m);
             
             LOGGER.info("Stopped Data Consumer: " + dataConsumerID);
             return (deployedDataConsumers.remove(dataConsumerID) != null);
-        } catch (SessionException e) {
+        } catch (SessionException | LatchTimeoutException e) {
             throw new DeploymentException(e);
         }
     }
@@ -390,7 +419,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
             
             LOGGER.info("Stopped Controller Agent: " + caID);
             return (deployedControllerAgents.remove(caID) != null);
-        } catch (SessionException e) {
+        } catch (SessionException | LatchTimeoutException e) {
             throw new DeploymentException(e);
         }
     }
