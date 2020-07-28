@@ -65,6 +65,8 @@ public class IotTopology {
     Thread currentThread;
 
     ReporterLoader reporterLoader;
+    
+    Exception error;
 
     public IotTopology(int topologyId,
                        String userID,
@@ -139,10 +141,13 @@ public class IotTopology {
                                                                                           controllerControlPlanePort
                                                             );
             
-            dataSourceIDs.add(startDS.getString("ID"));
+            if (startDS.has("ID"))
+                dataSourceIDs.add(startDS.getString("ID"));
+            else
+                throw new Exception("Error while instantiating Data Source: " + startDS.getString("msg"));
         }
         catch (JSONException e) {
-            throw new Exception("Error while instantiating DS\n" + e.getMessage());
+            throw new Exception("Error while instantiating Data Source: " + e.getMessage());
         }
     }
     
@@ -152,29 +157,32 @@ public class IotTopology {
         
         try {
             JSONObject startDC = restClient.startDataConsumer(dcClassName, dcHostSessionID, dcDataPlanePort + "+" +
-                                                                                            controllerAddress + "+" +
-                                                                                            controllerInfoPlanePort + "+" +
-                                                                                            controllerControlPlanePort
-                                                            );
+                                                                                controllerAddress + "+" +
+                                                                                controllerInfoPlanePort + "+" +
+                                                                                controllerControlPlanePort
+                                                    );
             
-            dataConsumerID = startDC.getString("ID");
+            if (startDC.has("ID"))
+                dataConsumerID = startDC.getString("ID");
+            else
+                throw new Exception("Error while instantiating Data Consumer: " + startDC.getString("msg"));
         }
         catch (JSONException e) {
-            throw new Exception("Error while instantiating DS\n" + e.getMessage());
+            throw new Exception("Error while instantiating Data Consumer: " + e.getMessage());
         }
-        
-        
     }
-    
+        
     
     private void stopDataSource(String dsID) throws Exception {
         JSONObject out;
         System.out.println("Stopping Data Source on host: "  + hostID + " - DS id: " + dsID);
         try {
-            out = restClient.stopDataSource(dsID, dsHostSessionID);  
-    
-            if (!out.getBoolean("success"))
-                throw new Exception("Error while stopping Data Source: " + dsID + out.getString("msg"));
+            if (dsID != null && dsHostSessionID != null) {
+                out = restClient.stopDataSource(dsID, dsHostSessionID);
+                
+                if (!out.getBoolean("success"))
+                    throw new Exception("Error while stopping Data Source: " + dsID + ": " + out.getString("msg"));
+            }
         }
         catch (JSONException e) {
             throw new Exception("Error while unloading Data Source: " + e.getMessage());
@@ -184,12 +192,15 @@ public class IotTopology {
     
     private void stopDataConsumer() throws Exception {
         JSONObject out;
-        System.out.println("Stopping Data Consumer on host: "  + hostID + " - DS id: " + dataConsumerID);
+        
         try {
-            out = restClient.stopDataConsumer(dataConsumerID, dcHostSessionID);  
+            if (dataConsumerID != null && dcHostSessionID != null) {
+                System.out.println("Stopping Data Consumer on host: "  + hostID + " - DC id: " + dataConsumerID);
+                out = restClient.stopDataConsumer(dataConsumerID, dcHostSessionID);  
     
-            if (!out.getBoolean("success"))
-                throw new Exception("Error while stopping Data Consumer: " + dataConsumerID + out.getString("msg"));
+                if (!out.getBoolean("success"))
+                    throw new Exception("Error while stopping Data Consumer: " + dataConsumerID + ": " + out.getString("msg"));
+            }
         }
         catch (JSONException e) {
             throw new Exception("Error while unloading Data Consumer: " + e.getMessage());
@@ -208,15 +219,21 @@ public class IotTopology {
                                                   probeClassName, 
                                                   probeName + "+" + probeAttributeName + "+" + value + "+" + rate + "+" + units + "+" + waitMin + "+" + waitMax
                                                  );
-            String probeID = out.getString("createdProbeID");
-            probes.add(probeID);
+            
+            if (out.has("createdProbeID")) {
+                String probeID = out.getString("createdProbeID");
+                probes.add(probeID);
+            } else
+                System.err.println("Topology " + topologyId + ": Error while loading Probe: " + probeName + " on DataSource " + dataSourceID + "\n" +
+                                    out.getString("msg"));
+            
         } catch (JSONException je) {
             System.err.println("Topology " + topologyId + ": Error while loading Probe: " + probeName + " on DataSource " + dataSourceID);
         }
     }
     
     
-    private void activateSensor(String dataSourceID, String probeID) {// throws InterruptedException {
+    private void activateSensor(String dataSourceID, String probeID) {
         try {
             restClient.setProbeServiceID(probeID, getRandomEntityID());
             restClient.turnOnProbe(probeID);
@@ -240,16 +257,38 @@ public class IotTopology {
     
     void createTopology() {
         try {
-            dcHostSessionID = restClient.createSession(hostID, userID).getString("ID");
-            dsHostSessionID = restClient.createSession(hostID, userID).getString("ID");
+            // starting Data Consumers first
+            JSONObject dcSession = restClient.createSession(hostID, userID);
+            
+            if (dcSession.has("ID"))
+                dcHostSessionID = dcSession.getString("ID");
+            else
+                throw new Exception("Data Consumer error: " + dcSession.getString("msg"));
             
             startDataConsumer();
             loadReporter("reporter-" + topologyId);
             
+            // starting Data Sources now
+            JSONObject dsSession = restClient.createSession(hostID, userID);
+            
+            if (dsSession.has("ID"))
+                dsHostSessionID = dsSession.getString("ID");
+            else
+                throw new Exception("Data Source error: " + dsSession.getString("msg"));
+            
             for (int i=0; i<dsNumber; i++)
                 startDataSource();
-                
-            // should create multiple thread here
+            
+        } catch (Exception e) {
+            error = new Exception("Fatal error while creating topology: " + this.topologyId + " – " + e.getMessage());
+            Thread.currentThread().interrupt();
+            return;
+        }
+        
+        
+        // emulation can continue now: errors on sensor loading are not fatal
+        try {
+            // TODO: should create multiple thread here
             for (String dsID : dataSourceIDs) {
                 System.out.println("Topology " + topologyId + ": Loading Probes / Sensors");
                 
@@ -280,8 +319,9 @@ public class IotTopology {
             unloadReporter();
             stopDataConsumer();
             
-            restClient.deleteSession(dcHostSessionID);
-            restClient.deleteSession(dsHostSessionID);
+            if (dcHostSessionID != null) restClient.deleteSession(dcHostSessionID);
+            if (dsHostSessionID != null) restClient.deleteSession(dsHostSessionID);
+            
         } catch (Exception e) {
             System.err.println("Error while deleting topology: " + this.topologyId + " – " + e.getMessage());
         }
@@ -414,6 +454,11 @@ public class IotTopology {
                     throw new IOException("Reporter class: " + fqClassName + " is not supported");
             }        
         }
+    }
+
+    
+    public Exception getError() {
+        return error;
     }
     
 }

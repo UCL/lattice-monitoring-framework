@@ -1,6 +1,7 @@
 package mon.lattice.control.im;
 
 import java.io.IOException;
+import java.util.Set;
 import mon.lattice.core.ID;
 import mon.lattice.core.plane.AnnounceEventListener;
 import us.monoid.json.JSONArray;
@@ -10,6 +11,12 @@ import us.monoid.json.JSONArray;
  * @author uceeftu
  */
 public interface ControlInformation extends AnnounceEventListener {
+    
+    public Set<ID> getDataSources();
+    
+    public Set<ID> getDataConsumers();
+    
+    public Set<ID> getControllerAgents();
     
     public AbstractControlEndPointMetaData getDSAddressFromProbeID(ID probe) throws ProbeNotFoundException, DSNotFoundException, IOException;
     

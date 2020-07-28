@@ -144,13 +144,13 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
             session.startSSHSession();
             session.deployJar();
             
-            //we add a reference to this Session to the host he is bound to
+            //we add a reference to this Session to the host it is bound to
             host.addSession(session.getId());
             
             sessions.put(session.getId(), session);
             return session.getId();
             
-        }  catch (JSchException | SftpException | SessionException e) {
+        }  catch (JSchException | SessionException e) {
             throw new DeploymentException(e); 
         }
     }
@@ -169,7 +169,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
         try {
             session.startEntity(dataSource);
         
-            // we are supposed to wait here until either the announce probeMessage sent by the DS 
+            // we are supposed to wait here until either the announce message sent by the DS 
             // on the Info Plane is received by the Announcelistener thread
 
             AnnounceMessage m = new AnnounceMessage(dataSource.getId(), EntityType.DATASOURCE, 10);
@@ -308,11 +308,11 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
         
         if (!(host.getSessions().isEmpty() && host.getDataSources().isEmpty() && host.getDataConsumers().isEmpty() && host.getControllerAgents().isEmpty()))
             throw new DeploymentException(new HostException("Host " + hostID + " cannot be removed (not empty)"));
-            
-        LOGGER.info("Removed host: " + hostID);
+        
         hosts.remove(hostID);
+        LOGGER.info("Removed host: " + hostID);
+        
         return true;
-      
     }
     
     
@@ -335,7 +335,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
             session.stopEntity(dataSource);
             host.removeDataSource(dataSourceID);
             
-            DeannounceMessage dataSourceMessage = new DeannounceMessage(dataSource.getId(), EntityType.DATASOURCE, 10);
+            DeannounceMessage dataSourceMessage = new DeannounceMessage(dataSource.getId(), EntityType.DATASOURCE, 20);
             controlInformation.notifyAnnounceEvent(dataSourceMessage);
             
             // now de-announcing all the related probes on the control plane
@@ -387,7 +387,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
             session.stopEntity(dataConsumer);
             host.removeDataConsumer(dataConsumerID);
             
-            DeannounceMessage m = new DeannounceMessage(dataConsumer.getId(), EntityType.DATACONSUMER, 10);
+            DeannounceMessage m = new DeannounceMessage(dataConsumer.getId(), EntityType.DATACONSUMER, 20);
             controlInformation.notifyAnnounceEvent(m);
             
             LOGGER.info("Stopped Data Consumer: " + dataConsumerID);
@@ -424,6 +424,10 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
         }
     }
     
+    
+    /* TODO: the following methods should iterate over the keys of the 
+       ControlInformationManager to include entities not deployed by this
+       manager */
     
     @Override
     public JSONArray getDataSources() throws JSONException {

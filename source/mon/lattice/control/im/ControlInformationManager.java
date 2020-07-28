@@ -70,7 +70,7 @@ public class ControlInformationManager implements ControlInformation {
     
     
     @Override
-    public void notifyAnnounceEvent(AbstractAnnounceMessage m) throws LatchTimeoutException {
+    public void notifyAnnounceEvent(AbstractAnnounceMessage m) {
         Map<ID, CountDownLatch> pendingEntities;
         Set<ID> entities;
         
@@ -129,8 +129,9 @@ public class ControlInformationManager implements ControlInformation {
            the operation will add the Latch to the Map, the other one will 
            get an handle to it. This is managed via calling putIfAbsent
         */
-        CountDownLatch latch = new CountDownLatch(1);
-        CountDownLatch existingLatch = pendingEntities.putIfAbsent(id, latch);
+        //CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch existingLatch = pendingEntities.putIfAbsent(id, 
+                                                                   new CountDownLatch(1));
         
         /* The thread that first created the Latch will wait on it */
         if (existingLatch == null)
@@ -326,6 +327,23 @@ public class ControlInformationManager implements ControlInformation {
         
         return this.fetchControllerAgentControlEndPoint(controllerAgentID);    
     }
+    
+
+    @Override
+    public Set<ID> getDataSources() {
+        return dataSources;
+    }
+
+    @Override
+    public Set<ID> getDataConsumers() {
+        return dataConsumers;
+    }
+
+    @Override
+    public Set<ID> getControllerAgents() {
+        return controllerAgents;
+    }
+    
     
     
     private AbstractControlEndPointMetaData fetchDataSourceControlEndPoint(ID dataSourceID) throws IOException {        

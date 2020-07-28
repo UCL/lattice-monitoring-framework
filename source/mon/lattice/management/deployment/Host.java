@@ -6,9 +6,8 @@
 package mon.lattice.management.deployment;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import mon.lattice.core.ID;
 
 /**
@@ -26,10 +25,10 @@ public abstract class Host {
     protected Long jarDeploymentDate;
     protected boolean jarDeployed;
     
-    List<ID> sessions;
-    List<ID> dataSources;
-    List<ID> dataConsumers;
-    List<ID> controllerAgents;
+    Set<ID> sessions;
+    Set<ID> dataSources;
+    Set<ID> dataConsumers;
+    Set<ID> controllerAgents;
     
     
     public Host(String address, int port) {
@@ -38,10 +37,10 @@ public abstract class Host {
         this.address = address;
         this.port = port;
         
-        sessions = Collections.synchronizedList(new ArrayList());
-        dataSources = Collections.synchronizedList(new ArrayList());
-        dataConsumers = Collections.synchronizedList(new ArrayList());
-        controllerAgents = Collections.synchronizedList(new ArrayList());
+        sessions = ConcurrentHashMap.newKeySet();
+        dataSources = ConcurrentHashMap.newKeySet();
+        dataConsumers = ConcurrentHashMap.newKeySet();
+        controllerAgents = ConcurrentHashMap.newKeySet();
     }
 
     public ID getId() {
@@ -94,7 +93,7 @@ public abstract class Host {
         sessions.remove(sessionID);
     }
     
-    public List<ID> getSessions() {
+    public Set<ID> getSessions() {
         return sessions;
     }
     
@@ -109,7 +108,7 @@ public abstract class Host {
     }
 
     
-    public List<ID> getDataSources() {
+    public Set<ID> getDataSources() {
         return dataSources;
     }
     
@@ -123,7 +122,7 @@ public abstract class Host {
         dataConsumers.remove(dataConsumerID);
     }
         
-    public List<ID> getDataConsumers() {
+    public Set<ID> getDataConsumers() {
         return dataConsumers;
     }
     
@@ -138,7 +137,7 @@ public abstract class Host {
     }
 
     
-    public List<ID> getControllerAgents() {
+    public Set<ID> getControllerAgents() {
         return controllerAgents;
     }
     

@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import mon.lattice.appl.RestClient;
 import mon.lattice.core.ID;
 import us.monoid.json.JSONException;
@@ -78,7 +80,7 @@ public class IotEmulator {
         System.out.println("Number of Probes/Sensors per Data Source: " + nSensors);
         System.out.println("Probes/Sensors rate: " + rate);
         System.out.println("Probes/Sensors random activation interval: " + waitMin + "-" + waitMax);
-        System.out.println("Number of concurrent generators: " + topologies);
+        System.out.println("Number of concurrent topologies: " + topologies);
         System.out.println();
     }
     
@@ -104,10 +106,10 @@ public class IotEmulator {
     
     void cleanup() {
         try {
-            restClient.removeHost(hostID);
-            restClient.deleteUser(userID);
+            System.out.println(restClient.removeHost(hostID));
+            System.out.println(restClient.deleteUser(userID));
             } catch (Exception e) {
-                System.err.println("There was an error while removing either the users or the hosts" + e.getMessage());
+                System.err.println("There was an error while removing either the users or the hosts: " + e.getMessage());
             }
     }
     
@@ -196,6 +198,19 @@ public class IotEmulator {
             for (IotTopology t : iotList)
                 t.currentThread.join();
             
+            
+            StringBuilder errors = new StringBuilder();
+            for (IotTopology t : iotList) {
+                Exception error = t.getError();
+                if (error != null) {
+                    errors.append(error.getMessage());
+                    errors.append("\n");
+                }
+            }
+            
+            if (errors.length() > 0) 
+                throw new Exception(errors.toString());
+            
             tEnd = System.currentTimeMillis();
             
             iot.writeCompletedTimestamp(tEnd/1000);
@@ -213,7 +228,7 @@ public class IotEmulator {
         }
         
         catch (Exception e) {
-            System.out.println("\n*** DEPLOYMENT FAILED ***\n" + e.getMessage());
+            System.out.println("\n*** DEPLOYMENT FAILED – Terminating Emulation ***\n" + e.getMessage());
             errorStatus = true;
         }
         
@@ -225,12 +240,13 @@ public class IotEmulator {
                 t.stopDeployment();
             }
             
-            if (iot != null) 
-                iot.cleanup();
-            
             try {
                 for (IotTopology t : iotList)
                     t.currentThread.join();
+                
+                if (iot != null) 
+                    iot.cleanup();
+                
             } catch (InterruptedException ie) {
                 System.err.println("Interrupted while waiting for the Undeployment to be completed: " + ie.getMessage());
                 System.exit(2);

@@ -8,7 +8,7 @@ import us.monoid.json.JSONObject;
 
 public abstract class ZMQAbstractSubscriberHandler {
     
-    private Logger LOGGER = LoggerFactory.getLogger(ZMQAbstractSubscriberHandler.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(ZMQAbstractSubscriberHandler.class);
     
     abstract void parseDataSourceInfo(JSONObject msgObj);
     
