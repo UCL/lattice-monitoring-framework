@@ -170,7 +170,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
             session.startEntity(dataSource);
         
             // we are supposed to wait here until either the announce message sent by the DS 
-            // on the Info Plane is received by the Announcelistener thread
+            // on the Info Plane is received by the Announcelistener thread or the timeout is reached (10 secs)
 
             AnnounceMessage m = new AnnounceMessage(dataSource.getId(), EntityType.DATASOURCE, 10);
             controlInformation.notifyAnnounceEvent(m);
@@ -207,8 +207,8 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
         try {
             session.startEntity(dataConsumer);
 
-            // we are supposed to wait here until either the announce probeMessage sent by the DC 
-            // is received from the Announcelistener thread or the timeout is reached (5 secs)
+            // we are supposed to wait here until either the announce message sent by the DC 
+            // is received from the Announcelistener thread or the timeout is reached (10 secs)
             
             AnnounceMessage m = new AnnounceMessage(dataConsumer.getId(), EntityType.DATACONSUMER, 10);
             controlInformation.notifyAnnounceEvent(m);
@@ -247,8 +247,8 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
         try {
             session.startEntity(controllerAgent);
             
-            // we are supposed to wait here until either the announce probeMessage sent by the Controller Agent 
-            // is received from the Announcelistener thread or the timeout is reached (5 secs)
+            // we are supposed to wait here until either the announce message sent by the Controller Agent 
+            // is received from the Announcelistener thread or the timeout is reached (10 secs)
             
             AnnounceMessage m = new AnnounceMessage(controllerAgent.getId(), EntityType.CONTROLLERAGENT, 10);
             controlInformation.notifyAnnounceEvent(m);
@@ -335,7 +335,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
             session.stopEntity(dataSource);
             host.removeDataSource(dataSourceID);
             
-            DeannounceMessage dataSourceMessage = new DeannounceMessage(dataSource.getId(), EntityType.DATASOURCE, 20);
+            DeannounceMessage dataSourceMessage = new DeannounceMessage(dataSource.getId(), EntityType.DATASOURCE, 10);
             controlInformation.notifyAnnounceEvent(dataSourceMessage);
             
             // now de-announcing all the related probes on the control plane
@@ -387,7 +387,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
             session.stopEntity(dataConsumer);
             host.removeDataConsumer(dataConsumerID);
             
-            DeannounceMessage m = new DeannounceMessage(dataConsumer.getId(), EntityType.DATACONSUMER, 20);
+            DeannounceMessage m = new DeannounceMessage(dataConsumer.getId(), EntityType.DATACONSUMER, 10);
             controlInformation.notifyAnnounceEvent(m);
             
             LOGGER.info("Stopped Data Consumer: " + dataConsumerID);
@@ -414,7 +414,7 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
             session.stopEntity(controllerAgent);
             host.removeControllerAgent(caID);
             
-            DeannounceMessage m = new DeannounceMessage(controllerAgent.getId(), EntityType.CONTROLLERAGENT, 5);
+            DeannounceMessage m = new DeannounceMessage(controllerAgent.getId(), EntityType.CONTROLLERAGENT, 10);
             controlInformation.notifyAnnounceEvent(m);
             
             LOGGER.info("Stopped Controller Agent: " + caID);
@@ -554,6 +554,5 @@ public class SSHDeploymentManager implements DeploymentService, ControlInformati
     }
     
     
-
-    
 }
+

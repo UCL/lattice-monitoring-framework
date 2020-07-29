@@ -114,7 +114,7 @@ public class SSHSession extends AbstractSession {
             channel.connect(3000);
             channelSftp = (ChannelSftp) channel;
             
-            Thread.sleep(500);
+            Thread.sleep(2000);
             
             String entityType;
             if (entity.getEntityType() == EntityType.DATASOURCE)

@@ -57,6 +57,7 @@ public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements Da
      */
     public boolean disconnect() {
         zmqPublisher.disconnect();
+        zmqPublisher.destroyZMQContext();
         zmqSubscriber.disconnect();
         return true;
     }
@@ -210,3 +211,4 @@ public class ZMQDataConsumerInfoPlane extends AbstractZMQInfoPlane implements Da
         return false;
     }
 }
+

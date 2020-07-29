@@ -33,7 +33,7 @@ public abstract class ZMQAbstractSubscriberHandler {
             } catch (JSONException e) {
                 LOGGER.error("Error while deserializing received message" + e.getMessage());
             }
-            
+                        
             if (entityType != null && messageObject != null) switch(entityType) {
                 case "datasource":
                     parseDataSourceInfo(messageObject);
