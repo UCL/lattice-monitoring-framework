@@ -110,25 +110,12 @@ public class SSHSession extends AbstractSession {
             channel.disconnect();
             
             /* now checking that the process was started */
-            channel = SSHSessionHandler.openChannel("sftp");
-            channel.connect(3000);
-            channelSftp = (ChannelSftp) channel;
+            long t1 = System.currentTimeMillis();
+            if (!isEntityStarted(entity, 2000, 200))
+                throw new SessionException("Error while starting the " + entity.getEntityType() + " process with command: " + command);
             
-            Thread.sleep(2000);
+            LOGGER.info("Process for " + entity.getEntityType() + " " + entity.getId() + " started in " + (System.currentTimeMillis() - t1) + " msec");
             
-            String entityType;
-            if (entity.getEntityType() == EntityType.DATASOURCE)
-                entityType = "data-source-";
-            else if (entity.getEntityType() == EntityType.DATACONSUMER)
-                entityType = "data-consumer-";
-            else
-                return;
-            
-            String entityLogFile = "/tmp/" + entityType + entity.getId().toString() + ".log";
-            channelSftp.stat(entityLogFile);
-            
-        } catch (SftpException sftpe) {
-            throw new SessionException("Error while starting the " + entity.getEntityType() + " process with command: " + command);
         } catch (JSchException | InterruptedException e) {
             throw new SessionException(e);
         } finally {
@@ -155,6 +142,55 @@ public class SSHSession extends AbstractSession {
         } finally {
             if (channel != null) channel.disconnect();
         }
+    }
+    
+    
+    /**
+     * This is used to check that the process for an entity was successfully started.
+     * It is not guaranteed that the entity is up if the process is up
+     * (the caller will wait for the announce message on the Info Plane to
+     * verify that).
+     * 
+     * @param entity - the entity to be checked
+     * @param timeout - the max timeout the method will wait for
+     * @param sleepTimeStep - the interval between different polling requests
+     * @return true if the entity was successfully started
+     * @throws JSchException
+     * @throws InterruptedException 
+     */
+    private boolean isEntityStarted(LatticeEntityInfo entity, int timeout, int sleepTimeStep) throws JSchException, InterruptedException {
+        Channel channel = null;
+        ChannelSftp channelSftp = null;
+        boolean entityStarted = false;
+        
+        channel = SSHSessionHandler.openChannel("sftp");
+        channel.connect(3000);
+        channelSftp = (ChannelSftp) channel;
+
+        String entityType;
+        if (entity.getEntityType() == EntityType.DATASOURCE)
+            entityType = "data-source-";
+        else if (entity.getEntityType() == EntityType.DATACONSUMER)
+            entityType = "data-consumer-";
+        else
+            return false;
+
+        String entityLogFile = "/tmp/" + entityType + entity.getId().toString() + ".log";
+        
+        for (int timer = 0; timer < timeout && entityStarted == false; timer += sleepTimeStep) {
+            try {
+                channelSftp.stat(entityLogFile);
+                entityStarted = true;
+            } catch (SftpException sFTPe) {
+                LOGGER.debug("Trying again in " + sleepTimeStep + " msec");
+                Thread.sleep(sleepTimeStep);
+             }
+        }
+        
+        channel.disconnect();
+        channelSftp.disconnect();
+        
+        return entityStarted;
     }
         
         
