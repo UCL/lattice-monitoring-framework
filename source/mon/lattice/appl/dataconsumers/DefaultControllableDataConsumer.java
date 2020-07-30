@@ -160,7 +160,7 @@ public final class DefaultControllableDataConsumer extends AbstractDataConsumer 
 
     @Override
     public void removeReporter(ControllableReporter r) throws Exception {
-        r.cleanup();
+        // This is now done in AbstractDataConsumer.removeReporter() //r.cleanup();
         super.removeReporter(r);
         reporters.remove(r.getId());
         getInfoPlane().removeReporterInfo(r);
@@ -177,7 +177,7 @@ public final class DefaultControllableDataConsumer extends AbstractDataConsumer 
         if (r instanceof ReporterInformationInteracter)
             ((ReporterInformationInteracter)r).setReporterInformation(new ReporterInformationManager(this.getInfoPlane()));
         
-        r.init();
+        // This is now done in AbstractDataConsumer.addReporter() // r.init();
         super.addReporter(r);
         reporters.put(r.getId(), r);
         getInfoPlane().addReporterInfo(r);

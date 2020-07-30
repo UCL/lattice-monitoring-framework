@@ -13,7 +13,7 @@ import java.util.EventListener;
  */
 public interface Reporter extends EventListener {
     /**
-     * Report the object
+     * Report the Measurement
      */
     public void report(Measurement m);
 

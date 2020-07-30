@@ -1,6 +1,6 @@
 package mon.lattice.appl.reporters.vlsp;
 
-import mon.lattice.core.AbstractReporter;
+import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.data.table.Table;
@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A PrintReporter just prints a Measurement.
  */
-public final class LoggerReporter extends AbstractReporter {
+public final class LoggerReporter extends AbstractControllableReporter {
     /**
      * In this LoggerReporter, report() logs and formats the Measurement (from VLSP) to the log file.
      */

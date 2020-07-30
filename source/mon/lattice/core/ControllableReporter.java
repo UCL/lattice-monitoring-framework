@@ -13,7 +13,7 @@ package mon.lattice.core;
  * @author uceeftu
  * 
  */
-public interface ControllableReporter extends Reporter {
+public interface ControllableReporter extends LifecycleReporter {
     
     public void init() throws Exception;
     

@@ -9,7 +9,7 @@ import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import mon.lattice.appl.reporters.ReporterException;
-import mon.lattice.core.AbstractReporter;
+import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.ProbeValueWithName;
@@ -17,7 +17,7 @@ import mon.lattice.core.Reporter;
 import mon.lattice.core.Timestamp;
 import mon.lattice.distribution.ConsumerMeasurementWithMetadataAndProbeName;
 
-public class MongoDBReporter extends AbstractReporter implements Reporter {
+public class MongoDBReporter extends AbstractControllableReporter {
     private final String mongoDBAddress;
     private final int mongoDBPort;
     private final String mongoDBName;

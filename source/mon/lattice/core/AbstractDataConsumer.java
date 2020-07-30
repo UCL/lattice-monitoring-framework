@@ -235,16 +235,38 @@ public abstract class AbstractDataConsumer extends AbstractPlaneInteracter imple
 
     /**
      * Add a Reporter.
+     * @return false if the Reporter is a LifecycleReporter and it fails on init()
      */
-    public void addReporter(Reporter l) {
+    public boolean addReporter(Reporter l) {
+        if (l instanceof LifecycleReporter) {
+            try {
+                ((LifecycleReporter)l).init();
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        
 	listenerList.add(Reporter.class, l);
+
+        return true;
     }
 
     /**
      * Remove a Reporter.
+     * @return false if the Reporter is a LifecycleReporter and it fails on cleanup()
      */
-    public void removeReporter(Reporter l) {
+    public boolean removeReporter(Reporter l) {
 	listenerList.remove(Reporter.class, l);
+
+        if (l instanceof LifecycleReporter) {
+            try {
+                ((LifecycleReporter)l).cleanup();
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -263,14 +285,20 @@ public abstract class AbstractDataConsumer extends AbstractPlaneInteracter imple
 
     /**
      * Clear away all the Reporters.
+     * @return false if any Reporter is a LifecycleReporter and it fails on cleanup()
      */
-    public void clearReporters() {
+    public boolean clearReporters() {
 	Object[] oldReporters = getReporters();
+
+        boolean retVal = true;
+        
 	for (Object r : oldReporters) {
 	    if (r instanceof Reporter) {
-		removeReporter((Reporter)r);
+		retVal = removeReporter((Reporter)r);
 	    }
 	}
+
+        return retVal;
     }
 
     /**

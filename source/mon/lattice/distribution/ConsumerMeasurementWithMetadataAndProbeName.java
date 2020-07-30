@@ -6,8 +6,7 @@ import mon.lattice.core.ID;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.ProbeValueWithName;
 
-public class ConsumerMeasurementWithMetadataAndProbeName extends
-		ConsumerMeasurementWithMetaData {
+public class ConsumerMeasurementWithMetadataAndProbeName extends ConsumerMeasurementWithMetaData implements WithNames {
 	public String probeName;
 
 	public ConsumerMeasurementWithMetadataAndProbeName(long seqNo, ID pid,

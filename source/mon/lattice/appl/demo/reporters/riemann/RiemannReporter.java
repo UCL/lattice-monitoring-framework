@@ -9,7 +9,7 @@ package mon.lattice.appl.demo.reporters.riemann;
 import mon.lattice.appl.demo.reporters.riemann.Proto.Attribute;
 import mon.lattice.appl.demo.reporters.riemann.Proto.Event;
 import mon.lattice.appl.demo.reporters.riemann.Proto.Msg;
-import mon.lattice.core.AbstractReporter;
+import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.ProbeValueWithName;
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author uceeftu
  */
-public class RiemannReporter extends AbstractReporter {
+public class RiemannReporter extends AbstractControllableReporter {
     InetAddress address;
     int port;
     

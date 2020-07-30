@@ -5,7 +5,7 @@
  */
 package eu.fivegex.monitoring.appl.reporters;
 
-import mon.lattice.core.AbstractReporter;
+import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.ProbeValueWithName;
@@ -21,7 +21,7 @@ import static us.monoid.web.Resty.form;
  *
  * @author uceeftu
  */
-public class InfluxDBReporter extends AbstractReporter {
+public class InfluxDBReporter extends AbstractControllableReporter {
     String serverAddress;
     String serverPort;
     String influxDBURI;

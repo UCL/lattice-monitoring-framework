@@ -1,6 +1,6 @@
 package mon.lattice.appl.reporters;
 
-import mon.lattice.core.AbstractReporter;
+import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A PrintReporter just prints a Measurement.
  */
-public class VoidReporter extends AbstractReporter {
+public class VoidReporter extends AbstractControllableReporter {
     /**
      * In a VoidReporter, report() just sleeps for reportTime milliseconds.
      */

@@ -1,7 +1,7 @@
 package mon.lattice.appl.reporters.vlsp;
 
 import java.io.IOException;
-import mon.lattice.core.AbstractReporter;
+import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.data.table.Table;
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An InfluxDBReporter stores metrics into InfluxDB.
  */
-public final class InfluxDBReporter extends AbstractReporter {
+public final class InfluxDBReporter extends AbstractControllableReporter {
     /**
      * In this InfluxDBReporter, report() logs and formats the Measurement (from VLSP) to an InfluxDB Database.
      */

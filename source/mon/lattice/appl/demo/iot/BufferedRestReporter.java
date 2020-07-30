@@ -5,7 +5,7 @@ package mon.lattice.appl.demo.iot;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import mon.lattice.core.AbstractReporter;
+import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ import us.monoid.web.Resty.Option;
  * A BufferReporter groups and sends the Measurements to a specific function.
  */
 @Deprecated
-public class BufferedRestReporter extends AbstractReporter {
+public class BufferedRestReporter extends AbstractControllableReporter {
     /**
      * In a BufferReporter, report() groups and sends the Measurement to a specific function.
      */

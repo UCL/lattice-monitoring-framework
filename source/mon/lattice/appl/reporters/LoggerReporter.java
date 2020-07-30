@@ -1,6 +1,6 @@
 package mon.lattice.appl.reporters;
 
-import mon.lattice.core.AbstractReporter;
+import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A PrintReporter just prints a Measurement.
  */
-public final class LoggerReporter extends AbstractReporter {
+public final class LoggerReporter extends AbstractControllableReporter {
     /**
      * In a LoggerReporter, report() just logs the Measurement to the log file.
      */

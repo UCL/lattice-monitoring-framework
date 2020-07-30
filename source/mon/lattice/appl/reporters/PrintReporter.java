@@ -5,14 +5,14 @@
 
 package mon.lattice.appl.reporters;
 
-import mon.lattice.core.AbstractReporter;
+import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 
 
 /**
  * A PrintReporter just prints a Measurement.
  */
-public class PrintReporter extends AbstractReporter {
+public class PrintReporter extends AbstractControllableReporter {
     /**
      * In a PrintReporter, report() just prints the Measurement.
      */
