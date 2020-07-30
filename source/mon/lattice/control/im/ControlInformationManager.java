@@ -124,20 +124,40 @@ public class ControlInformationManager implements ControlInformation {
     
     private void waitOrNotifyEntity(AbstractAnnounceMessage m, Map<ID, CountDownLatch> pendingEntities, Set<ID> entities) {
         ID id = m.getEntityID();
+        int LatchCount;
         
-        /* both Threads will attempt to create a Latch. The first one completing
-           the operation will add the Latch to the Map, the other one will 
-           get an handle to it. This is managed via calling putIfAbsent
+        /* all the Threads will attempt to create a Latch. The first one completing
+           the operation will add the Latch to the Map, the other ones will 
+           get an handle to it. This is managed via calling putIfAbsent.
+        
+           In general there are three threads that need synchronization:
+           Management, Control and Information. However not all of them need to
+           be synchronized with each other for each added / removed entity
+        
+           During the probe related operations the threads to be synchronized are
+           control and information plane. 
+           During deannounce operations the threads to be synchronized are the management
+           and information as we do not need to wait for the control plane. 
+           LatchCount is therefore set to 1.
         */
-        //CountDownLatch latch = new CountDownLatch(1);
+        
+        if (m.getEntityType() == EntityType.PROBE || m.getMessageType() == MessageType.DEANNOUNCE) 
+            LatchCount = 1;
+        /* During the announce operations not involving probes we need to sync three threads,
+           i.e., management, control and information. LatchCount is set to 2 in this case.
+        */
+        else
+            LatchCount = 2;
+        
+        
         CountDownLatch existingLatch = pendingEntities.putIfAbsent(id, 
-                                                                   new CountDownLatch(1));
+                                                                   new CountDownLatch(LatchCount));
         
         /* The thread that first created the Latch will wait on it */
         if (existingLatch == null)
             waitForEntity(m, pendingEntities);
         
-        /* The thread who received a handle to the existing Latch will
+        /* The thread(s) that received a handle to the existing Latch will
            notify the other (waiting) thread
         */
         else
@@ -151,15 +171,17 @@ public class ControlInformationManager implements ControlInformation {
         MessageType messageType = m.getMessageType();
         
         LOGGER.debug(Thread.currentThread().getName() + ": Notifying pending " + entityType + ": " + id);
-        CountDownLatch latch = pendingEntities.remove(id);
+        CountDownLatch latch = pendingEntities.get(id);
         latch.countDown();
 
-        if (messageType == MessageType.ANNOUNCE) {
-            entities.add(id);
-            LOGGER.info("Added " + entityType + ": " + id.toString());
-        } else {
-            entities.remove(id);
-            LOGGER.info("Removed " + entityType + ": " + id.toString());
+        if (latch.getCount() == 0) {
+            if (messageType == MessageType.ANNOUNCE) {
+                entities.add(id);
+                LOGGER.info("Added " + entityType + ": " + id.toString());
+            } else {
+                entities.remove(id);
+                LOGGER.info("Removed " + entityType + ": " + id.toString());
+            }
         } 
     }
     
@@ -179,7 +201,7 @@ public class ControlInformationManager implements ControlInformation {
         }
 
         /* we send a timeout exception when a timeout was actually set in the 
-           announce message (replyTimeout > 0) and the latch count is still > 0 
+           announce message (replyTimeout > 0) and the latch LatchCount is still > 0 
         */
         if (replyTimeout > 0 && latch.getCount() > 0) {
             // cleaning up

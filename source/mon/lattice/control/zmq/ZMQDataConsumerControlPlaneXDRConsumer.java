@@ -15,6 +15,7 @@ import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.Rational;
 import java.io.IOException;
 import mon.lattice.core.ControllableReporter;
+import mon.lattice.core.EntityType;
 
 
 
@@ -32,6 +33,7 @@ public class ZMQDataConsumerControlPlaneXDRConsumer extends AbstractZMQControlPl
 	    if (zmqReceiver == null) {
 		zmqReceiver  = new ZMQReceiver(this, routerAddress, routerPort);
                 zmqReceiver.setIdentity(dataConsumer.getID().toString());
+                zmqReceiver.setEntityType(EntityType.DATACONSUMER);
                 zmqReceiver.connect();
 		zmqReceiver.listen();
 		return true;

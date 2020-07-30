@@ -11,6 +11,7 @@ import mon.lattice.distribution.Receiving;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import mon.lattice.core.EntityType;
 import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
@@ -38,6 +39,8 @@ public class ZMQReceiver implements Runnable {
     
     String srcAddr;
     int length;
+    
+    EntityType entityType;
     
     
     public ZMQReceiver(Receiving receiver, String routerAddress, int port) {
@@ -122,7 +125,8 @@ public class ZMQReceiver implements Runnable {
 	// if we get here the thread must be running
 	threadRunning = true;
         
-        receiverSocket.send("READY");
+        receiverSocket.sendMore("READY");
+        receiverSocket.send(entityType.toString());
         
 	while (threadRunning) {
             
@@ -153,6 +157,19 @@ public class ZMQReceiver implements Runnable {
 	}
         receiverSocket.close();
         context.destroy();
-    }    
+    }
+    
+    
+
+    public EntityType getEntityType() {
+        return entityType;
+    }
+
+    public void setEntityType(EntityType entityType) {
+        this.entityType = entityType;
+    }
+
+
+    
     
 }

@@ -10,6 +10,7 @@ import java.net.InetSocketAddress;
 import mon.lattice.control.ControlServiceException;
 import mon.lattice.control.zmq.ZMQDataConsumerControlPlaneXDRConsumer;
 import mon.lattice.control.zmq.ZMQReceiver;
+import mon.lattice.core.EntityType;
 import mon.lattice.core.ID;
 import mon.lattice.core.Rational;
 
@@ -42,6 +43,7 @@ public class ZMQControlPlaneXDRConsumerWithControlAgents extends ZMQDataConsumer
 	    if (zmqReceiver == null) {
 		zmqReceiver  = new ZMQReceiver(this, routerAddress, routerPort);
                 zmqReceiver.setIdentity(controllerAgent.getID().toString());
+                zmqReceiver.setEntityType(EntityType.CONTROLLERAGENT);
                 zmqReceiver.connect();
 		zmqReceiver.listen();
 		return true;

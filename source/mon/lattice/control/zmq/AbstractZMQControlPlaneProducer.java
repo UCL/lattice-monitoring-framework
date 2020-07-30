@@ -79,6 +79,7 @@ public abstract class AbstractZMQControlPlaneProducer implements
     @Override
     public void setControlInformation(ControlInformation im) {
         this.controlInformation = im;
+        zmqRouter.setControlInformation(im);
     }
     
 }

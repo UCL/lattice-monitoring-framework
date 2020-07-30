@@ -7,6 +7,13 @@ package mon.lattice.control.zmq;
 
 import java.util.HashSet;
 import java.util.Set;
+import mon.lattice.control.im.ControlInformation;
+import mon.lattice.control.im.ControlInformationInteracter;
+import mon.lattice.core.EntityType;
+import mon.lattice.core.ID;
+import mon.lattice.core.plane.AnnounceMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
@@ -14,7 +21,9 @@ import org.zeromq.ZMQ;
  *
  * @author uceeftu
  */
-public class ZMQRouter implements Runnable {
+public class ZMQRouter implements Runnable, ControlInformationInteracter {
+    private static Logger LOGGER = LoggerFactory.getLogger(ZMQRouter.class);
+    
     ZMQ.Context context;
     ZMQ.Socket frontend;
     ZMQ.Socket backend;
@@ -24,6 +33,9 @@ public class ZMQRouter implements Runnable {
     Set<String> workers = new HashSet<>();
     
     Thread router;
+    
+    ControlInformation controlInformation;
+    
 
     public ZMQRouter(int port) {
         backendPort = port;
@@ -94,6 +106,18 @@ public class ZMQRouter implements Runnable {
                     
                     frontend.send(reply);
                 }
+                
+                /* we use this message (READY) to allow synchronization with the management 
+                   and info plane threads. We lock the management thread in the
+                   ControlInformationManager until we receive READY from 
+                   a new deployed entity (with ID workerIdentity).
+                */
+                
+                else {
+                    String entityType =  backend.recvStr();
+                    AnnounceMessage m = new AnnounceMessage(ID.fromString(workerIdentity), EntityType.valueOf(entityType));
+                    controlInformation.notifyAnnounceEvent(m);
+                }
             }
             
             if (items.pollin(1)) {
@@ -120,6 +144,16 @@ public class ZMQRouter implements Runnable {
             }
         }
         
+    }
+
+    @Override
+    public ControlInformation getControlInformation() {
+        return controlInformation;
+    }
+
+    @Override
+    public void setControlInformation(ControlInformation ci) {
+        controlInformation = ci;
     }
     
     

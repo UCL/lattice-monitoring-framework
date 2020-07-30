@@ -20,6 +20,7 @@ import mon.lattice.control.ProbeLoaderException;
 import mon.lattice.core.plane.DataSourceControlPlane;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import mon.lattice.core.EntityType;
 
 
 
@@ -39,6 +40,7 @@ public class ZMQDataSourceControlPlaneXDRConsumer extends AbstractZMQControlPlan
 	    if (zmqReceiver == null) {
 		zmqReceiver  = new ZMQReceiver(this, routerAddress, routerPort);
                 zmqReceiver.setIdentity(dataSourceDelegate.getDataSource().getID().toString());
+                zmqReceiver.setEntityType(EntityType.DATASOURCE);
                 zmqReceiver.connect();
 		zmqReceiver.listen();
 		return true;
