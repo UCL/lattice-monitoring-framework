@@ -27,7 +27,17 @@ public class ZMQProxy extends Thread {
         
         context = ZMQ.context(1);
         backend = context.socket(SocketType.XPUB);
-        frontend = context.socket(SocketType.XSUB);
+        
+        /* this should be a SUB. However there is an issue
+           when a publisher "connects" to a subscriber as the first 
+           published messages are lost. As our subscriber (controller) 
+           does not really filter messages using PULL does not make much difference
+           and solves the above problem.
+        
+           more info here:
+           https://github.com/zeromq/libzmq/issues/3214
+        */
+        frontend = context.socket(SocketType.PULL);
     }
 
     public ZMQ.Context getContext() {

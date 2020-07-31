@@ -6,14 +6,11 @@
 package mon.lattice.control.agents;
 
 import java.io.IOException;
-import java.io.Serializable;
 import mon.lattice.core.ControllableDataConsumer;
 import mon.lattice.core.DataSource;
-import mon.lattice.core.ID;
 import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.Reporter;
-import mon.lattice.core.plane.InfoPlane;
 import mon.lattice.im.zmq.AbstractZMQInfoPlane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

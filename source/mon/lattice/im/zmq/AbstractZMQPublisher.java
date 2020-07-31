@@ -32,7 +32,14 @@ public abstract class AbstractZMQPublisher extends AbstractIMNode implements IMP
 	remotePort = remPort;
         
         context = ZMQ.context(1);
-        publisherSocket = context.socket(SocketType.PUB);
+        
+        /* this should be a PUB. However there is an issue
+           when a publisher "connects" to a subscriber as the first 
+           published messages are lost. As our subscriber (controller) 
+           does not really filter messages using PUSH does not make much difference
+           and solves the above problem (no need to use unreliable sleep()).
+        */
+        publisherSocket = context.socket(SocketType.PUSH);
     }
 
     /**
@@ -44,10 +51,6 @@ public abstract class AbstractZMQPublisher extends AbstractIMNode implements IMP
         publisherSocket.setLinger(5000);
         publisherSocket.setHWM(0);
         publisherSocket.connect(uri);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-        }
         return true;
     }
 

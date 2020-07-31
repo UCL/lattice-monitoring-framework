@@ -98,15 +98,12 @@ public abstract class AbstractZMQSubscriber extends AbstractZMQIMNode implements
      */
     public boolean connectAndListen() {
         String uri;
+        
         if (remoteHost != null && remotePort != 0)
             uri = "tcp://" + remoteHost + ":" + remotePort;
-        else {
+        else
             uri = internalURI;
-            // sleeping before connecting to the inproc socket
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {}
-        }
+        
         subscriberSocket.setRcvHWM(0);
         subscriberSocket.connect(uri);
         thread.start();
