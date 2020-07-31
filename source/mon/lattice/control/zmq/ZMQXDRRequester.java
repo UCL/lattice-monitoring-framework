@@ -85,6 +85,9 @@ public class ZMQXDRRequester extends ZMQRequester {
             
         // worker identity
         String sourceWorker = sender.recvStr();
+        if (sourceWorker == null)
+           throw new IOException("The timeout expired while waiting for a control message reply");
+           
         sender.recvStr(); // empty frame
         // actual reply
         byte [] reply = sender.recv();
