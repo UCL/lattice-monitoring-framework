@@ -20,7 +20,6 @@ import mon.lattice.core.ProducerMeasurement;
 import mon.lattice.core.TypeException;
 
 import mon.lattice.appl.demo.iot.process.TcpdumpWrapper;
-import mon.lattice.appl.demo.iot.process.TcpdumpWrapper;
 
 /**
  * A probe that gets info from tcpdump about traffic coming in and out of a port
@@ -33,6 +32,16 @@ public class TcpdumpProbe extends AbstractProbe implements Probe {
     
     String hostname;
 
+    
+    /**
+     * Construct a TcpdumpProbe.
+     * Used by the REST API
+     */
+    public TcpdumpProbe(String hostname, String ifName, String port, String datarate) {
+        this(hostname, ifName, Integer.valueOf(port), Integer.valueOf(datarate));
+    }
+    
+    
     /**
      * Construct a TcpdumpProbe
      * Pass in hostname, interface name (e.g. eth0), port number.

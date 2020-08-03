@@ -5,13 +5,9 @@
 
 package mon.lattice.appl.demo.iot;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Set;
 import java.util.Map;
 import java.util.Enumeration;
 import java.util.Scanner;
@@ -22,7 +18,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.InetAddress;
 
 import mon.lattice.core.datarate.EveryNSeconds;
 import mon.lattice.core.DefaultProbeAttribute;
@@ -34,8 +29,6 @@ import mon.lattice.core.ProbeMeasurement;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.ProducerMeasurement;
 import mon.lattice.core.TypeException;
-import mon.lattice.core.data.list.DefaultMList;
-import mon.lattice.core.data.list.MList;
 import mon.lattice.core.data.table.DefaultTable;
 import mon.lattice.core.data.table.DefaultTableHeader;
 import mon.lattice.core.data.table.DefaultTableRow;
@@ -44,7 +37,6 @@ import mon.lattice.core.data.table.Table;
 import mon.lattice.core.data.table.TableHeader;
 import mon.lattice.core.data.table.TableProbeAttribute;
 import mon.lattice.core.data.table.TableRow;
-import mon.lattice.core.data.table.TableValue;
 import mon.lattice.core.data.table.TableException;
 
 import mon.lattice.appl.probes.host.linux.CPUDev;
@@ -67,6 +59,18 @@ public class HostInfoProbe extends AbstractProbe implements Probe {
 
     String hostname;
 
+    
+    
+    /**
+     * Construct a HostInfoPlane.
+     * Used by the REST API
+     */
+    public HostInfoProbe(String hostname, String datarate) {
+        this(hostname, Integer.valueOf(datarate));
+    }
+    
+    
+    
     /**
      * Construct a HostInfoProbe
      */

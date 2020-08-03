@@ -5,31 +5,27 @@
 
 package mon.lattice.appl.demo.iot;
 
-import mon.lattice.core.AbstractReporter;
-import mon.lattice.core.LifecycleReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.Timestamp;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.ProbeValueWithName;
-import mon.lattice.core.Reporter;
 import mon.lattice.distribution.WithNames;
 
 import cc.clayman.logging.BitMask;
 import cc.clayman.logging.Logger;
 import cc.clayman.logging.MASK;
 
-import java.util.List;
 import java.util.HashMap;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import mon.lattice.core.AbstractControllableReporter;
 
 
 /**
  *
  * An implementation of a Reporter that logs Tcpdump data to a file.
  */
-public class TcpdumpReporter extends AbstractReporter implements LifecycleReporter {
+public class TcpdumpReporter extends AbstractControllableReporter {
     String filename;
 
     // Stream for output
@@ -37,11 +33,21 @@ public class TcpdumpReporter extends AbstractReporter implements LifecycleReport
 
     HashMap<String, ProbeValue> values = null;
 
+    
+    /**
+     * Constructor with reporter name and name of log file
+     */
+    public TcpdumpReporter(String reporterName, String filename) {
+        super(reporterName);
+        this.filename = filename;
+    }
+    
 
     /**
      * Constructor with filename of log file
      */
     public TcpdumpReporter(String filename) {
+        super("tcpdumpReporter");
         this.filename = filename;
     }
            

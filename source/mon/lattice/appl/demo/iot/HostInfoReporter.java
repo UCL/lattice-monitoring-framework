@@ -5,31 +5,27 @@
 
 package mon.lattice.appl.demo.iot;
 
-import mon.lattice.core.AbstractReporter;
-import mon.lattice.core.LifecycleReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.Timestamp;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.ProbeValueWithName;
-import mon.lattice.core.Reporter;
 import mon.lattice.distribution.WithNames;
 
 import cc.clayman.logging.BitMask;
 import cc.clayman.logging.Logger;
 import cc.clayman.logging.MASK;
 
-import java.util.List;
 import java.util.HashMap;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import mon.lattice.core.AbstractControllableReporter;
 
 
 /**
  *
  * An implementation of a Reporter that logs HostInfo data to a file.
  */
-public class HostInfoReporter extends AbstractReporter implements LifecycleReporter {
+public class HostInfoReporter extends AbstractControllableReporter {
     String filename;
 
     // Stream for output
@@ -39,9 +35,20 @@ public class HostInfoReporter extends AbstractReporter implements LifecycleRepor
 
 
     /**
+     * Constructor with reporter name and log file name
+     */
+    public HostInfoReporter(String reporterName, String filename) {
+        super(reporterName);
+        this.filename = filename;
+    }    
+    
+    
+    
+    /**
      * Constructor with filename of log file
      */
     public HostInfoReporter(String filename) {
+        super("hostInfoReporter");
         this.filename = filename;
     }
            
