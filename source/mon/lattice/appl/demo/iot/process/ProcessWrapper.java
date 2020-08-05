@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class wraps a Process
@@ -141,9 +142,9 @@ public class ProcessWrapper {
         // could check if StreamIdent is 'Stderr' or 'Stdout'
         // and do different things
         if (ident == StreamIdent.Stderr) {
-            System.err.println(label + " " + getName() + " " + line);
+            LoggerFactory.getLogger(ProcessWrapper.class).info(label + " " + getName() + " " + line);
         } else {
-            System.out.println(label + " " + getName() + " " + line);
+            LoggerFactory.getLogger(ProcessWrapper.class).info(label + " " + getName() + " " + line);
         }
     }
 
@@ -166,7 +167,7 @@ public class ProcessWrapper {
      * There has been an IO error
      */
     public void ioerror(StreamIdent ident, IOException ioe) {
-        System.err.println("ProcessWrapper: " + ident + " Got IOException " + ioe);
+        LoggerFactory.getLogger(ProcessWrapper.class).error("ProcessWrapper: " + ident + " Got IOException " + ioe);
         stop();
     }
 

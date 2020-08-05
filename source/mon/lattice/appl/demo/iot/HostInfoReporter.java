@@ -18,14 +18,18 @@ import cc.clayman.logging.MASK;
 import java.util.HashMap;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import mon.lattice.core.AbstractControllableReporter;
+import mon.lattice.core.ReporterMeasurementType;
+import org.slf4j.LoggerFactory;
 
 
 /**
  *
  * An implementation of a Reporter that logs HostInfo data to a file.
  */
-public class HostInfoReporter extends AbstractControllableReporter {
+public class HostInfoReporter extends AbstractControllableReporter implements ReporterMeasurementType {
     String filename;
 
     // Stream for output
@@ -98,7 +102,7 @@ public class HostInfoReporter extends AbstractControllableReporter {
             outputStream = new FileOutputStream(filename);
             logger.addOutput(new PrintWriter(outputStream), new BitMask(MASK.APP));
         } catch (Exception e) {
-            e.printStackTrace();
+            LoggerFactory.getLogger(TcpdumpReporter.class).error(e.getMessage());
         }
 
     }
@@ -121,7 +125,7 @@ public class HostInfoReporter extends AbstractControllableReporter {
                 values.put(((ProbeValueWithName)pv).getName(), pv);
             }
         } else {
-            System.err.println("HostInfoReporter works with Measurements that are WithNames");
+            LoggerFactory.getLogger(TcpdumpReporter.class).error("HostInfoReporter works with Measurements that are WithNames");
         }
     }
     
@@ -134,6 +138,13 @@ public class HostInfoReporter extends AbstractControllableReporter {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public List<String> getMeasurementTypes() {
+        List<String> list = new ArrayList<>();
+        list.add("HostInfo");
+        return list;
     }
 
     

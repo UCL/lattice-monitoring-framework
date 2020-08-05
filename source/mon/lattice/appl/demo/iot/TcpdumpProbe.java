@@ -20,6 +20,7 @@ import mon.lattice.core.ProducerMeasurement;
 import mon.lattice.core.TypeException;
 
 import mon.lattice.appl.demo.iot.process.TcpdumpWrapper;
+import org.slf4j.LoggerFactory;
 
 /**
  * A probe that gets info from tcpdump about traffic coming in and out of a port
@@ -99,7 +100,7 @@ public class TcpdumpProbe extends AbstractProbe implements Probe {
 
             tcpdumpListener = new TcpdumpWrapper(tcpdump);
         } catch (IOException ioe) {
-            System.err.println(ioe);
+            LoggerFactory.getLogger(TcpdumpProbe.class).error("Error while starting tcpdump: " + ioe.getMessage());
         }
     }
 

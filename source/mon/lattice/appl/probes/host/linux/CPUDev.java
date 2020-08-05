@@ -9,7 +9,6 @@ import java.util.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.BufferedReader;
-import java.io.IOException;
 
 /**
  * A class used to get  cpu info on a Linux system.
@@ -20,11 +19,11 @@ public class CPUDev {
     File procstat = new File("/proc/stat");
 
     // a map of the last snapshot from /proc/stat
-    HashMap<String, Integer> lasttime = new HashMap<String, Integer>();
+    HashMap<String, Long> lasttime = new HashMap<String, Long>();
     // a map of the current delta values from /proc/stat
     HashMap<String, Float> thisdelta = new HashMap<String, Float>();
     //a map of the total usage for each cpu
-    HashMap<String, Integer> lasttotal = new HashMap<String, Integer>();
+    HashMap<String, Long> lasttotal = new HashMap<String, Long>();
 
     // no of cpus
     int cpuCount = 0;
@@ -55,7 +54,7 @@ public class CPUDev {
     /**
      * Get current value for a particular element of data.
      */
-    public Integer getCurrentValue(String key) {
+    public Long getCurrentValue(String key) {
         return lasttime.get(key);
     }
 
@@ -85,7 +84,7 @@ public class CPUDev {
     /**
      * Get total value for a particular element of data.
      */
-    public Integer getTotalValue(String key) {
+    public Long getTotalValue(String key) {
         return lasttotal.get(key+"-total");
     }
 
@@ -111,12 +110,12 @@ public class CPUDev {
 		String[] parts = infoLine.split(" ");
 
 		String cpu = parts[0];
-		int userN = Integer.parseInt(parts[1]);
-		int niceN = Integer.parseInt(parts[2]);
-		int systemN = Integer.parseInt(parts[3]);
-		int idleN = Integer.parseInt(parts[4]);
+		long userN = Long.parseUnsignedLong(parts[1]);
+		long niceN = Long.parseUnsignedLong(parts[2]);
+		long systemN = Long.parseUnsignedLong(parts[3]);
+		long idleN = Long.parseUnsignedLong(parts[4]);
 
-		int total = userN + niceN + systemN + idleN;
+		long total = userN + niceN + systemN + idleN;
 
 
                 /*
@@ -142,10 +141,10 @@ public class CPUDev {
                     //if (jiffies == 0) { jiffies = 1; }
                     jiffies++;
 
-		    int userDiff = userN - (Integer)lasttime.get(cpu+"-user");
-		    int niceDiff = niceN - (Integer)lasttime.get(cpu+"-nice");
-		    int systemDiff = systemN - (Integer)lasttime.get(cpu+"-system");
-		    int idleDiff = idleN - (Integer)lasttime.get(cpu+"-idle");
+		    long userDiff = userN - (Long)lasttime.get(cpu+"-user");
+		    long niceDiff = niceN - (Long)lasttime.get(cpu+"-nice");
+		    long systemDiff = systemN - (Long)lasttime.get(cpu+"-system");
+		    long idleDiff = idleN - (Long)lasttime.get(cpu+"-idle");
 
                     /*
 		    System.err.println("cpuInfo => " + cpu + ":" +

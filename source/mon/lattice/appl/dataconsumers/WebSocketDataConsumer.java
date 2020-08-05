@@ -47,13 +47,13 @@ public class WebSocketDataConsumer {
                     new WebSocketDataConsumer(port);
                     System.err.println("WebSocketDataConsumer listening on ws://*" + ":" + port);
                     break;
-                case 2:
+                case 1:
                     Scanner sc = new Scanner(args[0]);
                     port = sc.nextInt();
                     new WebSocketDataConsumer(port);
                     System.err.println("WebSocketDataConsumer listening on ws://*" + ":" + port);
                     break;
-                case 3:
+                case 2:
                     sc = new Scanner(args[0]);
                     port = sc.nextInt();
                     bindAddress = args[1];

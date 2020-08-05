@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mon.lattice.appl.RestClient;
 import mon.lattice.core.ID;
 import us.monoid.json.JSONException;

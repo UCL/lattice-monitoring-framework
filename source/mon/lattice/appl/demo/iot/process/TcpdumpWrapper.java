@@ -9,6 +9,7 @@ package mon.lattice.appl.demo.iot.process;
 import java.io.StringReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -134,8 +135,9 @@ public class TcpdumpWrapper extends ProcessWrapper {
 
             return line;
         } catch (Exception e) {
-            System.err.println(line);
-            e.printStackTrace();
+            LoggerFactory.getLogger(TcpdumpWrapper.class).error(line);
+            for (StackTraceElement el: e.getStackTrace())
+                LoggerFactory.getLogger(TcpdumpWrapper.class).error(el.toString());
             return "";
         }
     }

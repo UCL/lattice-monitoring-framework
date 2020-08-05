@@ -18,14 +18,18 @@ import cc.clayman.logging.MASK;
 import java.util.HashMap;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import mon.lattice.core.AbstractControllableReporter;
+import mon.lattice.core.ReporterMeasurementType;
+import org.slf4j.LoggerFactory;
 
 
 /**
  *
  * An implementation of a Reporter that logs Tcpdump data to a file.
  */
-public class TcpdumpReporter extends AbstractControllableReporter {
+public class TcpdumpReporter extends AbstractControllableReporter implements ReporterMeasurementType {
     String filename;
 
     // Stream for output
@@ -88,7 +92,7 @@ public class TcpdumpReporter extends AbstractControllableReporter {
             outputStream = new FileOutputStream(filename);
             logger.addOutput(new PrintWriter(outputStream), new BitMask(MASK.APP));
         } catch (Exception e) {
-            e.printStackTrace();
+            LoggerFactory.getLogger(TcpdumpReporter.class).error(e.getMessage());
         }
 
     }
@@ -111,7 +115,7 @@ public class TcpdumpReporter extends AbstractControllableReporter {
                 values.put(((ProbeValueWithName)pv).getName(), pv);
             }
         } else {
-            System.err.println("TcpdumpReporter works with Measurements that are WithNames");
+            LoggerFactory.getLogger(TcpdumpReporter.class).error("TcpdumpReporter works with Measurements that are WithNames");
         }
     }
     
@@ -124,6 +128,13 @@ public class TcpdumpReporter extends AbstractControllableReporter {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public List<String> getMeasurementTypes() {
+        List<String> list = new ArrayList<>();
+        list.add("Tcpdump");
+        return list;
     }
 
     
