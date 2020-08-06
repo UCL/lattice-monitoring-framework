@@ -366,15 +366,30 @@ public class IotTopology {
         }
        
         private String startReporter(String... args) throws IOException {
+            boolean isAargNull = false;
             try {
                 StringBuilder arguments = new StringBuilder();
                 int i;
                 for (i=0; i<args.length-1; i++) {
-                    arguments.append(args[i]);
-                    arguments.append("+");
+                    if (args[i] != null) {
+                        arguments.append(args[i]);
+                        arguments.append("+"); 
+                    } 
+                    
+                    else {
+                        isAargNull = true;
+                        break;
+                    }
+                        
                 }
                 
-                arguments.append(args[i]);
+                if (args[i] != null)
+                    arguments.append(args[i]);
+                else
+                    isAargNull = true;
+                            
+                if (isAargNull)
+                    throw new IOException("Error while activating Reporter: received a null arg");
 
                 JSONObject reporter = restClient.loadReporter(dataConsumerID, fqClassName, arguments.toString());
                 return reporter.getString("createdReporterID");
@@ -437,7 +452,6 @@ public class IotTopology {
                     
                 case "JSONWebSocketReporter":
                     setDestinationParams();
-                    reporterURI = configuration.getProperty("rep.uri");
                     
                     return startReporter(reporterName,
                                         reporterAddress, 
