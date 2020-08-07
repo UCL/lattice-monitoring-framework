@@ -1,7 +1,7 @@
 package mon.lattice.appl.reporters;
 
 import java.io.IOException;
-import mon.lattice.core.AbstractReporter;
+import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.TypeException;
 import mon.lattice.distribution.ConsumerMeasurementWithMetaDataToJSON;
@@ -16,7 +16,7 @@ import us.monoid.json.JSONObject;
  * Subclasses can (combine and) send measurements via different transports
  * via implementing the sendData method.
  */
-public abstract class AbstractJSONReporter extends AbstractReporter {
+public abstract class AbstractJSONReporter extends AbstractControllableReporter {
     
     public AbstractJSONReporter(String name) {
         super(name);
