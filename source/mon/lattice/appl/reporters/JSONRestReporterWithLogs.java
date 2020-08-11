@@ -12,21 +12,23 @@ import us.monoid.web.Content;
  * A JSONRestReporter converts a received measurement to JSON and POSTs it
  * to a remote receiver via REST.
  */
-public class JSONRestReporter extends AbstractJSONReporter {
+public class JSONRestReporterWithLogs extends AbstractJSONReporter {
 
     protected Resty resty = new Resty();
     protected String uri;
     
-    private static Logger LOGGER = LoggerFactory.getLogger(JSONRestReporter.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(JSONRestReporterWithLogs.class);
     
     
-    public JSONRestReporter(String reporterName, String ip, String port, String method) {
+    public JSONRestReporterWithLogs(String reporterName, String ip, String port, String method) {
         super(reporterName);
         this.uri = "http://" + ip + ":" + port + method;
     }
     
     /**
-     * Sends the measurement via REST and waits for the reply. 
+     * Sends the measurement via REST and waits for the reply.
+     * It also logs the result of the request and the time it took
+     * to receive the reply.
      * 
      * @param data is the measurement as an array of bytes
      * @throws IOException
@@ -35,6 +37,10 @@ public class JSONRestReporter extends AbstractJSONReporter {
     @Override
     protected void sendData(byte [] data) throws IOException, JSONException {
         Content payload = new Content("application/json", data);
+        long tStart = System.nanoTime();
         JSONObject result = resty.json(uri, payload).object();
+        long tReporting = (System.nanoTime() - tStart)/1000;
+        LOGGER.info("time (microsec): " + tReporting);
+        LOGGER.info("result: " + result.toString());
     }
 }
