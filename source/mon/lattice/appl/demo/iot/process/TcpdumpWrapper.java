@@ -66,10 +66,10 @@ public class TcpdumpWrapper extends ProcessWrapper {
         // could check if label is 'stderr' or 'stdout'
         // and do different things
         if (ident.equals(StreamIdent.Stderr)) {
-            if (debug) System.err.println("TcpdumpWrapper: stderr " + line);
+             LoggerFactory.getLogger(TcpdumpWrapper.class).debug("TcpdumpWrapper: stderr " + line);
         } else {
             // it's stdout
-            if (debug) System.err.println("TcpdumpWrapper: stdout " + line);
+             LoggerFactory.getLogger(TcpdumpWrapper.class).debug("TcpdumpWrapper: stdout " + line);
 
             // work out what to do
             tcpdumpLine(line);
@@ -92,16 +92,25 @@ public class TcpdumpWrapper extends ProcessWrapper {
      * 13   00:00:00.000039 IP 127.0.0.1.60304 > 127.0.0.1.6060: tcp 0
      * 14   00:00:00.000021 IP 127.0.0.1.60304 > 127.0.0.1.6060: tcp 0
      *
+     * might also start with '-' (maybe a tcpdump bug?)
+     * -00:00:00.000001 IP 127.0.0.1.60304 > 127.0.0.1.6060: tcp 0
+     *
      * but might get IPv6 addresses
      *
      * 00:00:00.000000 IP6 ::1.53493 > ::1.80: tcp 0
      */
-    protected String tcpdumpLine(String line) {
+    protected String tcpdumpLine(String rawLine) {
+        String line="";
         try {
-            final String format_ipv4 = " %d:%d:%d.%d IP %s > %s: tcp %d";
-            final String format_ipv6 = " %d:%d:%d.%d IP6 ::%s > ::%s: tcp %d";
+            // the ' ' at the beginning has been removed to solve issue with
+            // some of the lines starting with '-'
+            final String format_ipv4 = "%d:%d:%d.%d IP %s > %s: tcp %d";
+            final String format_ipv6 = "%d:%d:%d.%d IP6 ::%s > ::%s: tcp %d";
 
             Object[] vals;
+
+            // fix an issue with some of the lines beginning with '-' instead of ' '
+            line = rawLine.substring(1);
 
             if (line.contains("IP6")) {
                 vals = new FormatReader(new StringReader(line)).scanf(format_ipv6);
@@ -120,7 +129,7 @@ public class TcpdumpWrapper extends ProcessWrapper {
                 totalOutBytes += length;
                 totalOutPackets += 1;
                 
-                if (debug) System.err.println("OUT: sender = " + src + " receiver = " + dst + " length = " + length + " totalIn = " + totalInBytes + " totalOut = " + totalOutBytes);
+                LoggerFactory.getLogger(TcpdumpWrapper.class).debug("OUT: sender = " + src + " receiver = " + dst + " length = " + length + " totalIn = " + totalInBytes + " totalOut = " + totalOutBytes);
             } else {
                 // dst endsWith portSpec
                 // incoming
@@ -128,13 +137,14 @@ public class TcpdumpWrapper extends ProcessWrapper {
                 totalInBytes += length;
                 totalInPackets += 1;
                 
-                if (debug) System.err.println("IN: sender = " + src + " receiver = " + dst + " length = " + length + " totalIn = " + totalInBytes + " totalOut = " + totalOutBytes);
+                LoggerFactory.getLogger(TcpdumpWrapper.class).debug("IN: sender = " + src + " receiver = " + dst + " length = " + length + " totalIn = " + totalInBytes + " totalOut = " + totalOutBytes);
             }
 
             
 
             return line;
         } catch (Exception e) {
+            LoggerFactory.getLogger(TcpdumpWrapper.class).error(e.getMessage());
             LoggerFactory.getLogger(TcpdumpWrapper.class).error(line);
             for (StackTraceElement el: e.getStackTrace())
                 LoggerFactory.getLogger(TcpdumpWrapper.class).error(el.toString());
