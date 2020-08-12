@@ -37,7 +37,7 @@ public class ProcessInfoProbe extends AbstractProbe implements Probe {
      * Used by the REST API
      */
     public ProcessInfoProbe(String hostname, String datarate, String processId) {
-        this(hostname, Integer.valueOf(datarate), Integer.valueOf(datarate));
+        this(hostname, Integer.valueOf(datarate), Integer.valueOf(processId));
     }
     
     
