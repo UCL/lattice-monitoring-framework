@@ -92,25 +92,16 @@ public class TcpdumpWrapper extends ProcessWrapper {
      * 13   00:00:00.000039 IP 127.0.0.1.60304 > 127.0.0.1.6060: tcp 0
      * 14   00:00:00.000021 IP 127.0.0.1.60304 > 127.0.0.1.6060: tcp 0
      *
-     * might also start with '-' (maybe a tcpdump bug?)
-     * -00:00:00.000001 IP 127.0.0.1.60304 > 127.0.0.1.6060: tcp 0
-     *
      * but might get IPv6 addresses
      *
      * 00:00:00.000000 IP6 ::1.53493 > ::1.80: tcp 0
      */
-    protected String tcpdumpLine(String rawLine) {
-        String line="";
+    protected String tcpdumpLine(String line) {
         try {
-            // the ' ' at the beginning has been removed to solve issue with
-            // some of the lines starting with '-'
-            final String format_ipv4 = "%d:%d:%d.%d IP %s > %s: tcp %d";
-            final String format_ipv6 = "%d:%d:%d.%d IP6 ::%s > ::%s: tcp %d";
+            final String format_ipv4 = " %d:%d:%d.%d IP %s > %s: tcp %d";
+            final String format_ipv6 = " %d:%d:%d.%d IP6 ::%s > ::%s: tcp %d";
 
             Object[] vals;
-
-            // fix an issue with some of the lines beginning with '-' instead of ' '
-            line = rawLine.substring(1);
 
             if (line.contains("IP6")) {
                 vals = new FormatReader(new StringReader(line)).scanf(format_ipv6);
@@ -195,7 +186,7 @@ public class TcpdumpWrapper extends ProcessWrapper {
     /**
      *  The main tcpdump command
      */
-    private static String tcpdumpCmd = "sudo tcpdump -ttt -l -n -nn -q";
+    private static String tcpdumpCmd = "sudo tcpdump -ttttt -l -nn -q";
 
     /**
      * Build a Process from some args
