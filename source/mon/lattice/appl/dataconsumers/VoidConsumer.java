@@ -1,11 +1,6 @@
-// BasicConsumer.java
-// Author: Stuart Clayman
-// Email: sclayman@ee.ucl.ac.uk
-// Date: Sept 2009
-
 package mon.lattice.appl.dataconsumers;
 
-import mon.lattice.appl.reporters.PrintReporter;
+import mon.lattice.appl.reporters.EmptyReporter;
 import mon.lattice.core.MeasurementReceiver;
 import mon.lattice.core.Reporter;
 import mon.lattice.core.AbstractDataConsumer;
@@ -17,14 +12,14 @@ import mon.lattice.core.AbstractDataConsumer;
  * info plane.
  */
 
-public class BasicConsumer extends AbstractDataConsumer implements MeasurementReceiver {
+public class VoidConsumer extends AbstractDataConsumer implements MeasurementReceiver {
 
     /**
      * Construct a BasicConsumer.
      */
-    public BasicConsumer() {
-	// The default way to report a measurement is to print it
-	Reporter reporter =  new PrintReporter();
+    public VoidConsumer() {
+	// Use a void reporter
+	Reporter reporter =  new EmptyReporter("empty-reporter");
         
 	addReporter(reporter);
     }

@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * A PrintReporter just prints a Measurement.
+ * A VoidReporter just emulates a report response time.
  */
 public class VoidReporter extends AbstractControllableReporter {
     /**
