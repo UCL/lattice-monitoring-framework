@@ -7,7 +7,6 @@ import mon.lattice.core.Measurement;
 import mon.lattice.core.TypeException;
 import mon.lattice.distribution.ConsumerMeasurementEncoderWithMetaDataXDR;
 import org.slf4j.LoggerFactory;
-import us.monoid.json.JSONException;
 import mon.lattice.xdr.XDRDataOutputStream;
 
 /**
@@ -29,7 +28,7 @@ public abstract class AbstractXDREncoderReporter extends AbstractEncoderReporter
      * @return the measurement encoded as array of bytes
      */
     @Override
-    protected byte[] encodeMeasurement(Measurement m) {
+    protected byte[] encodeMeasurement(Measurement m) throws IOException {
         ConsumerMeasurementEncoderWithMetaDataXDR encoder = new ConsumerMeasurementEncoderWithMetaDataXDR(m);
         
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -38,12 +37,7 @@ public abstract class AbstractXDREncoderReporter extends AbstractEncoderReporter
         try {
             encoder.encode(dataOutput);
         } catch (IOException | TypeException e) {
-            LoggerFactory.getLogger(getClass()).error("Error while encoding measurements: " + e.getMessage());
-        } catch (Exception e) {
-            LoggerFactory.getLogger(getClass()).error("Exception: " + e.getMessage());
-            for (StackTraceElement el: e.getStackTrace()) {
-                LoggerFactory.getLogger(getClass()).error(el.toString());
-            }
+            throw new IOException("Error while encoding measurement: " + e.getMessage());
         }
         
         return byteStream.toByteArray();
@@ -56,8 +50,8 @@ public abstract class AbstractXDREncoderReporter extends AbstractEncoderReporter
         try {
             byte[] measurementAsBytes = encodeMeasurement(m);
             sendData(measurementAsBytes);
-        } catch (IOException | JSONException e) {
-            LoggerFactory.getLogger(getClass()).error("Error while sending measurement: " + e.getMessage());
+        } catch (IOException e) {
+            LoggerFactory.getLogger(getClass()).error("Error while reporting measurement: " + e.getMessage());
         }
     }
     

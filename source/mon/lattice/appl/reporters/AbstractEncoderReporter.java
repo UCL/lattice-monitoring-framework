@@ -3,7 +3,6 @@ package mon.lattice.appl.reporters;
 import java.io.IOException;
 import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
-import us.monoid.json.JSONException;
 
 /**
  * An AbstractEncoderReporter that defines the methods to re-encode
@@ -25,16 +24,15 @@ public abstract class AbstractEncoderReporter extends AbstractControllableReport
      * Implemented by the subclasses according to their specific transport
      * @param data
      * @throws IOException
-     * @throws JSONException
      */
-    protected abstract void sendData(byte[] data) throws IOException, JSONException;
+    protected abstract void sendData(byte[] data) throws IOException;
 
     /**
-     * Encode the measurement m as a byte array.
-     * The specific type of encoding is left to the subclasses
+     * Encode the measurement m as a byte array.The specific type of encoding is left to the subclasses
      * @param m: the measurement
      * @return the measurement encoded as array of bytes
+     * @throws IOException
      */
-    protected abstract byte[] encodeMeasurement(Measurement m);
+    protected abstract byte[] encodeMeasurement(Measurement m) throws IOException;
     
 }

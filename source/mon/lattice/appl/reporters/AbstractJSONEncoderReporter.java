@@ -1,7 +1,6 @@
 package mon.lattice.appl.reporters;
 
 import java.io.IOException;
-import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.TypeException;
 import mon.lattice.distribution.ConsumerMeasurementEncoderWithMetaDataJSON;
@@ -29,7 +28,7 @@ public abstract class AbstractJSONEncoderReporter extends AbstractEncoderReporte
      * @return the measurement the JSON Object as an array of bytes
      */
     @Override
-    protected byte[] encodeMeasurement(Measurement m) {
+    protected byte[] encodeMeasurement(Measurement m) throws IOException {
         JSONObject obj = new JSONObject();
         try {
             // encode the measurement as JSON with MetaData, ready for transmission
@@ -37,7 +36,7 @@ public abstract class AbstractJSONEncoderReporter extends AbstractEncoderReporte
             // encode into an existing JSONObject
             encoder.encode(obj);
         } catch (TypeException | JSONException e) {
-            LoggerFactory.getLogger(getClass()).error("Error while encoding the Measurement: " + e.getMessage());
+            throw new IOException("Error while encoding measurement: " + e.getMessage());
         }
         return obj.toString().getBytes();
     }
@@ -46,10 +45,10 @@ public abstract class AbstractJSONEncoderReporter extends AbstractEncoderReporte
     public void report(Measurement m) {
         LoggerFactory.getLogger(getClass()).debug("Received measurement: " + m.toString());
         try {
-            byte[] measurementsAsBytes = encodeMeasurement(m);
-            sendData(measurementsAsBytes);
-        } catch (IOException | JSONException e) {
-            LoggerFactory.getLogger(getClass()).error("Error while sending measurement: " + e.getMessage());
+            byte[] measurementAsBytes = encodeMeasurement(m);
+            sendData(measurementAsBytes);
+        } catch (IOException e) {
+            LoggerFactory.getLogger(getClass()).error("Error while reporting measurement: " + e.getMessage());
         }
     }
     

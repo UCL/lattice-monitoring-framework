@@ -4,7 +4,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.monoid.web.Resty;
-import us.monoid.json.JSONObject;
 import us.monoid.json.JSONException;
 import us.monoid.web.Content;
 
@@ -30,11 +29,14 @@ public class JSONRestReporter extends AbstractJSONEncoderReporter {
      * 
      * @param data is the measurement as an array of bytes
      * @throws IOException
-     * @throws JSONException 
      */
     @Override
-    protected void sendData(byte [] data) throws IOException, JSONException {
-        Content payload = new Content("application/json", data);
-        JSONObject result = resty.json(uri, payload).object();
+    protected void sendData(byte [] data) throws IOException {
+        try {
+            Content payload = new Content("application/json", data);
+            resty.json(uri, payload).object();
+        } catch (JSONException je) {
+            throw new IOException("Error while sending measurement: " + je.getMessage());
+        }
     }
 }

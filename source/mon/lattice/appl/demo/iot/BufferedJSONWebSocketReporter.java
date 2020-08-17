@@ -47,22 +47,20 @@ public class BufferedJSONWebSocketReporter extends JSONWebSocketReporter {
     @Override
     public void report(Measurement m) {
 	LOGGER.debug("Received measurement: " + m.toString());
-        if (array.length() <= bufferSize)
-            array.put(encodeMeasurement(m));
-        else {
-            // Send the grouped data and reinitialise the buffer and the counter
-            LOGGER.debug("Array: " + array.toString());   
-            try {
-                sendData(array.toString().getBytes());
-            } catch (IOException e) {
-                LOGGER.error("Error while sending Measurement: " + e.getMessage());
-            } finally {
-                array = new JSONArray();
+        
+        try {
+            if (array.length() <= bufferSize)
                 array.put(encodeMeasurement(m));
-            }
-        }
+            else {
+                 // Send the grouped data and reinitialise the buffer and the counter
+                 LOGGER.debug("Array: " + array.toString());
+                 sendData(array.toString().getBytes());
+                 array = new JSONArray();
+                 array.put(encodeMeasurement(m));
+                 }
+        } catch (IOException e) {
+                LOGGER.error("Error while reporting measurement: " + e.getMessage());
+        } 
     }
-    
-    
     
 }
