@@ -15,7 +15,6 @@ import mon.lattice.core.data.map.MMapValue;
 import mon.lattice.core.data.list.MListValue;
 import mon.lattice.core.data.list.MList;
 import mon.lattice.core.Measurement;
-import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttributeType;
 import mon.lattice.core.TypeException;
 import mon.lattice.core.ProbeValue;

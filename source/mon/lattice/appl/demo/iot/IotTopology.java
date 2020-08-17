@@ -55,6 +55,9 @@ public class IotTopology {
     Integer dcDataPlanePort;
     String dsHostSessionID;
     
+    String dcRemoteForwardingHost;
+    Integer dcRemoteForwardingPort;
+    
     List<String> dataSourceIDs = new ArrayList<>();
     String dcClassName;
     String dcHostSessionID; 
@@ -111,6 +114,12 @@ public class IotTopology {
         // in order to allocate a different Data Consumer reporterPort for each topology 
         // we add the topology ID to the value read from the conf file
         dcDataPlanePort = Integer.valueOf(configuration.getProperty("dc.dataplane.port")) + topologyId;
+        
+        if (dcClassName.contains("Forwarder")) {
+            dcRemoteForwardingHost = configuration.getProperty("dc.dataplane.forward.host");
+            dcRemoteForwardingPort = Integer.valueOf(configuration.getProperty("dc.dataplane.forward.port"));
+        }
+        
     }
     
     
@@ -138,8 +147,7 @@ public class IotTopology {
                                                                                           dcDataPlanePort + "+" +
                                                                                           controllerAddress + "+" +
                                                                                           controllerInfoPlanePort + "+" +
-                                                                                          controllerControlPlanePort
-                                                            );
+                                                                                          controllerControlPlanePort);
             
             if (startDS.has("ID"))
                 dataSourceIDs.add(startDS.getString("ID"));
@@ -156,13 +164,26 @@ public class IotTopology {
         System.out.println("Deploying Data Consumer on host: " + hostID);
         
         try {
-            JSONObject startDC = restClient.startDataConsumer(dcClassName, dcHostSessionID, dcDataPlanePort + "+" +
-                                                                                controllerAddress + "+" +
-                                                                                controllerInfoPlanePort + "+" +
-                                                                                controllerControlPlanePort
-                                                    );
+             JSONObject startDC = null;
             
-            if (startDC.has("ID"))
+            // checking if the DC is a forwarder
+            if (dcClassName.contains("Forwarder")) {
+                startDC = restClient.startDataConsumer(dcClassName, dcHostSessionID, dcDataPlanePort + "+" +
+                                                                                     controllerAddress + "+" +
+                                                                                     controllerInfoPlanePort + "+" +
+                                                                                     controllerControlPlanePort + "+" +
+                                                                                     dcRemoteForwardingHost + "+" +
+                                                                                     dcRemoteForwardingPort);
+            }
+            
+            else {
+                startDC = restClient.startDataConsumer(dcClassName, dcHostSessionID, dcDataPlanePort + "+" +
+                                                                                     controllerAddress + "+" +
+                                                                                     controllerInfoPlanePort + "+" +
+                                                                                     controllerControlPlanePort);
+            }
+            
+            if (startDC != null && startDC.has("ID"))
                 dataConsumerID = startDC.getString("ID");
             else
                 throw new Exception("Error while instantiating Data Consumer: " + startDC.getString("msg"));
@@ -451,6 +472,7 @@ public class IotTopology {
                     
                     
                 case "JSONWebSocketReporter":
+                case "XDRWebSocketReporter":    
                     setDestinationParams();
                     
                     return startReporter(reporterName,
@@ -459,10 +481,13 @@ public class IotTopology {
                     
                 
                 /* Other Reporters */  
-                case "VoidReporter":
+                case "EmulatedReportTimeReporter":
                     reporterResponseTime = Integer.valueOf(configuration.getProperty("rep.response"));
                     return startReporter(reporterName,
                                   reporterResponseTime.toString());
+                    
+                case "VoidReporter":
+                    return startReporter(reporterName);
                     
                 default:
                     throw new IOException("Reporter class: " + fqClassName + " is not supported");

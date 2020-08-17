@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A reporter that sends the Measurements over a WebSocket
- * encoded in a JSON form.
+ * encoded in an XDR form.
  */
-public class JSONWebSocketReporter extends AbstractJSONEncoderReporter {
+public class XDRWebSocketReporter extends AbstractXDREncoderReporter {
     /*
      * The socket being transmitted to
      */
@@ -44,7 +44,7 @@ public class JSONWebSocketReporter extends AbstractJSONEncoderReporter {
     URI uri;
 
     
-    private static Logger LOGGER = LoggerFactory.getLogger(JSONWebSocketReporter.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(XDRWebSocketReporter.class);
     
 
     
@@ -53,7 +53,7 @@ public class JSONWebSocketReporter extends AbstractJSONEncoderReporter {
      * parameters are all passed as String to allow dynamic loading from REST API
      */
     
-    public JSONWebSocketReporter(String reporterName, String addr, String port) throws IOException {        
+    public XDRWebSocketReporter(String reporterName, String addr, String port) throws IOException {        
         this(reporterName, InetAddress.getByName(addr), Integer.valueOf(port));
     }
     
@@ -61,7 +61,7 @@ public class JSONWebSocketReporter extends AbstractJSONEncoderReporter {
     /**
      * Construct a WebSocketReporter for a particular IP address
      */
-    public JSONWebSocketReporter(String reporterName, InetSocketAddress dstAddr) throws IOException {
+    public XDRWebSocketReporter(String reporterName, InetSocketAddress dstAddr) throws IOException {
         super(reporterName); 
 	wsAddr = dstAddr;
 
@@ -76,7 +76,7 @@ public class JSONWebSocketReporter extends AbstractJSONEncoderReporter {
     /**
      * Construct a WebSocketReporter for a particular IP address
      */
-    public JSONWebSocketReporter(String reporterName, InetAddress addr, int port) throws IOException {
+    public XDRWebSocketReporter(String reporterName, InetAddress addr, int port) throws IOException {
         super(reporterName); 
 
 	wsAddr = new InetSocketAddress(addr, port);

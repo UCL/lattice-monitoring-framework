@@ -12,7 +12,7 @@ import us.monoid.web.Content;
  * A JSONRestReporter converts a received measurement to JSON and POSTs it
  * to a remote receiver via REST.
  */
-public class JSONRestReporter extends AbstractJSONReporter {
+public class JSONRestReporter extends AbstractJSONEncoderReporter {
 
     protected Resty resty = new Resty();
     protected String uri;

@@ -151,7 +151,7 @@ public class MeasurementDecoderWithNamesXDR extends MeasurementDecoderXDR {
         }
 
         // System.err.println();
-	return new ConsumerMeasurementWithMetadataAndProbeName(seqNo, probeID, mType, ts, mDelta, serviceID, groupID, attrValues, probeName);
+	return new ConsumerMeasurementWithMetaDataAndProbeName(seqNo, probeID, mType, ts, mDelta, serviceID, groupID, attrValues, probeName);
 		
     }
 	

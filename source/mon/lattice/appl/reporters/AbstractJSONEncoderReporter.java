@@ -4,7 +4,7 @@ import java.io.IOException;
 import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.TypeException;
-import mon.lattice.distribution.ConsumerMeasurementWithMetaDataToJSON;
+import mon.lattice.distribution.ConsumerMeasurementEncoderWithMetaDataJSON;
 import org.slf4j.LoggerFactory;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
@@ -16,46 +16,38 @@ import us.monoid.json.JSONObject;
  * Subclasses can (combine and) send measurements via different transports
  * via implementing the sendData method.
  */
-public abstract class AbstractJSONReporter extends AbstractControllableReporter {
+public abstract class AbstractJSONEncoderReporter extends AbstractEncoderReporter {
     
-    public AbstractJSONReporter(String name) {
+    public AbstractJSONEncoderReporter(String name) {
         super(name);
     }
-
-
-    /**
-     * Implemented by the subclasses according to their specific transport
-     * @param data
-     * @throws IOException
-     * @throws JSONException 
-     */
-    protected abstract void sendData(byte[] data) throws IOException, JSONException;
     
     
     /**
-     * Encode the measurement m as a JSON Object.
+     * Encode the measurement m as a JSON Object and returns it as an array of bytes.
      * @param m: the measurement
-     * @return the measurement as JSON Object
+     * @return the measurement the JSON Object as an array of bytes
      */
-    protected JSONObject encodeMeasurement(Measurement m) {
+    @Override
+    protected byte[] encodeMeasurement(Measurement m) {
         JSONObject obj = new JSONObject();
         try {
             // encode the measurement as JSON with MetaData, ready for transmission
-            ConsumerMeasurementWithMetaDataToJSON encoder = new ConsumerMeasurementWithMetaDataToJSON(m);
+            ConsumerMeasurementEncoderWithMetaDataJSON encoder = new ConsumerMeasurementEncoderWithMetaDataJSON(m);
             // encode into an existing JSONObject
             encoder.encode(obj);
         } catch (TypeException | JSONException e) {
             LoggerFactory.getLogger(getClass()).error("Error while encoding the Measurement: " + e.getMessage());
         }
-        return obj;
+        return obj.toString().getBytes();
     }
 
     @Override
     public void report(Measurement m) {
         LoggerFactory.getLogger(getClass()).debug("Received measurement: " + m.toString());
         try {
-            JSONObject measurementsAsJSON = encodeMeasurement(m);
-            sendData(measurementsAsJSON.toString().getBytes());
+            byte[] measurementsAsBytes = encodeMeasurement(m);
+            sendData(measurementsAsBytes);
         } catch (IOException | JSONException e) {
             LoggerFactory.getLogger(getClass()).error("Error while sending measurement: " + e.getMessage());
         }

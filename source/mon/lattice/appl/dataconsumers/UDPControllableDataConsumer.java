@@ -24,13 +24,13 @@ import java.util.Scanner;
 /**
  * This receives measurements from a UDP Data Plane.
  */
-public final class SimpleControllableDataConsumer extends Thread {
+public final class UDPControllableDataConsumer extends Thread {
     DefaultControllableDataConsumer consumer;
 
     /*
-     * Construct a controllable SimpleControllableDataConsumer
+     * Construct a controllable UDPControllableDataConsumer
      */
-    public SimpleControllableDataConsumer(String dataAddr, 
+    public UDPControllableDataConsumer(String dataAddr, 
                                           int dataPort, 
                                           String infoPlaneRootName,   
                                           int infoPlaneRootPort,
@@ -99,7 +99,7 @@ public final class SimpleControllableDataConsumer extends Thread {
                 String loopBack = InetAddress.getLoopbackAddress().getHostName();
                 System.out.println("No arguments provided - running on loopback: " + loopBack);
                 dcAddr = infoHost = controlEndPoint = loopBack;
-                new SimpleControllableDataConsumer(dcAddr, dataPort, infoHost, infoRemotePort, infoLocalPort, controlEndPoint, controlLocalPort, controllerRemotePort);
+                new UDPControllableDataConsumer(dcAddr, dataPort, infoHost, infoRemotePort, infoLocalPort, controlEndPoint, controlLocalPort, controllerRemotePort);
                 System.err.println("DataConsumerWithMeasurementRate listening on Data plane: " + dcAddr + "/" + dataPort);
                 System.err.println("DataConsumerWithMeasurementRate listening on Control plane: " + controlEndPoint + "/" + controlLocalPort);
             } else if (args.length == 5) {  
@@ -119,7 +119,7 @@ public final class SimpleControllableDataConsumer extends Thread {
                 
                 dcAddr = controlEndPoint = InetAddress.getLocalHost().getHostName();
 
-                new SimpleControllableDataConsumer(dcAddr, dataPort, infoHost, infoRemotePort, infoLocalPort, controlEndPoint, controlLocalPort, controllerRemotePort);
+                new UDPControllableDataConsumer(dcAddr, dataPort, infoHost, infoRemotePort, infoLocalPort, controlEndPoint, controlLocalPort, controllerRemotePort);
 
                 System.err.println("DataConsumerWithMeasurementRate listening on Data plane: " + dcAddr + "/" + dataPort);
                 System.err.println("DataConsumerWithMeasurementRate listening on Control plane: " + controlEndPoint + "/" + controlLocalPort);

@@ -7,7 +7,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
-import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQException;
 
@@ -18,7 +17,7 @@ import org.zeromq.ZMQException;
 public class ZMQDataSubscriber implements Runnable {
     Receiving receiver;
     
-    ZContext context;
+    ZMQ.Context context;
     ZMQ.Socket subscriberSocket;
     
     String remoteHost = null;
@@ -43,8 +42,8 @@ public class ZMQDataSubscriber implements Runnable {
         this.receiver = receiver;
         this.localPort = port;
         
-        context = new ZContext(1);
-        subscriberSocket = context.createSocket(SocketType.SUB);
+        context = ZMQ.context(1);
+        subscriberSocket = context.socket(SocketType.SUB);
     }
     
     
@@ -54,12 +53,12 @@ public class ZMQDataSubscriber implements Runnable {
         this.remotePort = remotePort;
     }
     
-    public ZMQDataSubscriber(Receiving receiver, String uri, ZContext ctx) {
+    public ZMQDataSubscriber(Receiving receiver, String uri, ZMQ.Context ctx) {
         this.receiver = receiver;
         this.remoteURI = uri;
         
         context = ctx;
-        subscriberSocket = context.createSocket(SocketType.SUB);
+        subscriberSocket = context.socket(SocketType.SUB);
         //subscriberSocket.setRcvHWM(0);
     }
     
@@ -159,7 +158,7 @@ public class ZMQDataSubscriber implements Runnable {
 	    }
 	}
         subscriberSocket.close();
-        context.destroy();
+        context.term();
     }
     
 }

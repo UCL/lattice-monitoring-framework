@@ -10,26 +10,58 @@ import mon.lattice.core.TypeException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-public class ZMQDataPlaneConsumerAndForwarder extends AbstractZMQDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
+/**
+ * A ZMQDataPlaneConsumerAndForwarder receives measurements on the Data Plane and 
+ * forwards them using a PUB socket with either bind or connect.
+ * 
+ * @author uceeftu
+ */
+public class ZMQDataPlaneConsumerAndForwarder extends AbstractZMQDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {    
+    AbstractZMQDataForwarder forwarder;
+    String remoteForwardingHost;
+    Integer remoteForwardingPort;
+    Integer localForwardingPort;
+    
     /**
-     * Construct a UDPDataPlaneConsumerNoNames.
+     * Construct a ZMQDataPlaneConsumerAndForwarder that will listen for incoming 
+     * measurements on port @port and will forward them via a publisher socket bound on localForwardingPort
+     * @param port
+     * @param localForwardingPort 
      */
-    
-    ZMQDataForwarder forwarder;
-    
-    public ZMQDataPlaneConsumerAndForwarder(int port) {
+    public ZMQDataPlaneConsumerAndForwarder(int port, int localForwardingPort) {
         super(port);
+        this.localForwardingPort = localForwardingPort;
     }
 
+    /**
+     * Construct a ZMQDataPlaneConsumerAndForwarder that will listen for incoming 
+     * measurements on port @port and will forward them to a publisher socket connected to
+     * tcp://remoteForwardingHost:remoteForwardingPort
+     * 
+     * @param port
+     * @param remoteForwardingHost
+     * @param remoteForwardingPort 
+     */
+    public ZMQDataPlaneConsumerAndForwarder(int port, String remoteForwardingHost, int remoteForwardingPort) {
+        super(port);
+        this.remoteForwardingHost = remoteForwardingHost;
+        this.remoteForwardingPort = remoteForwardingPort;
+    }
+    
     
     @Override
         public boolean connect() {
 	try {
 	    // only connect if we're not already connected
             if (forwarder == null) {
-                    forwarder = new ZMQDataForwarder(port);
-                    forwarder.startProxy();
-                }
+                // check the parameters to start the right forwarder
+                if (remoteForwardingHost != null && remoteForwardingPort != null)
+                    forwarder = new ZMQDataForwarderWithConnect(port, remoteForwardingHost, remoteForwardingPort);
+                else if (localForwardingPort != null)
+                    forwarder = new ZMQDataForwarderWithBind(port, localForwardingPort);
+                    
+                forwarder.startProxy();
+            }
             
 	    if (subscriber == null) {
                 // connecting to the internal inproc
@@ -51,13 +83,14 @@ public class ZMQDataPlaneConsumerAndForwarder extends AbstractZMQDataPlaneConsum
     }
 
     /**
-     * Dicconnect from a delivery mechansim.
+     * Disconnect from a delivery mechanism.
      */
     @Override
     public boolean disconnect() {
 	try {
             forwarder.stopProxy();
 	    subscriber.end();
+            forwarder.closeContext();
 	    subscriber = null;
 	    return true;
 	} catch (Exception ieo) {

@@ -11,10 +11,7 @@ import mon.lattice.core.Reporter;
 import mon.lattice.core.AbstractDataConsumer;
 
 /**
- * A BasicConsumer is an object that is used in application 
- * level code.  It has the necessary functionality to act as a consumer
- * and have plugins for each of the data plane, control plane, and
- * info plane.
+ * A BasicConsumer is a simple implementation of AbstractDataConsumer with a PrintReporter.
  */
 
 public class BasicConsumer extends AbstractDataConsumer implements MeasurementReceiver {

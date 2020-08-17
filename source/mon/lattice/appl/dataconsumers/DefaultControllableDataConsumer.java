@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mon.lattice.appl.dataconsumers;
 
 import mon.lattice.appl.reporters.im.ReporterInformationManager;
@@ -19,9 +14,10 @@ import java.util.Collection;
 import mon.lattice.appl.reporters.im.ReporterInformationInteracter;
 
 /**
- * Extends AbstractDataConsumer functionalities adding remote control
- it also provides measurements rate reporting as specified in the ControllableDataConsumer Interface
- it comes with a default PrintReporter
+ * A DefaultControllableDataConsumer extends the AbstractDataConsumer functionalities adding remote control.
+ * It also provides measurements rate reporting as specified in the ControllableDataConsumer Interface
+ * and comes with a default PrintReporter
+ * 
  * @author uceeftu
  */
 public final class DefaultControllableDataConsumer extends AbstractDataConsumer implements MeasurementReceiver, ControllableDataConsumer {

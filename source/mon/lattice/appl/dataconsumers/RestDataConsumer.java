@@ -6,7 +6,8 @@ import java.util.Scanner;
 import mon.lattice.core.AbstractDataConsumer;
 
 /**
- * This receives measurements from a REST Data Plane.
+ * A RestDataConsumer receives measurements from a REST Data Plane.
+ * It decodes JSON measurements and can either print them out or doing nothing
  */
 public class RestDataConsumer {
     // The consumer

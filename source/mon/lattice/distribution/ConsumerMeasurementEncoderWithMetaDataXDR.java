@@ -1,43 +1,38 @@
-// ConsumerMeasurementWithMetaDataToJSON.java
-// Author: Stuart Clayman
-// Email: s.clayman@ucl.ac.uk
-// Date: June 2020
-
 package mon.lattice.distribution;
 
+import java.io.DataOutput;
+import java.io.IOException;
 import mon.lattice.core.ID;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ConsumerMeasurement;
 import mon.lattice.core.plane.MessageType;
-import us.monoid.json.JSONObject;
-import us.monoid.json.JSONException;
 import mon.lattice.core.TypeException;
 
 /**
- * Convert a ConsumerMeasurement that has some Message Meta Data to a JSON representation.
- * This is similar to ConsumerMeasurementToJSON, but it also used the Meta Data 
+ * Convert a ConsumerMeasurement that has some Message Meta Data to a XDR representation.
+ * This is similar to ConsumerMeasurementEncoderWithNamesXDR, but it also used the Meta Data 
  * to add on the Data Source ID, the Data Source seqNo, and the Message type.
  *
  * This extra data is useful in some contexts.
  */
-public class ConsumerMeasurementWithMetaDataToJSON {
+public class ConsumerMeasurementEncoderWithMetaDataXDR {
     // The Measurement
     ConsumerMeasurement measurement;
 
     
 
     /**
-     * Construct a ConsumerMeasurementWithMetaDataToJSON for a Measurement.
+     * Construct a ConsumerMeasurementEncoderWithMetaDataXDR for a Measurement.
      */
-    public ConsumerMeasurementWithMetaDataToJSON(ConsumerMeasurement m) {
+    public ConsumerMeasurementEncoderWithMetaDataXDR(ConsumerMeasurement m) {
 	measurement = m;
     }
 
-    public ConsumerMeasurementWithMetaDataToJSON(Measurement m) {
+    public ConsumerMeasurementEncoderWithMetaDataXDR(Measurement m) {
 	measurement = (ConsumerMeasurement)m;
     }
 
-    public void encode(JSONObject json) throws JSONException, TypeException {
+    public void encode(DataOutput out) throws IOException, TypeException {
 
         // encode the measurement, ready for transmission
         // try and output some data source info
@@ -52,20 +47,20 @@ public class ConsumerMeasurementWithMetaDataToJSON {
         MessageType type = metaData.type;
 
         // write the DataSource id
-        json.put("dataSourceID", dataSourceID.toString());
+        out.writeLong(dataSourceID.getMostSignificantBits());
+        out.writeLong(dataSourceID.getLeastSignificantBits());
 
         // write type
-        json.put("messageType", type);
+        out.writeInt(type.getValue());
 
         // write seqNo
-        json.put("dataSourceSeqNo", dataSourceSeqNo);
-            
+        out.writeInt(dataSourceSeqNo);
 
-        // encode the measurement as JSON, ready for transmission
-        ConsumerMeasurementToJSON encoder = new ConsumerMeasurementToJSON(cm);
+        // encode the measurement as XDR, ready for transmission
+        ConsumerMeasurementEncoderWithNamesXDR encoder = new ConsumerMeasurementEncoderWithNamesXDR(cm);
 
-        // encode into an existing JSONObject
-        encoder.encode(json);
+        // encode into an existing XDR
+        encoder.encode(out);
     }
 
 }

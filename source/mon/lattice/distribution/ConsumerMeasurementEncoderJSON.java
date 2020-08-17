@@ -1,4 +1,4 @@
-// ConsumerMeasurementToJSON.java
+// ConsumerMeasurementEncoderJSON.java
 // Author: Stuart Clayman
 // Email: s.clayman@ucl.ac.uk
 // Date: June 2020
@@ -12,8 +12,9 @@ import mon.lattice.core.ProbeValueWithName;
 
 /**
  * Convert a ConsumerMeasurement to a JSON representation.
+ * The ConsumerMeasurement is expected to be with names
  */
-public class ConsumerMeasurementToJSON extends MeasurementEncoderJSON {
+public class ConsumerMeasurementEncoderJSON extends MeasurementEncoderJSON {
     // This is basically the same as a MeasurementEncoderJSON
     // with a few specific differences to get the Probe name
     // and the attribute names
@@ -21,11 +22,11 @@ public class ConsumerMeasurementToJSON extends MeasurementEncoderJSON {
     /**
      * Construct a MeasurementEncoderJSON for a Measurement.
      */
-    public ConsumerMeasurementToJSON(Measurement m) {
+    public ConsumerMeasurementEncoderJSON(Measurement m) {
         this((ConsumerMeasurement)m);
     }
     
-    public ConsumerMeasurementToJSON(ConsumerMeasurement m) {
+    public ConsumerMeasurementEncoderJSON(ConsumerMeasurement m) {
         super(m);
     }
 
@@ -34,7 +35,7 @@ public class ConsumerMeasurementToJSON extends MeasurementEncoderJSON {
      * Get the probe name
      */
     protected String getProbeName() {
-        return ((ConsumerMeasurementWithMetadataAndProbeName)measurement).getProbeName();
+        return ((ConsumerMeasurementWithMetaDataAndProbeName)measurement).getProbeName();
     }
 
     /**

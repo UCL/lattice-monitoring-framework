@@ -13,9 +13,8 @@ import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ProbeValue;
 import mon.lattice.core.ProbeValueWithName;
-import mon.lattice.core.Reporter;
 import mon.lattice.core.Timestamp;
-import mon.lattice.distribution.ConsumerMeasurementWithMetadataAndProbeName;
+import mon.lattice.distribution.ConsumerMeasurementWithMetaDataAndProbeName;
 
 public class MongoDBReporter extends AbstractControllableReporter {
     private final String mongoDBAddress;
@@ -61,9 +60,9 @@ public class MongoDBReporter extends AbstractControllableReporter {
     
     @Override
     public void report(Measurement m) {
-        String probeName = ((ConsumerMeasurementWithMetadataAndProbeName)m).getProbeName();
+        String probeName = ((ConsumerMeasurementWithMetaDataAndProbeName)m).getProbeName();
 
-        Timestamp t = ((ConsumerMeasurementWithMetadataAndProbeName)m).getTimestamp();
+        Timestamp t = ((ConsumerMeasurementWithMetaDataAndProbeName)m).getTimestamp();
 
         Document attributes = new Document();
         for (ProbeValue attribute : m.getValues()) {

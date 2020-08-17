@@ -11,16 +11,17 @@ import java.net.InetSocketAddress;
 import java.util.Scanner;
 
 /**
- * This receives measurements from a UDP Data Plane.
+ * A UDPDataConsumer receives measurements from a UDP Data Plane.
+ * It decodes XDR measurements and prints them out
  */
-public class SimpleDataConsumer {
+public class UDPDataConsumer {
     // The Basic consumer
     BasicConsumer consumer;
 
     /*
-     * Construct a SimpleConsumerUDP
+     * Construct a UDPDataConsumer
      */
-    public SimpleDataConsumer(String addr, int dataPort) {
+    public UDPDataConsumer(String addr, int dataPort) {
 	// set up a BasicConsumer
 	consumer = new BasicConsumer();
 
@@ -43,19 +44,19 @@ public class SimpleDataConsumer {
         } 
         
 	if (args.length == 0) {
-	    new SimpleDataConsumer(currentHost, port);
-	    System.err.println("SimpleConsumerUDP listening on " + currentHost + "/" + port);
+	    new UDPDataConsumer(currentHost, port);
+	    System.err.println("UDPDataConsumer listening on " + currentHost + "/" + port);
 	} else if (args.length == 2) {
 	    String addr = args[0];
 
 	    Scanner sc = new Scanner(args[1]);
 	    port = sc.nextInt();
 
-	    new SimpleDataConsumer(addr, port);
+	    new UDPDataConsumer(addr, port);
 
-	    System.err.println("SimpleConsumerUDP listening on " + addr + "/" + port);
+	    System.err.println("UDPDataConsumer listening on " + addr + "/" + port);
 	} else {
-	    System.err.println("usage: SimpleConsumerUDP localhost port");
+	    System.err.println("usage: UDPDataConsumer localhost port");
 	    System.exit(1);
 	}
     }
