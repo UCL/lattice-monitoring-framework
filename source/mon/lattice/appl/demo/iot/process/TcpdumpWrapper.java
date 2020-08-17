@@ -66,10 +66,10 @@ public class TcpdumpWrapper extends ProcessWrapper {
         // could check if label is 'stderr' or 'stdout'
         // and do different things
         if (ident.equals(StreamIdent.Stderr)) {
-            if (debug) System.err.println("TcpdumpWrapper: stderr " + line);
+             LoggerFactory.getLogger(TcpdumpWrapper.class).debug("TcpdumpWrapper: stderr " + line);
         } else {
             // it's stdout
-            if (debug) System.err.println("TcpdumpWrapper: stdout " + line);
+             LoggerFactory.getLogger(TcpdumpWrapper.class).debug("TcpdumpWrapper: stdout " + line);
 
             // work out what to do
             tcpdumpLine(line);
@@ -120,7 +120,7 @@ public class TcpdumpWrapper extends ProcessWrapper {
                 totalOutBytes += length;
                 totalOutPackets += 1;
                 
-                if (debug) System.err.println("OUT: sender = " + src + " receiver = " + dst + " length = " + length + " totalIn = " + totalInBytes + " totalOut = " + totalOutBytes);
+                LoggerFactory.getLogger(TcpdumpWrapper.class).debug("OUT: sender = " + src + " receiver = " + dst + " length = " + length + " totalIn = " + totalInBytes + " totalOut = " + totalOutBytes);
             } else {
                 // dst endsWith portSpec
                 // incoming
@@ -128,13 +128,14 @@ public class TcpdumpWrapper extends ProcessWrapper {
                 totalInBytes += length;
                 totalInPackets += 1;
                 
-                if (debug) System.err.println("IN: sender = " + src + " receiver = " + dst + " length = " + length + " totalIn = " + totalInBytes + " totalOut = " + totalOutBytes);
+                LoggerFactory.getLogger(TcpdumpWrapper.class).debug("IN: sender = " + src + " receiver = " + dst + " length = " + length + " totalIn = " + totalInBytes + " totalOut = " + totalOutBytes);
             }
 
             
 
             return line;
         } catch (Exception e) {
+            LoggerFactory.getLogger(TcpdumpWrapper.class).error(e.getMessage());
             LoggerFactory.getLogger(TcpdumpWrapper.class).error(line);
             for (StackTraceElement el: e.getStackTrace())
                 LoggerFactory.getLogger(TcpdumpWrapper.class).error(el.toString());
@@ -185,7 +186,7 @@ public class TcpdumpWrapper extends ProcessWrapper {
     /**
      *  The main tcpdump command
      */
-    private static String tcpdumpCmd = "sudo tcpdump -ttt -l -n -nn -q";
+    private static String tcpdumpCmd = "sudo tcpdump -ttttt -l -nn -q";
 
     /**
      * Build a Process from some args

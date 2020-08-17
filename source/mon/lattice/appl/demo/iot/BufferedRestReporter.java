@@ -36,6 +36,8 @@ public class BufferedRestReporter extends AbstractControllableReporter {
     int maxQueueLength;
     boolean fullQueue = false;
 
+    long waitRequestTimeStart = 0;
+    
     Resty resty = new Resty(Option.timeout(0));
     JSONArray array = new JSONArray();
     
@@ -127,7 +129,13 @@ public class BufferedRestReporter extends AbstractControllableReporter {
             try {
                 if (queue.size() > 0.8*maxQueueLength)
                     LOGGER.warn("Queue size: " + queue.size());
+
+                long waitRequestTimeEnd = System.currentTimeMillis();
+                long interval = waitRequestTimeEnd - waitRequestTimeStart;
+                LOGGER.info("interval from previous request (msec): " + interval);
                 sendRequest();
+                waitRequestTimeStart = System.currentTimeMillis();
+
             } catch (IOException | JSONException e) {
                 LOGGER.error("Error while sending Measurement: " + e.getMessage());
               }
