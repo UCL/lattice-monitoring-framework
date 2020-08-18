@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Scanner;
 import mon.lattice.core.AbstractDataConsumer;
-import mon.lattice.distribution.ws.WSDataPlaneConsumerJSON;
+import mon.lattice.distribution.ws.WSDataPlaneConsumerWithNames;
 
 /**
  * A WebSocketDataConsumer receives measurements from a WS Data Plane.
- * It decodes JSON measurements and can either print them out or doing nothing
+ * It decodes XDR measurements and can either print them out or doing nothing
  */
-public class WebSocketDataConsumer {
+public class WebSocketXDRDataConsumer {
     // The consumer
     AbstractDataConsumer consumer;
 
@@ -18,7 +18,7 @@ public class WebSocketDataConsumer {
      * Construct a WebSocketDataConsumer
      */
     
-    private WebSocketDataConsumer(boolean printOutput) {
+    private WebSocketXDRDataConsumer(boolean printOutput) {
         if (printOutput) {
             // set up a BasicConsumer (with a built-in PrintReporter)
             consumer = new BasicConsumer();
@@ -32,22 +32,22 @@ public class WebSocketDataConsumer {
     
     
     
-    public WebSocketDataConsumer(int dataPort, boolean printOutput) throws IOException {    
+    public WebSocketXDRDataConsumer(int dataPort, boolean printOutput) throws IOException {    
         this(printOutput);
         
 	// set up data plane
-	consumer.setDataPlane(new WSDataPlaneConsumerJSON(dataPort));
+	consumer.setDataPlane(new WSDataPlaneConsumerWithNames(dataPort));
 
 	consumer.connect();
     }
     
     
-    public WebSocketDataConsumer(String addr, int dataPort, boolean printOutput) throws IOException {
+    public WebSocketXDRDataConsumer(String addr, int dataPort, boolean printOutput) throws IOException {
 	this(printOutput);
         
 	// set up data plane
         InetSocketAddress address = new InetSocketAddress(addr, dataPort);
-	consumer.setDataPlane(new WSDataPlaneConsumerJSON(address));
+	consumer.setDataPlane(new WSDataPlaneConsumerWithNames(address));
 
 	consumer.connect();
     }
@@ -60,16 +60,16 @@ public class WebSocketDataConsumer {
         try {
             switch (args.length) {
                 case 0:
-                    new WebSocketDataConsumer(port, printOutput);
-                    System.err.println("WebSocketDataConsumer (printOutput=" + printOutput + ") listening on ws://*" + ":" + port);
+                    new WebSocketXDRDataConsumer(port, printOutput);
+                    System.err.println("WebSocketXDRDataConsumer (printOutput=" + printOutput + ") listening on ws://*" + ":" + port);
                     break;
                 case 2:
                     Scanner sc = new Scanner(args[0]);
                     port = sc.nextInt();
                     sc = new Scanner(args[1]);
                     printOutput = sc.nextBoolean();
-                    new WebSocketDataConsumer(port, printOutput);
-                    System.err.println("WebSocketDataConsumer (printOutput=" + printOutput + ") listening on ws://*" + ":" + port);
+                    new WebSocketXDRDataConsumer(port, printOutput);
+                    System.err.println("WebSocketXDRDataConsumer (printOutput=" + printOutput + ") listening on ws://*" + ":" + port);
                     break;
                 case 3:
                     sc = new Scanner(args[0]);
@@ -77,11 +77,11 @@ public class WebSocketDataConsumer {
                     bindAddress = args[1];
                     sc = new Scanner(args[2]);
                     printOutput = sc.nextBoolean();
-                    new WebSocketDataConsumer(bindAddress, port, printOutput);
-                    System.err.println("WebSocketDataConsumer (printOutput=" + printOutput + ") listening on ws://" + bindAddress + ":" + port);
+                    new WebSocketXDRDataConsumer(bindAddress, port, printOutput);
+                    System.err.println("WebSocketXDRDataConsumer (printOutput=" + printOutput + ") listening on ws://" + bindAddress + ":" + port);
                     break;
                 default:
-                    System.err.println("usage: WebSocketDataConsumer [port] [bind address] [true | false]");
+                    System.err.println("usage: WebSocketXDRDataConsumer [port] [bind address] [true | false]");
                     System.exit(1);
             }
         } catch (Exception e) {

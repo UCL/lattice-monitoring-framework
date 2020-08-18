@@ -6,7 +6,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import mon.lattice.core.ID;
-import us.monoid.json.JSONException;
 import us.monoid.web.Content;
 
 /**
@@ -32,10 +31,9 @@ public class BufferedJSONRestReporterWithCallback extends BufferedJSONRestReport
      * 
      * @param data
      * @throws IOException
-     * @throws JSONException 
      */
     @Override 
-    protected void sendData(byte [] data) throws IOException, JSONException {
+    protected void sendData(byte [] data) throws IOException {
         String requestID = ID.generate() + ":" + System.currentTimeMillis();
         resty.withHeader("X-Call-Id", requestID);
         Content payload = new Content("application/json", data);

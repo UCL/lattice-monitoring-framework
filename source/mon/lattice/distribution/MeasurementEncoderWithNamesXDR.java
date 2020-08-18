@@ -6,10 +6,8 @@ package mon.lattice.distribution;
 
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.List;
 
 import mon.lattice.core.Measurement;
-import mon.lattice.core.Probe;
 import mon.lattice.core.ProbeAttribute;
 import mon.lattice.core.ProbeAttributeType;
 import mon.lattice.core.ProbeValue;
@@ -81,11 +79,6 @@ public class MeasurementEncoderWithNamesXDR extends MeasurementEncoderXDR {
         // count first
         int attrCount = measurement.getValues().size();
         out.writeInt(attrCount);
-
-        //System.err.print(" [" + attrCount + "] ");
-		
-		
-        Probe probe = ((ProducerMeasurement)measurement).getProbe();
 		
         // skip through all the attributes
 		

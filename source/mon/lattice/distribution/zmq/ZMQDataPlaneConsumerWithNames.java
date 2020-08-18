@@ -18,11 +18,21 @@ import java.io.IOException;
 public class ZMQDataPlaneConsumerWithNames extends AbstractZMQDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
     /**
      * Construct a ZMQDataPlaneConsumerWithNames.
+     * It will listen on *: port
+     * 
+     * @param port 
      */
     public ZMQDataPlaneConsumerWithNames(int port) {
         super(port);
     }
 
+    /**
+     * Construct a ZMQDataPlaneConsumerWithNames.
+     * It will listen connect to a remote host and remote port
+     * 
+     * @param remoteHost
+     * @param port 
+     */
     public ZMQDataPlaneConsumerWithNames(String remoteHost, int port) {
         super(remoteHost, port);
     }

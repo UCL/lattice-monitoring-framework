@@ -16,7 +16,6 @@ import mon.lattice.core.ID;
 import mon.lattice.core.plane.ControlPlane;
 import mon.lattice.core.plane.InfoPlane;
 import mon.lattice.distribution.udp.UDPDataPlaneConsumerWithNames;
-import mon.lattice.im.dht.tomp2p.TomP2PDHTDataConsumerInfoPlane;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -24,13 +23,14 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import mon.lattice.im.dht.planx.PlanxDHTDataConsumerInfoPlane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * This receives measurements from a UDP Data Plane.
  */
-public final class ControllableDataConsumerDaemon extends Thread {
+public final class UDPControllableDataConsumerDaemonWithPlanx extends Thread {
     DefaultControllableDataConsumer consumer;
     
     ID dataConsumerID;
@@ -52,9 +52,9 @@ public final class ControllableDataConsumerDaemon extends Thread {
     PrintStream errStream;
 
     
-    public ControllableDataConsumerDaemon(String myID,
+    public UDPControllableDataConsumerDaemonWithPlanx(String myID,
                                           int dataPort, 
-                                          //String infoPlaneRootName,   
+                                          String infoPlaneRootName,   
                                           int infoPlaneRootPort,
                                           int infoPlaneLocalPort,
                                           String controlAddr,
@@ -66,25 +66,12 @@ public final class ControllableDataConsumerDaemon extends Thread {
         
         this.localCtrlPair = new InetSocketAddress(InetAddress.getByName(controlAddr), controlPort);
         
-        //this.remoteInfoHost = infoPlaneRootName;
+        String remoteCtrlAnnounceHost = infoPlaneRootName;
+        this.remoteCtrlPair = new InetSocketAddress(InetAddress.getByName(remoteCtrlAnnounceHost), 8888); // announce port is fixed to 8888
+        
+        this.remoteInfoHost = infoPlaneRootName;
         this.localInfoPort = infoPlaneLocalPort;
         this.remoteInfoPort = infoPlaneRootPort;
-    }
-    
-    
-    
-    public ControllableDataConsumerDaemon(String myID,
-                                          int dataPort, 
-                                          //String infoPlaneRootName,   
-                                          int infoPlaneRootPort,
-                                          int infoPlaneLocalPort,
-                                          String controlAddr,
-                                          int controlPort,
-                                          int controlRemotePort) throws UnknownHostException {
-    
-        this(myID, dataPort, /*infoPlaneRootName,*/ infoPlaneRootPort, infoPlaneLocalPort, controlAddr, controlPort);
-        // commeting out this as the infoPlaneRootName is no longer passed as parameter
-        //this.remoteCtrlPair = new InetSocketAddress(InetAddress.getByName(infoPlaneRootName), controlRemotePort);
     }
     
     
@@ -102,8 +89,8 @@ public final class ControllableDataConsumerDaemon extends Thread {
         // set up data plane listening on *:port
 	consumer.setDataPlane(new UDPDataPlaneConsumerWithNames(dataPort));
        
-        //InfoPlane infoPlane = new TomP2PDHTDataConsumerInfoPlane(remoteInfoHost, remoteInfoPort, localInfoPort);
-        InfoPlane infoPlane = new TomP2PDHTDataConsumerInfoPlane(remoteInfoPort, localInfoPort); // announcing to broadcast
+        InfoPlane infoPlane = new PlanxDHTDataConsumerInfoPlane(remoteInfoHost, remoteInfoPort, localInfoPort);
+        
         ((DataConsumerInteracter) infoPlane).setDataConsumer(consumer);
         consumer.setInfoPlane(infoPlane);
         
@@ -143,7 +130,7 @@ public final class ControllableDataConsumerDaemon extends Thread {
         System.setProperty(org.slf4j.impl.SimpleLogger.SHOW_SHORT_LOG_NAME_KEY, "true");
         System.setProperty(org.slf4j.impl.SimpleLogger.SHOW_THREAD_NAME_KEY, "false");
         
-        LOGGER = LoggerFactory.getLogger(ControllableDataConsumerDaemon.class);
+        LOGGER = LoggerFactory.getLogger(UDPControllableDataConsumerDaemonWithPlanx.class);
     }
     
     
@@ -217,18 +204,14 @@ public final class ControllableDataConsumerDaemon extends Thread {
                     LOGGER.error("usage: ControllableDataConsumerDaemon [dcID] localdataPort infoRemotePort infoLocalPort controlLocalPort");
                     System.exit(1);
             }
-            ControllableDataConsumerDaemon dataConsumer = new ControllableDataConsumerDaemon(dcID, 
+            UDPControllableDataConsumerDaemonWithPlanx dataConsumer = new UDPControllableDataConsumerDaemonWithPlanx(dcID, 
                                                                                    dataPort, 
-                                                                                   //infoHost, 
+                                                                                   infoHost, 
                                                                                    infoRemotePort, 
                                                                                    infoLocalPort, 
                                                                                    controlEndPoint, 
                                                                                    controlLocalPort);
-                                                                                   //controllerRemotePort); //not using announce on the Control Plane
             dataConsumer.init();
-            
-            //System.in.read();
-            //dataConsumer.mockDisconnect();
             
         } catch (Exception e) {
             LOGGER.error("Error " + e.getMessage());

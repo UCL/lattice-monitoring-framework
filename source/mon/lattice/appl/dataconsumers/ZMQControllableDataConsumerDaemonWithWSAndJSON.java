@@ -7,7 +7,12 @@ import java.util.Scanner;
 import mon.lattice.core.ID;
 import mon.lattice.distribution.ws.WSDataPlaneConsumerJSON;
 
-
+/**
+ * A ZMQControllableDataConsumerDaemonWithWSAndJSON extends AbstractZMQControllableDataConsumerDaemon
+ * with a WS JSON data plane implementation listening on a given port.
+ * 
+ * @author uceeftu
+ */
 public class ZMQControllableDataConsumerDaemonWithWSAndJSON extends AbstractZMQControllableDataConsumerDaemon {
 
     public ZMQControllableDataConsumerDaemonWithWSAndJSON(String myID, int dataPort, String infoPlaneRootName, int infoPlaneRootPort, String controlAddr, int controlPort) throws UnknownHostException {

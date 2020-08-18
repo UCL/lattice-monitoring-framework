@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mon.lattice.appl.dataconsumers;
 
 import java.io.IOException;
@@ -12,7 +7,12 @@ import java.util.Scanner;
 import mon.lattice.core.ID;
 import mon.lattice.distribution.ws.WSDataPlaneConsumerWithNames;
 
-
+/**
+ * A ZMQControllableDataConsumerDaemonWithWS extends AbstractZMQControllableDataConsumerDaemon
+ * with a WS XDR data plane implementation listening on a given port.
+ * 
+ * @author uceeftu
+ */
 public class ZMQControllableDataConsumerDaemonWithWS extends AbstractZMQControllableDataConsumerDaemon {
 
     public ZMQControllableDataConsumerDaemonWithWS(String myID, int dataPort, String infoPlaneRootName, int infoPlaneRootPort, String controlAddr, int controlPort) throws UnknownHostException {

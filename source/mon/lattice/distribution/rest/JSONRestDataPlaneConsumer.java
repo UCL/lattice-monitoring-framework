@@ -24,12 +24,24 @@ public class JSONRestDataPlaneConsumer extends AbstractRestDataPlaneConsumer {
     
     private static Logger LOGGER = LoggerFactory.getLogger(JSONRestDataPlaneConsumer.class);;
 
+    
     public JSONRestDataPlaneConsumer(int port, String endP) throws IOException {
         super(port, endP);
     }
+    
+    
+    public JSONRestDataPlaneConsumer(int port, String endP, int threads) throws IOException {
+        super(port, endP, threads);
+    }
 
+    
     public JSONRestDataPlaneConsumer(String remoteHost, int port, String endP) throws IOException {
         super(remoteHost, port, endP);
+    }
+    
+    
+    public JSONRestDataPlaneConsumer(String remoteHost, int port, String endP, int threads) throws IOException {
+        super(remoteHost, port, endP, threads);
     }
     
     

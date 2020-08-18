@@ -29,6 +29,7 @@ import us.monoid.json.JSONException;
 
 /**
  * Convert a measurement to a JSON representation.
+ * The measurement is expected to be with names
  */
 public class MeasurementEncoderJSON {
     // The Measurement

@@ -1,7 +1,10 @@
 package mon.lattice.appl.dataconsumers;
 
 /**
- *
+ * AbstractZMQControllableDataConsumerDaemon is an abstract DataConsumer
+ * based on DefaultControllableDataConsumer with ZMQ Info and Control Planes objects.
+ * 
+ * The Data plane implementation is left to the subclasses
  * @author uceeftu
  */
 
