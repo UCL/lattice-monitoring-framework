@@ -1,6 +1,7 @@
+// Based on HostInfoReporter.java (from Stuart Clayman)
+
 package mon.lattice.appl.demo.iot;
 
-import mon.lattice.appl.demo.iot.*;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.Timestamp;
 import mon.lattice.core.ProbeValue;
@@ -23,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * An implementation of a Reporter that logs HostInfo data to a file.
+ * An implementation of a Reporter that logs ProcessInfo data to a file.
  */
 public class ProcessInfoReporter extends AbstractControllableReporter implements ReporterMeasurementType {
     String filename;
@@ -76,9 +77,11 @@ public class ProcessInfoReporter extends AbstractControllableReporter implements
         ProbeValue mem = getAttribute("mem");
 
 
-        String metrics = timestamp.value() + " " + Timestamp.elapsed(elapsed) + " C " + hostname.getValue() + " " + pid.getValue() + " " + cpu.getValue() + " "  + mem.getValue();
+        String cpuLine = timestamp.value() + " " + Timestamp.elapsed(elapsed) + " C " + hostname.getValue() + " " + pid.getValue() + " " + cpu.getValue();
+        String memLine = timestamp.value() + " " + Timestamp.elapsed(elapsed) + " M " + hostname.getValue() + " " + pid.getValue() + " " + mem.getValue();
         
-        Logger.getLogger("processinfo").logln(MASK.APP, metrics);
+        Logger.getLogger("processinfo").logln(MASK.APP, cpuLine);
+        Logger.getLogger("processinfo").logln(MASK.APP, memLine);
 
         // now add on the measurement delta
         elapsed += m.getDeltaTime().value();

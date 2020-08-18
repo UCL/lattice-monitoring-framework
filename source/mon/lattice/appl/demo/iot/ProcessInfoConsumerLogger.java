@@ -1,7 +1,4 @@
-// HostInfoConsumerLogger.java
-// Author: Stuart Clayman
-// Email: s.clayman@ucl.ac.uk
-// Date: July 2020
+// Based on HostInfoConsumerLogger.java (from Stuart Clayman)
 
 package mon.lattice.appl.demo.iot;
 
@@ -9,15 +6,15 @@ import java.util.Scanner;
 import mon.lattice.distribution.zmq.ZMQDataPlaneConsumerWithNames;
 
 /**
- * This receives HostInfoProbe measurements from a WebSocket Data Plane
- * and sends them to a log file
+ * Receives ProcessInfo measurements from a ZMQ Data Plane
+ * and writes them to a log file.
  */
 public class ProcessInfoConsumerLogger {
     // The  consumer
     ProcessInfoConsumer consumer;
 
     /*
-     * Construct a HostInfoConsumerLogger
+     * Construct a ProcessInfoConsumerLogger
      */
     public ProcessInfoConsumerLogger(String addr, int dataPort, String logName) {
 	// set up a HostInfoConsumer

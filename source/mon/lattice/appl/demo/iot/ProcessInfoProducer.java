@@ -1,7 +1,4 @@
-// HostInfoProducer.java
-// Author: Stuart Clayman
-// Email: s.clayman@ucl.ac.uk
-// Date: July 2020
+// Based on HostInfoProducer.java (from Stuart Clayman)
 
 package mon.lattice.appl.demo.iot;
 
@@ -15,14 +12,14 @@ import java.net.UnknownHostException;
 import mon.lattice.distribution.zmq.ZMQDataPlaneProducerWithNames;
 
 /**
- * This monitor sends Host Info data and uses a WebSocket Data Plane.
+ * This monitor sends ProcessInfo data and uses a ZMQ Data Plane.
  */
 public class ProcessInfoProducer {
     // The DataSource
     DataSource ds;
 
     /*
-     * Construct a HostInfoProducer.
+     * Construct a ProcessInfoProducer.
      */
     public ProcessInfoProducer(String addr, int dataPort, String myHostname) {
 	// set up data source

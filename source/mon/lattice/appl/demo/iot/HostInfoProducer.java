@@ -8,8 +8,6 @@ package mon.lattice.appl.demo.iot;
 import mon.lattice.appl.datasources.BasicDataSource;
 import mon.lattice.core.DataSource;
 import mon.lattice.core.Probe;
-import mon.lattice.core.ID;
-//import mon.lattice.distribution.ws.WSDataPlaneProducerJSON;
 import mon.lattice.distribution.ws.WSDataPlaneProducerWithNames;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
