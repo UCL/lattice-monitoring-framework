@@ -30,16 +30,16 @@ public class BufferedRestReporter extends AbstractControllableReporter {
     Integer bufferSize;
     String uri;
     
-    BlockingQueue<Measurement> queue;
+    BlockingQueue<JSONArray> queue;
+    
     Thread worker;
     
     int maxQueueLength;
-    boolean fullQueue = false;
 
     long waitRequestTimeStart = 0;
     
     Resty resty = new Resty(Option.timeout(0));
-    JSONArray array = new JSONArray();
+    JSONArray buffer = new JSONArray();
     
     private Logger LOGGER = LoggerFactory.getLogger(BufferedRestReporter.class);
 
@@ -76,11 +76,7 @@ public class BufferedRestReporter extends AbstractControllableReporter {
     @Override
     public void report(Measurement m) {
 	LOGGER.debug("Received measurement: " + m.toString());
-        
-        if (!queue.offer(m) && !fullQueue) {
-            LOGGER.error("*** Queue is full! ***");
-            fullQueue = true;
-        }
+        addToBuffer(m);
     }
     
     
@@ -106,9 +102,9 @@ public class BufferedRestReporter extends AbstractControllableReporter {
     }
     
     
-    private void sendRequest() throws IOException, JSONException {
-        LOGGER.debug(array.toString());
-        Content payload = new Content("application/json", array.toString().getBytes());
+    private void sendRequest(JSONArray data) throws IOException, JSONException {
+        LOGGER.debug(data.toString());
+        Content payload = new Content("application/json", data.toString().getBytes());
         long tStart = System.currentTimeMillis();
         JSONArray result = resty.json(uri, payload).array();
         long tEnd = System.currentTimeMillis();
@@ -119,45 +115,40 @@ public class BufferedRestReporter extends AbstractControllableReporter {
     
 
     private void addToBuffer(Measurement m) {
-        if (array.length() <= bufferSize)
-	    array.put(processMeasurement(m));
+        if (buffer.length() <= bufferSize)
+	    buffer.put(processMeasurement(m));
             
         else {
-            // Send the grouped data and reinitialise the buffer and the counter
-            LOGGER.debug("builder result: " + array.toString());
+             // Send the grouped data and reinitialise the buffer and the counter
+             LOGGER.debug("buffer: " + buffer.toString());
 
-            try {
-                if (queue.size() > 0.8*maxQueueLength)
-                    LOGGER.warn("Queue size: " + queue.size());
+             long waitRequestTimeEnd = System.currentTimeMillis();
+             long interval = waitRequestTimeEnd - waitRequestTimeStart;
 
-                long waitRequestTimeEnd = System.currentTimeMillis();
-                long interval = waitRequestTimeEnd - waitRequestTimeStart;
-                LOGGER.info("interval from previous request (msec): " + interval);
-                sendRequest();
-                waitRequestTimeStart = System.currentTimeMillis();
+             LOGGER.info("interval from previous request (msec): " + interval);
 
-            } catch (IOException | JSONException e) {
-                LOGGER.error("Error while sending Measurement: " + e.getMessage());
-              }
-            finally {
-                array = new JSONArray();
-                array.put(processMeasurement(m));
-                }
-            }
+             if (queue.offer(buffer))
+                 buffer = new JSONArray();
+             else
+                 LOGGER.error("*** Queue is full! ***");
+
+             waitRequestTimeStart = System.currentTimeMillis();
+        }
     }
     
     
     
     private void dequeue() {
         LOGGER.info("Started " + Thread.currentThread().getName());
-        Measurement m;
         while (!Thread.interrupted()) {
             try {
-                m = queue.take();
-                addToBuffer(m);
+                JSONArray data = queue.take();
+                sendRequest(data);
             } catch (InterruptedException ie) {
-                LOGGER.info("Interrupted while waiting for a measurement");
+                LOGGER.info("Interrupted while taking an array of measurements");
                 LOGGER.info("Terminated " + Thread.currentThread().getName());
+            } catch (IOException | JSONException e) {
+                LOGGER.error("Error while sending buffered measurements: " + e.getMessage());
             }
         }
         LOGGER.info("Terminated " + Thread.currentThread().getName());
