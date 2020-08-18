@@ -34,7 +34,7 @@ public class RestDataConsumer {
 	this(printOutput);
 
 	// set up data plane
-	consumer.setDataPlane(new JSONRestDataPlaneConsumer(dataPort, endPoint));
+	consumer.setDataPlane(new JSONRestDataPlaneConsumer(dataPort, endPoint, 8));
 
 	consumer.connect();
     }

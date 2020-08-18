@@ -45,31 +45,50 @@ public abstract class AbstractRestDataPlaneConsumer implements DataPlane, Measur
     
     
     /**
-     * Construct a AbstractUDPDataPlaneConsumer.
+     * Construct a AbstractRestDataPlaneConsumer listening on a given port.
      */
     public AbstractRestDataPlaneConsumer(int port, String endP) throws IOException {
-        this.port = port;
-        endPoint = endP;
-	seqNoMap = new HashMap<ID, Integer>();
-        container = this;
-        server = new ContainerServer(container);
-        address = new InetSocketAddress(port);
+        this(null, port, endP, 1);
     }
     
     
     /**
-     * Construct a AbstractUDPDataPlaneConsumer connecting to a remote address.
+     * Construct a AbstractRestDataPlaneConsumer listening on a given port and a given thread pool size.
+     */
+    public AbstractRestDataPlaneConsumer(int port, String endP, int threads) throws IOException {
+        this(null, port, endP, threads);
+    }
+    
+    
+    /**
+     * Construct a AbstractRestDataPlaneConsumer listening on a given address and port.
      */
     public AbstractRestDataPlaneConsumer(String host, int port, String endP) throws IOException {
+        this(host, port, endP, 1);
+    }
+    
+    
+    /**
+     * Construct a AbstractRestDataPlaneConsumer listening on a given address and port.
+     * It also receives the specific number of working threads in the pool.
+     */
+    public AbstractRestDataPlaneConsumer(String host, int port, String endP, int threads) throws IOException {
         this.port = port;
         endPoint = endP;
 	seqNoMap = new HashMap<ID, Integer>();
         container = this;
-        server = new ContainerServer(container);
-        address = new InetSocketAddress(host, port);
-        if (address.isUnresolved())
-            throw new IOException("Cannot solve " + host);
+        server = new ContainerServer(container, threads);
+        
+        if (host == null)
+            address = new InetSocketAddress(port);
+        else {
+            address = new InetSocketAddress(host, port);
+            if (address.isUnresolved())
+                throw new IOException("Cannot solve " + host);
+        }
     }
+    
+    
 
     /**
      * Connect to a delivery mechanism.
