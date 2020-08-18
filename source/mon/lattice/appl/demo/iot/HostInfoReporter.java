@@ -37,6 +37,9 @@ public class HostInfoReporter extends AbstractControllableReporter implements Re
 
     HashMap<String, ProbeValue> values = null;
 
+    // An elapsed time
+    long elapsed = 0;
+
 
     /**
      * Constructor with reporter name and log file name
@@ -80,12 +83,15 @@ public class HostInfoReporter extends AbstractControllableReporter implements Re
         ProbeValue mem_total = getAttribute("mem-total");
 
 
-        String cpuLine = timestamp.value() + " C " + hostname.getValue() + " " + cpu_user.getValue() + " " + cpu_sys.getValue() + " "  + cpu_idle.getValue() + " " + load_average.getValue();
+        String cpuLine = timestamp.value() + " " + Timestamp.elapsed(elapsed) + " C " + hostname.getValue() + " " + cpu_user.getValue() + " " + cpu_sys.getValue() + " "  + cpu_idle.getValue() + " " + load_average.getValue();
 
-        String memLine = timestamp.value() + " M " + hostname.getValue() + " " + mem_total.getValue() + " " + mem_used.getValue() + " " + mem_free.getValue();
+        String memLine = timestamp.value() + " " + Timestamp.elapsed(elapsed) + " M " + hostname.getValue() + " " + mem_total.getValue() + " " + mem_used.getValue() + " " + mem_free.getValue();
             
         Logger.getLogger("hostinfo").logln(MASK.APP, cpuLine);
         Logger.getLogger("hostinfo").logln(MASK.APP, memLine);
+
+        // now add on the measurement delta
+        elapsed += m.getDeltaTime().value();
     }
 
     

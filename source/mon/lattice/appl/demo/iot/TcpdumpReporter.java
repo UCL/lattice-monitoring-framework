@@ -37,6 +37,9 @@ public class TcpdumpReporter extends AbstractControllableReporter implements Rep
 
     HashMap<String, ProbeValue> values = null;
 
+    // An elapsed time
+    long elapsed = 0;
+
     
     /**
      * Constructor with reporter name and name of log file
@@ -54,7 +57,7 @@ public class TcpdumpReporter extends AbstractControllableReporter implements Rep
         super("tcpdumpReporter");
         this.filename = filename;
     }
-           
+
     /**
      * Report the Measurement
      */
@@ -73,9 +76,12 @@ public class TcpdumpReporter extends AbstractControllableReporter implements Rep
         ProbeValue inPackets = getAttribute("inPackets");
         ProbeValue outPackets = getAttribute("outPackets");
         
-        String netLine = timestamp.value() + " N " + hostname.getValue() + " " + ifName.getValue() + " " + portNo.getValue() + " " + inBytes.getValue() + " " + inPackets.getValue() + " " + outBytes.getValue()  + " " + outPackets.getValue();
+        String netLine = timestamp.value() + " " + Timestamp.elapsed(elapsed) + " N " + hostname.getValue() + " " + ifName.getValue() + " " + portNo.getValue() + " " + inBytes.getValue() + " " + inPackets.getValue() + " " + outBytes.getValue()  + " " + outPackets.getValue();
             
         Logger.getLogger("tcpdump").logln(MASK.APP, netLine);
+
+        // now add on the measurement delta
+        elapsed += m.getDeltaTime().value();
     }
 
     

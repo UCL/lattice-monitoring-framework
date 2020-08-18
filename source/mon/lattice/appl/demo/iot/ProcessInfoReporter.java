@@ -34,6 +34,9 @@ public class ProcessInfoReporter extends AbstractControllableReporter implements
     HashMap<String, ProbeValue> values = null;
 
 
+    // An elapsed time
+    long elapsed = 0;
+
     /**
      * Constructor with reporter name and log file name
      */
@@ -73,9 +76,12 @@ public class ProcessInfoReporter extends AbstractControllableReporter implements
         ProbeValue mem = getAttribute("mem");
 
 
-        String metrics = timestamp.value() + " C " + hostname.getValue() + " " + pid.getValue() + " " + cpu.getValue() + " "  + mem.getValue();
+        String metrics = timestamp.value() + " " + Timestamp.elapsed(elapsed) + " C " + hostname.getValue() + " " + pid.getValue() + " " + cpu.getValue() + " "  + mem.getValue();
         
         Logger.getLogger("processinfo").logln(MASK.APP, metrics);
+
+        // now add on the measurement delta
+        elapsed += m.getDeltaTime().value();
     }
 
     
