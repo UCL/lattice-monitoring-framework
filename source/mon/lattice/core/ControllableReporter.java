@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mon.lattice.core;
 
 /**
@@ -14,10 +9,6 @@ package mon.lattice.core;
  * 
  */
 public interface ControllableReporter extends LifecycleReporter {
-    
-    public void init() throws Exception;
-    
-    public void cleanup() throws Exception;
     
     public ID getId();
        

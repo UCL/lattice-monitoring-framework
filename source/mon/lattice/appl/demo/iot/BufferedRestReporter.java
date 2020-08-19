@@ -69,6 +69,7 @@ public class BufferedRestReporter extends AbstractControllableReporter {
     
     @Override
     public void cleanup() throws Exception {
+        LOGGER.info(" *** Size of the Queue: " + queue.size() + " ***");
         worker.interrupt();
     }
     
@@ -130,7 +131,7 @@ public class BufferedRestReporter extends AbstractControllableReporter {
              if (queue.offer(buffer))
                  buffer = new JSONArray();
              else
-                 LOGGER.error("*** Queue is full! ***");
+                 LOGGER.warn("*** Queue is full! ***");
 
              waitRequestTimeStart = System.currentTimeMillis();
         }
