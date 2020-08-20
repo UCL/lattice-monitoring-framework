@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
  * An implementation of a Reporter that logs Tcpdump data to a file.
  */
 public class TcpdumpReporter extends AbstractControllableReporter implements ReporterMeasurementType {
+    // Filename
     String filename;
 
     // Stream for output
@@ -40,6 +41,13 @@ public class TcpdumpReporter extends AbstractControllableReporter implements Rep
     // An elapsed time
     long elapsed = 0;
 
+    // The Logger
+    Logger logger;
+
+    // Stream refs
+    int MASK1 = MASK.APP;
+    int MASK2 = 1 << 6;
+        
     
     /**
      * Constructor with reporter name and name of log file
@@ -78,7 +86,7 @@ public class TcpdumpReporter extends AbstractControllableReporter implements Rep
         
         String netLine = timestamp.value() + " " + Timestamp.elapsed(elapsed) + " N " + hostname.getValue() + " " + ifName.getValue() + " " + portNo.getValue() + " " + inBytes.getValue() + " " + inPackets.getValue() + " " + outBytes.getValue()  + " " + outPackets.getValue();
             
-        Logger.getLogger("tcpdump").logln(MASK.APP, netLine);
+        logger.logln(MASK1|MASK2, netLine);
 
         // now add on the measurement delta
         elapsed += m.getDeltaTime().value();
@@ -91,12 +99,18 @@ public class TcpdumpReporter extends AbstractControllableReporter implements Rep
     @Override
     public void init() throws Exception {
         // allocate a new logger
-        Logger logger = Logger.getLogger("tcpdump");
+        logger = Logger.getLogger("tcpdump");
 
-        // add some extra output channels, using mask bit 6
+        // add some extra output channels,
         try {
+            // MASK.APP = 1 << 4  === MASK1
             outputStream = new FileOutputStream(filename);
-            logger.addOutput(new PrintWriter(outputStream), new BitMask(MASK.APP));
+            logger.addOutput(new PrintWriter(outputStream), new BitMask(MASK1));
+
+            //  using mask bit 6 === MASK2
+            logger.addOutput(new DBOutputter(filename + ".snd"), new BitMask(MASK2));
+
+            
         } catch (Exception e) {
             LoggerFactory.getLogger(TcpdumpReporter.class).error(e.getMessage());
         }

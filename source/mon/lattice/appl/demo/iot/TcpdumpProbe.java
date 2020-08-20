@@ -146,9 +146,16 @@ public class TcpdumpProbe extends AbstractProbe implements Probe {
             // a failure somewhere
             return null;
         }
-
-            
-
     }
+
+    /**
+     * The code to run at the end of the thread body.
+     * Used to tidy things up.
+     */
+    public void endThreadBody() {
+        System.err.println("TcpdumpProbe: endThreadBody");
+        tcpdumpListener.stop();
+    }
+    
 
 }

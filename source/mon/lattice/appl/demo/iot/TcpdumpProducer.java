@@ -57,7 +57,7 @@ public class TcpdumpProducer {
     }
 
     private void turnOffProbe(Probe p) {
-	ds.deactivateProbe(p);
+	ds.turnOffProbe(p);
 	ds.removeProbe(p);
         pb = null;
     }
