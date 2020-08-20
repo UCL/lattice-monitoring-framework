@@ -192,6 +192,7 @@ public class ProcessWrapper {
                     try {
                         Thread.sleep(100);
                     } catch (java.lang.InterruptedException e) {
+                        //System.err.println("ProcessWrapper: sleep InterruptedException " + e);
                     }
 
                     // Close the process stdout
@@ -201,9 +202,13 @@ public class ProcessWrapper {
                      * close of input streams moved into thread for better reliability
                      */
 
+                    //System.err.println("ProcessWrapper: stop listeners");
+
                     // stop listeners
                     iStreamHandler.stop();
                     eStreamHandler.stop();
+
+                    //System.err.println("ProcessWrapper: terminate");
 
                     // now splat it
                     terminate();
@@ -225,10 +230,11 @@ public class ProcessWrapper {
             if (listener != null) {
                 listener.processExitValue(process, exitValue, name);
             }
-            //System.out.println("ProcessWrapper: Process " + process + " terminate");
+            //System.out.println("ProcessWrapper: Process " + process + " terminate exitValue = " + exitValue);
             
         } catch (IllegalThreadStateException e) {
             //the subprocess represented by this Process object has not yet terminated
+            System.out.println("the subprocess represented by this Process has not yet terminated: " + e);
             process.destroy();
         }
     }
@@ -266,6 +272,7 @@ public class ProcessWrapper {
          * End the Listener.
          */
         public synchronized void stop() {
+            //System.err.println("ProcessStreamHandler: stop " + label);
             notifyAll();
             running = false;
         }
