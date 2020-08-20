@@ -8,13 +8,13 @@ package mon.lattice.appl.demo.iot;
 import mon.lattice.appl.reporters.PrintReporter;
 import mon.lattice.core.MeasurementReceiver;
 import mon.lattice.core.Reporter;
-import mon.lattice.core.AbstractDataConsumer;
+import mon.lattice.core.AbstractLifecycleDataConsumer;
 
 /**
  * A HostInfoConsumer takes HostInfo and logs it.
  */
 
-public class HostInfoConsumer extends AbstractDataConsumer implements MeasurementReceiver {
+public class HostInfoConsumer extends AbstractLifecycleDataConsumer implements MeasurementReceiver {
     String filename;
     
     Reporter reporter;

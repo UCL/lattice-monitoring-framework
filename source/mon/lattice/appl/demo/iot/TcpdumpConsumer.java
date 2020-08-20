@@ -6,18 +6,15 @@
 package mon.lattice.appl.demo.iot;
 
 import mon.lattice.appl.reporters.PrintReporter;
-import mon.lattice.appl.reporters.LoggerReporter;
 import mon.lattice.core.MeasurementReceiver;
 import mon.lattice.core.Reporter;
-import mon.lattice.core.LifecycleReporter;
-import mon.lattice.core.AbstractDataConsumer;
-import java.io.IOException;
+import mon.lattice.core.AbstractLifecycleDataConsumer;
 
 /**
  * A TcpdumpConsumer takes Tcpdump and logs it.
  */
 
-public class TcpdumpConsumer extends AbstractDataConsumer implements MeasurementReceiver {
+public class TcpdumpConsumer extends AbstractLifecycleDataConsumer implements MeasurementReceiver {
     String filename;
     
     Reporter reporter;

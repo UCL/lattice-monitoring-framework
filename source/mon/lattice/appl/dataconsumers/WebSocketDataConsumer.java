@@ -3,7 +3,7 @@ package mon.lattice.appl.dataconsumers;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Scanner;
-import mon.lattice.core.AbstractDataConsumer;
+import mon.lattice.core.AbstractLifecycleDataConsumer;
 import mon.lattice.distribution.ws.WSDataPlaneConsumerJSON;
 
 /**
@@ -12,7 +12,7 @@ import mon.lattice.distribution.ws.WSDataPlaneConsumerJSON;
  */
 public class WebSocketDataConsumer {
     // The consumer
-    AbstractDataConsumer consumer;
+    AbstractLifecycleDataConsumer consumer;
 
     /*
      * Construct a WebSocketDataConsumer

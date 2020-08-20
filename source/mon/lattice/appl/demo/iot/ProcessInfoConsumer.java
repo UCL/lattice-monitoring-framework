@@ -5,13 +5,13 @@ package mon.lattice.appl.demo.iot;
 import mon.lattice.appl.reporters.PrintReporter;
 import mon.lattice.core.MeasurementReceiver;
 import mon.lattice.core.Reporter;
-import mon.lattice.core.AbstractDataConsumer;
+import mon.lattice.core.AbstractLifecycleDataConsumer;
 
 /**
  * A ProcessInfoConsumer takes ProcessInfo and logs it.
  */
 
-public class ProcessInfoConsumer extends AbstractDataConsumer implements MeasurementReceiver {
+public class ProcessInfoConsumer extends AbstractLifecycleDataConsumer implements MeasurementReceiver {
     String filename;
     
     Reporter reporter;

@@ -22,14 +22,6 @@ public class ProcessInfoConsumerLogger {
 
 	// set up data plane
 	consumer.setDataPlane(new ZMQDataPlaneConsumerWithNames(dataPort));
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() {
-                    System.out.println("Shutting down ...");
-                    //some cleaning up code...
-                    consumer.disconnect();
-                }
-            });
         
 	consumer.connect();
 
