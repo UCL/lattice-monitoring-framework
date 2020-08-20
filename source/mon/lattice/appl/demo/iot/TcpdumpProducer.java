@@ -23,6 +23,8 @@ public class TcpdumpProducer {
     // The DataSource
     DataSource ds;
 
+    Probe pb;
+    
     /*
      * Construct a TcpdumpProducer.
      */
@@ -36,10 +38,20 @@ public class TcpdumpProducer {
 	// set up data plane
 	ds.setDataPlane(new WSDataPlaneProducerWithNames(address));
 
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    System.out.println("Shutting down ...");
+                    //some cleaning up code...
+                    turnOffProbe(pb);
+                    ds.disconnect();
+                }
+            });
+        
 	ds.connect();
     }
 
     private void turnOnProbe(Probe p) {
+        pb = p;
 	ds.addProbe(p);
 	ds.turnOnProbe(p);
     }
@@ -47,6 +59,7 @@ public class TcpdumpProducer {
     private void turnOffProbe(Probe p) {
 	ds.deactivateProbe(p);
 	ds.removeProbe(p);
+        pb = null;
     }
 
     public static void main(String [] args) {
