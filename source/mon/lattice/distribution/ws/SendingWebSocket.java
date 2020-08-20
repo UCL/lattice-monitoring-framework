@@ -13,6 +13,7 @@ import java.util.Map;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.handshake.ServerHandshake;
+import org.slf4j.LoggerFactory;
 
 public class SendingWebSocket extends WebSocketClient {
 
@@ -43,7 +44,7 @@ public class SendingWebSocket extends WebSocketClient {
     @Override
     public void onClose( int code, String reason, boolean remote ) {
         // The codecodes are documented in class org.java_websocket.framing.CloseFrame
-        System.err.println( "SendingWebSocket: Connection closed by " + ( remote ? "remote peer" : "us" ) + " Code: " + code + " Reason: " + reason );
+        LoggerFactory.getLogger(SendingWebSocket.class).info("SendingWebSocket: Connection closed by " + ( remote ? "remote peer" : "us" ) + " Code: " + code + " Reason: " + reason );
     }
 
     @Override

@@ -52,8 +52,6 @@ public class ReceivingWebSocket extends WebSocketServer {
     @Override
     public void onStart() {
         System.out.println("Server started!");
-        setConnectionLostTimeout(0);
-        setConnectionLostTimeout(100);
     }
 
     @Override
