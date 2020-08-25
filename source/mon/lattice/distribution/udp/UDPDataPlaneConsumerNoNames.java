@@ -47,7 +47,7 @@ public class UDPDataPlaneConsumerNoNames extends AbstractUDPDataPlaneConsumer im
 
 	try {
             DataPlaneMessageXDRDecoder decoder = new DataPlaneMessageXDRDecoder(getSeqNoMap());
-            Measurement measurement = decoder.decode(bis, metaData);
+            Measurement measurement = decoder.decode(bis, metaData, false);
 
             report(measurement);
 

@@ -473,7 +473,9 @@ public class IotTopology {
                     
                 case "JSONWebSocketReporter":
                 case "XDRWebSocketReporter":
-                case "XDRWebSocketReporterWithNames":        
+                case "XDRWebSocketReporterWithNames":
+                case "XDRUDPReporter":
+                case "XDRUDPReporterWithNames":
                     setDestinationParams();
                     
                     return startReporter(reporterName,
