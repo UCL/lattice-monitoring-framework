@@ -95,25 +95,37 @@ public class TcpdumpWrapper extends ProcessWrapper {
      * but might get IPv6 addresses
      *
      * 00:00:00.000000 IP6 ::1.53493 > ::1.80: tcp 0
+     *
+     *
+     * 00:00:04.710890 IP 128.40.39.137.38816 > 128.40.39.163.9999: UDP, length 132
+     *
      */
     protected String tcpdumpLine(String line) {
         try {
             final String format_ipv4 = " %d:%d:%d.%d IP %s > %s: tcp %d";
+            final String format_ipv4_udp = " %d:%d:%d.%d IP %s > %s: UDP, length %d";
             final String format_ipv6 = " %d:%d:%d.%d IP6 ::%s > ::%s: tcp %d";
-
+ 
             Object[] vals;
 
             if (line.contains("IP6")) {
+                // a new case might be required here for IPV6 and UDP
                 vals = new FormatReader(new StringReader(line)).scanf(format_ipv6);
-            } else {
-                vals = new FormatReader(new StringReader(line)).scanf(format_ipv4);
             }
-            
-            //System.err.println(line);
+ 
+            else {
+                if (line.contains("UDP")) 
+                   vals = new FormatReader(new StringReader(line)).scanf(format_ipv4_udp);
+                else 
+                   vals = new FormatReader(new StringReader(line)).scanf(format_ipv4);
+            }
+           
             String src =  (String)vals[4];
             String dst =  (String)vals[5];
-            long length = (long)vals[6];
-            
+
+            // the length will always be the last element (6) in the considered cases
+            long length = (long)vals[6]; 
+
             if (src.endsWith(portSpec)) {
                 // sending out
 

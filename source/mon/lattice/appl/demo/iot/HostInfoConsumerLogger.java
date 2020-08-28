@@ -5,9 +5,7 @@
 
 package mon.lattice.appl.demo.iot;
 
-import mon.lattice.appl.dataconsumers.BasicConsumer;
 import mon.lattice.distribution.ws.WSDataPlaneConsumerWithNames;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Scanner;
 
@@ -31,14 +29,6 @@ public class HostInfoConsumerLogger {
 
 	// set up data plane
 	consumer.setDataPlane(new WSDataPlaneConsumerWithNames(address));
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() {
-                    System.out.println("Shutting down ...");
-                    //some cleaning up code...
-                    consumer.disconnect();
-                }
-            });
         
 	consumer.connect();
 

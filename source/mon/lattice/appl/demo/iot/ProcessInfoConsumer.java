@@ -1,26 +1,23 @@
-// HostInfoConsumer.java
-// Author: Stuart Clayman
-// Email: s.clayman@ucl.ac.uk
-// Date: July 2020
+// Based on HostInfoConsumer.java (from Stuart Clayman)
 
 package mon.lattice.appl.demo.iot;
 
 import mon.lattice.appl.reporters.PrintReporter;
 import mon.lattice.core.MeasurementReceiver;
 import mon.lattice.core.Reporter;
-import mon.lattice.core.AbstractDataConsumer;
+import mon.lattice.core.AbstractLifecycleDataConsumer;
 
 /**
- * A ProcessInfoConsumer takes HostInfo and logs it.
+ * A ProcessInfoConsumer takes ProcessInfo and logs it.
  */
 
-public class ProcessInfoConsumer extends AbstractDataConsumer implements MeasurementReceiver {
+public class ProcessInfoConsumer extends AbstractLifecycleDataConsumer implements MeasurementReceiver {
     String filename;
     
     Reporter reporter;
 
     /**
-     * Construct a HostInfoConsumer
+     * Construct a ProcessInfoConsumer
      */
     public ProcessInfoConsumer(String filename) {
         this.filename = filename;

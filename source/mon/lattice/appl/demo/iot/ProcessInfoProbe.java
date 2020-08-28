@@ -1,7 +1,4 @@
-// HostInfoProbe.java
-// Author: Stuart Clayman
-// Email: s.clayman@ucl.ac.uk
-// Date: July 2020
+// Based on HostInfoProbe.java (from Stuart Clayman)
 
 package mon.lattice.appl.demo.iot;
 

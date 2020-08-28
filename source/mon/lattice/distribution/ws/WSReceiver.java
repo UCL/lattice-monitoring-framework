@@ -123,6 +123,12 @@ public class WSReceiver implements Runnable {
             socket = new ReceivingWebSocket(new InetSocketAddress(address, port));
         }
         
+        socket.setConnectionLostTimeout(100);
+        
+        // this fixes the exception at startup 
+        // if there are pending existing connections on TIME_WAIT
+        socket.setReuseAddr(true);
+        
         socket.start();
     }
 
@@ -149,11 +155,11 @@ public class WSReceiver implements Runnable {
         threadRunning = false;
 
         try {
-            // stop the WebSocket
-            socket.stop();
-
             // interrupt the read()
             myThread.interrupt();
+            
+            // stop the WebSocket
+            socket.stop();
             
         } catch (InterruptedException ie) {
             throw new IOException("Socket stop: " + ie.getMessage());
