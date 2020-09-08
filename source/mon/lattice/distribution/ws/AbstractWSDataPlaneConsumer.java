@@ -25,6 +25,8 @@ public abstract class AbstractWSDataPlaneConsumer implements DataPlane, Measurem
 
     int port;
     
+    int nThreads;
+    
     // We don't want to transmit measurement data.
     // Producers will only transmit, and Consumers will receive.
 
@@ -60,6 +62,22 @@ public abstract class AbstractWSDataPlaneConsumer implements DataPlane, Measurem
 
 	seqNoMap = new HashMap<ID, Integer>();
     }
+    
+    
+    public AbstractWSDataPlaneConsumer(int port, int nThreads) {
+        this(port);
+        this.nThreads = nThreads;
+    }
+    
+    /**
+     * Construct a AbstractWSDataPlaneConsumer.
+     */
+    public AbstractWSDataPlaneConsumer(InetSocketAddress addr, int nThreads) {
+	this(addr);
+        this.nThreads = nThreads;
+    }
+    
+    
 
     /**
      * Connect to a delivery mechansim.

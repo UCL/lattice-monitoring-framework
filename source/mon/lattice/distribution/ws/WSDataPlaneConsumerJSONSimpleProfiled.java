@@ -24,6 +24,16 @@ public class WSDataPlaneConsumerJSONSimpleProfiled extends WSDataPlaneConsumerJS
     }
     
     
+    public WSDataPlaneConsumerJSONSimpleProfiled(InetSocketAddress addr, int nThreads) {
+        super(addr, nThreads);
+    }
+
+    public WSDataPlaneConsumerJSONSimpleProfiled(int port, int nThreads) {
+        super(port, nThreads);
+    }
+    
+    
+    
     @Override
     public boolean disconnect() {
         System.err.println(mean);

@@ -70,10 +70,41 @@ public class WebSocketJSONDataConsumer {
         
 	consumer.connect();
     }
+    
+    
+    public WebSocketJSONDataConsumer(int dataPort, int nThreads, byte conf) throws IOException {    
+        this(conf);
+        
+	// set up data plane
+        if (doProfiling == 0)
+            consumer.setDataPlane(new WSDataPlaneConsumerJSON(dataPort, nThreads));
+        else
+            consumer.setDataPlane(new WSDataPlaneConsumerJSONProfiled(dataPort, nThreads));
+        
+	consumer.connect();
+    }
+    
+    
+    public WebSocketJSONDataConsumer(String addr, int dataPort, int nThreads, byte conf) throws IOException {
+	this(conf);
+        
+	// set up data plane
+        InetSocketAddress address = new InetSocketAddress(addr, dataPort);
+        
+        if (doProfiling == 0)
+            consumer.setDataPlane(new WSDataPlaneConsumerJSON(address, nThreads));
+        else
+            consumer.setDataPlane(new WSDataPlaneConsumerJSONProfiled(address, nThreads));
+        
+	consumer.connect();
+    }
+    
+    
 
     public static void main(String [] args) {
-        String bindAddress;
+        String bindAddress=null;
         int port = 9999;
+        int nThreads=0;
         byte conf = 1;
         
         try {
@@ -93,14 +124,29 @@ public class WebSocketJSONDataConsumer {
                 case 3:
                     sc = new Scanner(args[0]);
                     port = sc.nextInt();
-                    bindAddress = args[1];
+                    
+                    sc = new Scanner(args[1]);
+                    if (sc.hasNextInt())
+                        nThreads = sc.nextInt();
+                    else
+                        bindAddress = args[1];
+                    
                     sc = new Scanner(args[2]);
                     conf = sc.nextByte();
-                    new WebSocketJSONDataConsumer(bindAddress, port, conf);
-                    System.err.println("WebSocketDataConsumer (conf=" + conf + ") listening on ws://" + bindAddress + ":" + port);
+                    
+                    if (bindAddress != null) {
+                        new WebSocketJSONDataConsumer(bindAddress, port, conf);
+                        System.err.println("WebSocketDataConsumer (conf=" + conf + ") listening on ws://" + bindAddress + ":" + port);
+                    }
+                    
+                    else if (nThreads > 0) {
+                        new WebSocketJSONDataConsumer(port, nThreads, conf);
+                        System.err.println("WebSocketDataConsumer (conf=" + conf + ") listening on ws://*" + ":" + port + "(threads=" + nThreads + ")");
+                    }
+                    
                     break;
                 default:
-                    System.err.println("usage: WebSocketDataConsumer [port] [bind address] [0-3]");
+                    System.err.println("usage: WebSocketDataConsumer [port] [bind address | nThreads] [0-3]");
                     System.exit(1);
             }
         } catch (Exception e) {

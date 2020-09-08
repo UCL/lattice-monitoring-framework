@@ -22,6 +22,15 @@ public class WSDataPlaneConsumerJSONProfiled extends WSDataPlaneConsumerJSON {
     public WSDataPlaneConsumerJSONProfiled(int port) {
         super(port);
     }
+    
+    
+    public WSDataPlaneConsumerJSONProfiled(InetSocketAddress addr, int nThreads) {
+        super(addr, nThreads);
+    }
+
+    public WSDataPlaneConsumerJSONProfiled(int port, int nThreads) {
+        super(port, nThreads);
+    }
 
     @Override
     public boolean disconnect() {

@@ -6,6 +6,7 @@ import java.util.Scanner;
 import mon.lattice.core.AbstractLifecycleDataConsumer;
 import mon.lattice.distribution.ws.WSDataPlaneConsumerJSONProfiled;
 import mon.lattice.distribution.ws.WSDataPlaneConsumerJSONSimple;
+import mon.lattice.distribution.ws.WSDataPlaneConsumerJSONSimpleProfiled;
 
 /**
  * A WebSocketJSONSimpleDataConsumer receives measurements from a WS Data Plane.
@@ -34,11 +35,13 @@ public class WebSocketJSONSimpleDataConsumer {
         
         if (printOutput == 0) {
             // set up a VoidConsumer (no print)
+            System.err.println("Printing is disabled");
             consumer = new VoidConsumer();
         }
         
         else {
             // set up a BasicConsumer (with a built-in PrintReporter)
+            System.err.println("Printing is enabled");
             consumer = new BasicConsumer();
         }
     }
@@ -49,10 +52,14 @@ public class WebSocketJSONSimpleDataConsumer {
         this(conf);
         
 	// set up data plane
-        if (doProfiling == 0)
+        if (doProfiling == 0) {
+            System.err.println("Profiling is disabled");
             consumer.setDataPlane(new WSDataPlaneConsumerJSONSimple(dataPort));
-        else
-            consumer.setDataPlane(new WSDataPlaneConsumerJSONProfiled(dataPort));
+        }
+        else {
+            System.err.println("Profiling is enabled");
+            consumer.setDataPlane(new WSDataPlaneConsumerJSONSimpleProfiled(dataPort));
+        }
         
 	consumer.connect();
     }
@@ -64,17 +71,61 @@ public class WebSocketJSONSimpleDataConsumer {
 	// set up data plane
         InetSocketAddress address = new InetSocketAddress(addr, dataPort);
         
-        if (doProfiling == 0)
+        if (doProfiling == 0) {
+            System.err.println("Profiling is disabled");
             consumer.setDataPlane(new WSDataPlaneConsumerJSONSimple(address));
-        else
-            consumer.setDataPlane(new WSDataPlaneConsumerJSONProfiled(address));
+        }
+        else {
+            System.err.println("Profiling is enabled");
+            consumer.setDataPlane(new WSDataPlaneConsumerJSONSimpleProfiled(address));
+        }
         
 	consumer.connect();
     }
+    
+    
+    public WebSocketJSONSimpleDataConsumer(int dataPort, int nThreads, byte conf) throws IOException {    
+        this(conf);
+        
+	// set up data plane
+        if (doProfiling == 0) {
+            System.err.println("Profiling is disabled");
+            consumer.setDataPlane(new WSDataPlaneConsumerJSONSimple(dataPort, nThreads));
+        }
+        else {
+            System.err.println("Profiling is enabled");
+            consumer.setDataPlane(new WSDataPlaneConsumerJSONSimpleProfiled(dataPort, nThreads));
+        }
+        
+	consumer.connect();
+    }
+    
+    
+    public WebSocketJSONSimpleDataConsumer(String addr, int dataPort, int nThreads, byte conf) throws IOException {
+	this(conf);
+        
+	// set up data plane
+        InetSocketAddress address = new InetSocketAddress(addr, dataPort);
+        
+        if (doProfiling == 0) {
+            System.err.println("Profiling is disabled");
+            consumer.setDataPlane(new WSDataPlaneConsumerJSONSimple(address, nThreads));
+        }
+        else {
+            System.err.println("Profiling is enabled");
+            consumer.setDataPlane(new WSDataPlaneConsumerJSONProfiled(address, nThreads));
+        }
+        
+	consumer.connect();
+    }
+    
+    
+    
 
     public static void main(String [] args) {
-        String bindAddress;
+        String bindAddress=null;
         int port = 9999;
+        int nThreads=0;
         byte conf = 1;
         
         try {
@@ -94,14 +145,29 @@ public class WebSocketJSONSimpleDataConsumer {
                 case 3:
                     sc = new Scanner(args[0]);
                     port = sc.nextInt();
-                    bindAddress = args[1];
+                    
+                    sc = new Scanner(args[1]);
+                    if (sc.hasNextInt())
+                        nThreads = sc.nextInt();
+                    else
+                        bindAddress = args[1];
+                    
                     sc = new Scanner(args[2]);
                     conf = sc.nextByte();
-                    new WebSocketJSONSimpleDataConsumer(bindAddress, port, conf);
-                    System.err.println("WebSocketJSONSimpleDataConsumer (conf=" + conf + ") listening on ws://" + bindAddress + ":" + port);
+                    
+                    if (bindAddress != null) {
+                        new WebSocketJSONSimpleDataConsumer(bindAddress, port, conf);
+                        System.err.println("WebSocketJSONSimpleDataConsumer (conf=" + conf + ") listening on ws://" + bindAddress + ":" + port);
+                    }
+                    
+                    else if (nThreads > 0) {
+                        new WebSocketJSONSimpleDataConsumer(port, nThreads, conf);
+                        System.err.println("WebSocketJSONSimpleDataConsumer (conf=" + conf + ") listening on ws://*" + ":" + port + "(threads=" + nThreads + ")");
+                    }
+                    
                     break;
                 default:
-                    System.err.println("usage: WebSocketJSONSimpleDataConsumer [port] [bind address] [0-3]");
+                    System.err.println("usage: WebSocketJSONSimpleDataConsumer [port] [bind address | nThreads] [0-3]");
                     System.exit(1);
             }
         } catch (Exception e) {
