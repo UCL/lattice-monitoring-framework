@@ -25,7 +25,7 @@ public abstract class AbstractWSDataPlaneConsumer implements DataPlane, Measurem
 
     int port;
     
-    int nThreads;
+    int nThreads=0;
     
     // We don't want to transmit measurement data.
     // Producers will only transmit, and Consumers will receive.
@@ -89,9 +89,15 @@ public abstract class AbstractWSDataPlaneConsumer implements DataPlane, Measurem
                 
                 WSReceiver rr;
                 if (address != null)
-                    rr = new WSReceiver(this, address);
+                    if (nThreads ==0)
+                        rr = new WSReceiver(this, address);
+                    else
+                        rr = new WSReceiver(this, address, nThreads);
                 else
-                    rr = new WSReceiver(this, port);
+                    if (nThreads ==0)
+                        rr = new WSReceiver(this, port);
+                    else
+                        rr = new WSReceiver(this, port, nThreads);
 
 		rr.listen();
 		
