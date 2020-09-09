@@ -472,6 +472,7 @@ public class IotTopology {
                     
                     
                 case "JSONWebSocketReporter":
+                case "JSONUDPReporter":
                 case "XDRWebSocketReporter":
                 case "XDRWebSocketReporterWithNames":
                 case "XDRUDPReporter":
