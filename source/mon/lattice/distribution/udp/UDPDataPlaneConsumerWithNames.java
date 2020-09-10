@@ -8,8 +8,6 @@ package mon.lattice.distribution.udp;
 import mon.lattice.distribution.Receiving;
 import mon.lattice.distribution.MetaData;
 import mon.lattice.distribution.DataPlaneMessageXDRDecoder;
-import mon.lattice.xdr.XDRDataInputStream;
-import mon.lattice.core.plane.MessageType;
 import mon.lattice.core.plane.DataPlane;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.MeasurementReporting;

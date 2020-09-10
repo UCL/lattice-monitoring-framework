@@ -7,7 +7,6 @@ package mon.lattice.distribution.udp;
 
 import mon.lattice.distribution.Receiving;
 import mon.lattice.distribution.MetaData;
-import mon.lattice.distribution.DataPlaneMessageXDRDecoder;
 import mon.lattice.core.plane.DataPlane;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.MeasurementReporting;
@@ -40,8 +39,6 @@ public class UDPDataPlaneConsumerJSON extends AbstractUDPDataPlaneConsumer imple
      * +---------------------------------------------------------------------+
      */
     public void received(ByteArrayInputStream bis, MetaData metaData) throws  IOException, TypeException {
-
-	//System.out.println("DC: Received " + metaData);
 
 	try {
             DataPlaneMessageJSONDecoder decoder = new DataPlaneMessageJSONDecoder(getSeqNoMap());

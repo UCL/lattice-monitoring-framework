@@ -43,6 +43,7 @@ public abstract class AbstractJSONEncoderReporter extends AbstractEncoderReporte
 
     @Override
     public void report(Measurement m) {
+        super.report(m);
         LoggerFactory.getLogger(getClass()).debug("Received measurement: " + m.toString());
         try {
             byte[] measurementAsBytes = encodeMeasurement(m);

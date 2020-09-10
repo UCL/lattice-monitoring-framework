@@ -3,7 +3,8 @@ package mon.lattice.appl.dataconsumers;
 import mon.lattice.distribution.rest.JSONRestDataPlaneConsumer;
 import java.io.IOException;
 import java.util.Scanner;
-import mon.lattice.core.AbstractDataConsumer;
+import mon.lattice.core.AbstractLifecycleDataConsumer;
+import mon.lattice.distribution.rest.JSONRestDataPlaneConsumerProfiled;
 
 /**
  * A RestDataConsumer receives measurements from a REST Data Plane.
@@ -11,60 +12,88 @@ import mon.lattice.core.AbstractDataConsumer;
  */
 public class RestDataConsumer {
     // The consumer
-    AbstractDataConsumer consumer;
+    AbstractLifecycleDataConsumer consumer;
+    
+    
+    byte printOutput;
+    byte doProfiling;
+    
+    
+    private void parseConf(byte conf) {
+        printOutput = (byte) (conf &  0x01);
+        doProfiling = (byte) ((conf & 0x02) >>> 1);
+    }
 
     /*
      * Construct a RestDataConsumer
      */
     
-    private RestDataConsumer(boolean printOutput) {
-        if (printOutput) {
-            // set up a BasicConsumer (with a built-in PrintReporter)
-            consumer = new BasicConsumer();
-        }
+    private RestDataConsumer(byte conf) {
+        parseConf(conf);
         
-        else {
+        if (printOutput == 0) {
             // set up a VoidConsumer (no print)
             consumer = new VoidConsumer();
         }
+        
+        else {
+            // set up a BasicConsumer (with a built-in PrintReporter)
+            consumer = new BasicConsumer();
+        }
     }
     
     
-    public RestDataConsumer(int dataPort, String endPoint, boolean printOutput) throws IOException {
-	this(printOutput);
+    public RestDataConsumer(int dataPort, String endPoint, byte conf) throws IOException {
+	this(conf);
 
 	// set up data plane
-	consumer.setDataPlane(new JSONRestDataPlaneConsumer(dataPort, endPoint));
+        
+        if (doProfiling == 0)
+            consumer.setDataPlane(new JSONRestDataPlaneConsumer(dataPort, endPoint));
+        else
+            consumer.setDataPlane(new JSONRestDataPlaneConsumerProfiled(dataPort, endPoint));
 
 	consumer.connect();
     }
     
     
-    public RestDataConsumer(int dataPort, String endPoint, int threads, boolean printOutput) throws IOException {
-	this(printOutput);
+    public RestDataConsumer(int dataPort, String endPoint, int threads, byte conf) throws IOException {
+	this(conf);
 
 	// set up data plane
-	consumer.setDataPlane(new JSONRestDataPlaneConsumer(dataPort, endPoint, threads));
+        
+        if (doProfiling == 0) 
+            consumer.setDataPlane(new JSONRestDataPlaneConsumer(dataPort, endPoint, threads));
+        else
+            consumer.setDataPlane(new JSONRestDataPlaneConsumerProfiled(dataPort, endPoint, threads));
 
 	consumer.connect();
     }
     
     
-    public RestDataConsumer(String addr, int dataPort, String endPoint, boolean printOutput) throws IOException {
-	this(printOutput);
+    public RestDataConsumer(String addr, int dataPort, String endPoint, byte conf) throws IOException {
+	this(conf);
 
 	// set up data plane
-	consumer.setDataPlane(new JSONRestDataPlaneConsumer(addr, dataPort, endPoint));
+        
+        if (doProfiling == 0) 
+            consumer.setDataPlane(new JSONRestDataPlaneConsumer(addr, dataPort, endPoint));
+        else
+             consumer.setDataPlane(new JSONRestDataPlaneConsumerProfiled(addr, dataPort, endPoint));
 
 	consumer.connect();
     }
     
     
-    public RestDataConsumer(String addr, int dataPort, String endPoint, int threads, boolean printOutput) throws IOException {
-	this(printOutput);
+    public RestDataConsumer(String addr, int dataPort, String endPoint, int threads, byte conf) throws IOException {
+	this(conf);
 
 	// set up data plane
-	consumer.setDataPlane(new JSONRestDataPlaneConsumer(addr, dataPort, endPoint, threads));
+        
+        if (doProfiling == 0) 
+            consumer.setDataPlane(new JSONRestDataPlaneConsumer(addr, dataPort, endPoint, threads));
+        else
+            consumer.setDataPlane(new JSONRestDataPlaneConsumerProfiled(addr, dataPort, endPoint, threads));
 
 	consumer.connect();
     }
@@ -72,24 +101,24 @@ public class RestDataConsumer {
     public static void main(String [] args) {
         String bindAddress;
         int port = 9999;
-        boolean printOutput = true;
+        byte conf = 1;
         int nThreads;
         
         String endPoint ="reporter";
         try {
             switch (args.length) {
                 case 0:
-                    new RestDataConsumer(port, endPoint, printOutput);
-                    System.err.println("RestDataConsumer (printOutput=" + printOutput + ") listening on http://*" + ":" + port + "/" + endPoint + "/");
+                    new RestDataConsumer(port, endPoint, conf);
+                    System.err.println("RestDataConsumer (conf=" + conf + ") listening on http://*" + ":" + port + "/" + endPoint + "/");
                     break;
                 case 3:
                     Scanner sc = new Scanner(args[0]);
                     port = sc.nextInt();
                     endPoint = args[1];
                     sc = new Scanner(args[2]);
-                    printOutput = sc.nextBoolean();
-                    new RestDataConsumer(port, endPoint, printOutput);
-                    System.err.println("RestDataConsumer (printOutput=" + printOutput + ") listening on http://*" + ":" + port + "/" + endPoint + "/");
+                    conf = sc.nextByte();
+                    new RestDataConsumer(port, endPoint, conf);
+                    System.err.println("RestDataConsumer (conf=" + conf + ") listening on http://*" + ":" + port + "/" + endPoint + "/");
                     break;    
                 case 4:
                     sc = new Scanner(args[0]);
@@ -98,9 +127,9 @@ public class RestDataConsumer {
                     sc = new Scanner(args[2]);
                     nThreads = sc.nextInt();
                     sc = new Scanner(args[3]);
-                    printOutput = sc.nextBoolean();
-                    new RestDataConsumer(port, endPoint, nThreads, printOutput);
-                    System.err.println("RestDataConsumer (printOutput=" + printOutput + ") listening on http://*" + ":" + port + "/" + endPoint + "/");
+                    conf = sc.nextByte();
+                    new RestDataConsumer(port, endPoint, nThreads, conf);
+                    System.err.println("RestDataConsumer (conf=" + conf + ") listening on http://*" + ":" + port + "/" + endPoint + "/");
                     System.err.println("Number of threads: " + nThreads);
                     break;
                 case 5:
@@ -111,9 +140,9 @@ public class RestDataConsumer {
                     sc = new Scanner(args[3]);
                     nThreads = sc.nextInt();
                     sc = new Scanner(args[4]);
-                    printOutput = sc.nextBoolean();
-                    new RestDataConsumer(bindAddress, port, endPoint, nThreads, printOutput);
-                    System.err.println("RestDataConsumer (printOutput=" + printOutput + ") listening on http://" + bindAddress + ":" + port + "/" + endPoint + "/");
+                    conf = sc.nextByte();
+                    new RestDataConsumer(bindAddress, port, endPoint, nThreads, conf);
+                    System.err.println("RestDataConsumer (conf=" + conf + ") listening on http://" + bindAddress + ":" + port + "/" + endPoint + "/");
                     System.err.println("Number of threads: " + nThreads);
                     break;
                 default:

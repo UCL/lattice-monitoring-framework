@@ -3,6 +3,7 @@ package mon.lattice.appl.reporters;
 import java.io.IOException;
 import mon.lattice.core.AbstractControllableReporter;
 import mon.lattice.core.Measurement;
+import org.slf4j.LoggerFactory;
 
 /**
  * An AbstractEncoderReporter that defines the methods to re-encode
@@ -16,8 +17,11 @@ import mon.lattice.core.Measurement;
  */
 public abstract class AbstractEncoderReporter extends AbstractControllableReporter {
     
+    protected long nMeasurements;
+    
     public AbstractEncoderReporter(String name) {
         super(name);
+        nMeasurements = 0;
     }
 
     /**
@@ -35,4 +39,15 @@ public abstract class AbstractEncoderReporter extends AbstractControllableReport
      */
     protected abstract byte[] encodeMeasurement(Measurement m) throws IOException;
     
+    
+    @Override
+    public void cleanup() throws IOException {
+        LoggerFactory.getLogger(AbstractJSONEncoderReporter.class).info("Received " + nMeasurements + " measurements");
+    }
+    
+    
+    @Override
+    public void report(Measurement m) {
+        nMeasurements ++;
+    }
 }

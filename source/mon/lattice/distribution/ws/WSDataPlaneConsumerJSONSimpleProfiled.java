@@ -37,13 +37,14 @@ public class WSDataPlaneConsumerJSONSimpleProfiled extends WSDataPlaneConsumerJS
     @Override
     public boolean disconnect() {
         System.err.println(mean);
-        File logFile = new File("/tmp/" + "avg_decoding_time_" + System.currentTimeMillis() + ".log");
+        File logFile = new File("/tmp/" + "stats_" + System.currentTimeMillis() + ".log");
         try {
             FileWriter fw = new FileWriter(logFile);
-            fw.write(String.valueOf((long)mean) + " ns");
+            fw.write("avg_decoding_time " + String.valueOf((long)mean) + " ns\n");
+            fw.write("received_measurements " + String.valueOf((long)n) + "\n");
             fw.close();
         } catch (IOException e) {
-            LoggerFactory.getLogger(WSDataPlaneConsumerJSONProfiled.class).error("There was an error while writing the profiling stats");
+            LoggerFactory.getLogger(WSDataPlaneConsumerJSONSimpleProfiled.class).error("There was an error while writing the profiling stats");
         }
         
         return super.disconnect();

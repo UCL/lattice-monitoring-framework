@@ -1,4 +1,4 @@
-package mon.lattice.distribution.ws;
+package mon.lattice.distribution.udp;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -7,19 +7,20 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import mon.lattice.core.TypeException;
 import mon.lattice.distribution.MetaData;
+import mon.lattice.distribution.ws.WSDataPlaneConsumerProfiled;
 import org.slf4j.LoggerFactory;
 
 
-public class WSDataPlaneConsumerWithNamesProfiled extends WSDataPlaneConsumerWithNames {
-
+public class UDPDataPlaneConsumerNoNamesProfiled extends UDPDataPlaneConsumerNoNames {
+    
     double mean = 0;
     long n = 0;
-    
-    public WSDataPlaneConsumerWithNamesProfiled(InetSocketAddress addr) {
+
+    public UDPDataPlaneConsumerNoNamesProfiled(InetSocketAddress addr) {
         super(addr);
     }
 
-    public WSDataPlaneConsumerWithNamesProfiled(int port) {
+    public UDPDataPlaneConsumerNoNamesProfiled(int port) {
         super(port);
     }
     
@@ -34,13 +35,12 @@ public class WSDataPlaneConsumerWithNamesProfiled extends WSDataPlaneConsumerWit
             fw.write("received_measurements " + String.valueOf((long)n) + "\n");
             fw.close();
         } catch (IOException e) {
-            LoggerFactory.getLogger(WSDataPlaneConsumerWithNamesProfiled.class).error("There was an error while writing the profiling stats");
+            LoggerFactory.getLogger(UDPDataPlaneConsumerNoNamesProfiled.class).error("There was an error while writing the profiling stats");
         }
         
         return super.disconnect();
         
     }
-
     
     
     @Override

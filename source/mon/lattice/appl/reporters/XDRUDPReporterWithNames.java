@@ -126,6 +126,7 @@ public class XDRUDPReporterWithNames extends AbstractXDREncoderReporterWithNames
     
     @Override
     public void cleanup() throws IOException {
+        super.cleanup();
         LOGGER.info("Disconnecting");
         disconnect();
     }

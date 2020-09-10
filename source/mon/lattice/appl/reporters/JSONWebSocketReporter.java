@@ -133,6 +133,7 @@ public class JSONWebSocketReporter extends AbstractJSONEncoderReporter {
     
     @Override
     public void cleanup() throws IOException {
+        super.cleanup();
         LOGGER.info("Disconnecting");
         disconnect();
     }

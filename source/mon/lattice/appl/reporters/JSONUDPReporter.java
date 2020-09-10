@@ -126,6 +126,7 @@ public class JSONUDPReporter extends AbstractJSONEncoderReporter {
     
     @Override
     public void cleanup() throws IOException {
+        super.cleanup();
         LOGGER.info("Disconnecting");
         disconnect();
     }

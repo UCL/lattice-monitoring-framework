@@ -133,6 +133,7 @@ public class XDRWebSocketReporterWithNames extends AbstractXDREncoderReporterWit
     
     @Override
     public void cleanup() throws IOException {
+        super.cleanup();
         LOGGER.info("Disconnecting");
         disconnect();
     }

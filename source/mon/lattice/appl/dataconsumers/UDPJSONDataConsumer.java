@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.util.Scanner;
 import mon.lattice.core.AbstractLifecycleDataConsumer;
 import mon.lattice.distribution.udp.UDPDataPlaneConsumerJSON;
+import mon.lattice.distribution.udp.UDPDataPlaneConsumerJSONProfiled;
 
 /**
  * A UDPJSONDataConsumer receives measurements from a UDP Data Plane.
@@ -13,41 +14,59 @@ import mon.lattice.distribution.udp.UDPDataPlaneConsumerJSON;
 public class UDPJSONDataConsumer {
     // The consumer
     AbstractLifecycleDataConsumer consumer;
+    
+    byte printOutput;
+    byte doProfiling;
+    
+    
+    private void parseConf(byte conf) {
+        printOutput = (byte) (conf &  0x01);
+        doProfiling = (byte) ((conf & 0x02) >>> 1);
+    }
 
     /*
      * Construct a UDPJSONDataConsumer
      */
     
-    private UDPJSONDataConsumer(boolean printOutput) {
-        if (printOutput) {
-            // set up a BasicConsumer (with a built-in PrintReporter)
-            consumer = new BasicConsumer();
+    private UDPJSONDataConsumer(byte conf) {
+        parseConf(conf);
+        
+        if (printOutput == 0) {
+            // set up a VoidConsumer (no print)
+            consumer = new VoidConsumer();
         }
         
         else {
-            // set up a VoidConsumer (no print)
-            consumer = new VoidConsumer();
+            // set up a BasicConsumer (with a built-in PrintReporter)
+            consumer = new BasicConsumer();
         }
     }
     
     
     
-    public UDPJSONDataConsumer(int dataPort, boolean printOutput) throws IOException {    
-        this(printOutput);
+    public UDPJSONDataConsumer(int dataPort, byte conf) throws IOException {    
+        this(conf);
         
 	// set up data plane
-	consumer.setDataPlane(new UDPDataPlaneConsumerJSON(dataPort));
+        if (doProfiling == 0)
+            consumer.setDataPlane(new UDPDataPlaneConsumerJSON(dataPort));
+        else
+            consumer.setDataPlane(new UDPDataPlaneConsumerJSONProfiled(dataPort));
 
 	consumer.connect();
     }
     
     
-    public UDPJSONDataConsumer(String addr, int dataPort, boolean printOutput) throws IOException {
-	this(printOutput);
+    public UDPJSONDataConsumer(String addr, int dataPort, byte conf) throws IOException {
+	this(conf);
         
 	// set up data plane
         InetSocketAddress address = new InetSocketAddress(addr, dataPort);
-	consumer.setDataPlane(new UDPDataPlaneConsumerJSON(address));
+        
+        if (doProfiling == 0)
+            consumer.setDataPlane(new UDPDataPlaneConsumerJSON(address));
+        else
+            consumer.setDataPlane(new UDPDataPlaneConsumerJSONProfiled(address));
 
 	consumer.connect();
     }
@@ -55,33 +74,33 @@ public class UDPJSONDataConsumer {
     public static void main(String [] args) {
         String bindAddress;
         int port = 9999;
-        boolean printOutput = true;
+        byte conf = 1;
         
         try {
             switch (args.length) {
                 case 0:
-                    new UDPJSONDataConsumer(port, printOutput);
-                    System.err.println("UDPJSONDataConsumer (printOutput=" + printOutput + ") listening on *:" + port);
+                    new UDPJSONDataConsumer(port, conf);
+                    System.err.println("UDPJSONDataConsumer (conf=" + conf + ") listening on *:" + port);
                     break;
                 case 2:
                     Scanner sc = new Scanner(args[0]);
                     port = sc.nextInt();
                     sc = new Scanner(args[1]);
-                    printOutput = sc.nextBoolean();
-                    new UDPJSONDataConsumer(port, printOutput);
-                    System.err.println("UDPJSONDataConsumer (printOutput=" + printOutput + ") listening on *:" + port);
+                    conf = sc.nextByte();
+                    new UDPJSONDataConsumer(port, conf);
+                    System.err.println("UDPJSONDataConsumer (conf=" + conf + ") listening on *:" + port);
                     break;
                 case 3:
                     sc = new Scanner(args[0]);
                     port = sc.nextInt();
                     bindAddress = args[1];
                     sc = new Scanner(args[2]);
-                    printOutput = sc.nextBoolean();
-                    new UDPJSONDataConsumer(bindAddress, port, printOutput);
-                    System.err.println("UDPJSONDataConsumer (printOutput=" + printOutput + ") listening on " + bindAddress + ":" + port);
+                    conf = sc.nextByte();
+                    new UDPJSONDataConsumer(bindAddress, port, conf);
+                    System.err.println("UDPJSONDataConsumer (conf=" + conf + ") listening on " + bindAddress + ":" + port);
                     break;
                 default:
-                    System.err.println("usage: UDPJSONDataConsumer [port] [bind address] [true | false]");
+                    System.err.println("usage: UDPJSONDataConsumer [port] [bind address] [0-3]");
                     System.exit(1);
             }
         } catch (Exception e) {
