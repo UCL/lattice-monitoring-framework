@@ -48,7 +48,7 @@ public abstract class AbstractRestDataPlaneConsumer implements DataPlane, Measur
      * Construct a AbstractRestDataPlaneConsumer listening on a given port.
      */
     public AbstractRestDataPlaneConsumer(int port, String endP) throws IOException {
-        this(null, port, endP, 1);
+        this(null, port, endP, 0);
     }
     
     
@@ -64,7 +64,7 @@ public abstract class AbstractRestDataPlaneConsumer implements DataPlane, Measur
      * Construct a AbstractRestDataPlaneConsumer listening on a given address and port.
      */
     public AbstractRestDataPlaneConsumer(String host, int port, String endP) throws IOException {
-        this(host, port, endP, 1);
+        this(host, port, endP, 0);
     }
     
     
@@ -77,7 +77,12 @@ public abstract class AbstractRestDataPlaneConsumer implements DataPlane, Measur
         endPoint = endP;
 	seqNoMap = new HashMap<ID, Integer>();
         container = this;
-        server = new ContainerServer(container, threads);
+        
+        if (threads > 0)
+            server = new ContainerServer(container, threads);
+        else
+            // using the default number of threads
+            server = new ContainerServer(container);
         
         if (host == null)
             address = new InetSocketAddress(port);
