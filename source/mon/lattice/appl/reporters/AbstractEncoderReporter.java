@@ -42,7 +42,7 @@ public abstract class AbstractEncoderReporter extends AbstractControllableReport
     
     @Override
     public void cleanup() throws IOException {
-        LoggerFactory.getLogger(AbstractJSONEncoderReporter.class).info("Received " + nMeasurements + " measurements");
+        LoggerFactory.getLogger(AbstractEncoderReporter.class).info("Reported " + nMeasurements + " measurements");
     }
     
     

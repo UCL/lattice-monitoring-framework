@@ -101,7 +101,7 @@ public class ProcessInfoReporter extends AbstractControllableReporter implements
             outputStream = new FileOutputStream(filename);
             logger.addOutput(new PrintWriter(outputStream), new BitMask(MASK.APP));
         } catch (Exception e) {
-            LoggerFactory.getLogger(TcpdumpReporter.class).error(e.getMessage());
+            LoggerFactory.getLogger(ProcessInfoReporter.class).error(e.getMessage());
         }
 
     }
@@ -124,7 +124,7 @@ public class ProcessInfoReporter extends AbstractControllableReporter implements
                 values.put(((ProbeValueWithName)pv).getName(), pv);
             }
         } else {
-            LoggerFactory.getLogger(TcpdumpReporter.class).error("ProcessInfoReporter works with Measurements that are WithNames");
+            LoggerFactory.getLogger(ProcessInfoReporter.class).error("ProcessInfoReporter works with Measurements that are WithNames");
         }
     }
     
