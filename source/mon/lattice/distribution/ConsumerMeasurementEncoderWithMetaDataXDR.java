@@ -2,36 +2,33 @@ package mon.lattice.distribution;
 
 import java.io.DataOutput;
 import java.io.IOException;
-import mon.lattice.core.ID;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.ConsumerMeasurement;
-import mon.lattice.core.plane.MessageType;
+import mon.lattice.core.ID;
 import mon.lattice.core.TypeException;
+import mon.lattice.core.plane.MessageType;
 
 /**
- * Convert a ConsumerMeasurement that has some Message Meta Data to a XDR representation.
- * This is similar to ConsumerMeasurementEncoderWithNamesXDR, but it also used the Meta Data 
+ * Convert a ConsumerMeasurement that has some Message Meta Data (without names) to a XDR representation.
+ * It utilises MeasurementEncoderXDR, but it also uses the Meta Data 
  * to add on the Data Source ID, the Data Source seqNo, and the Message type.
  *
  * This extra data is useful in some contexts.
  */
 public class ConsumerMeasurementEncoderWithMetaDataXDR {
+    
     // The Measurement
     ConsumerMeasurement measurement;
-
     
-
-    /**
-     * Construct a ConsumerMeasurementEncoderWithMetaDataXDR for a Measurement.
-     */
     public ConsumerMeasurementEncoderWithMetaDataXDR(ConsumerMeasurement m) {
-	measurement = m;
+        measurement = m;
     }
 
     public ConsumerMeasurementEncoderWithMetaDataXDR(Measurement m) {
-	measurement = (ConsumerMeasurement)m;
+        measurement = (ConsumerMeasurement)m;
     }
-
+    
+    
     public void encode(DataOutput out) throws IOException, TypeException {
 
         // encode the measurement, ready for transmission
@@ -55,9 +52,14 @@ public class ConsumerMeasurementEncoderWithMetaDataXDR {
 
         // write seqNo
         out.writeInt(dataSourceSeqNo);
-
+        
+        encodeMeasurement(cm, out);
+    }
+    
+    
+    protected void encodeMeasurement(ConsumerMeasurementWithMetaData cm, DataOutput out) throws IOException, TypeException {
         // encode the measurement as XDR, ready for transmission
-        ConsumerMeasurementEncoderWithNamesXDR encoder = new ConsumerMeasurementEncoderWithNamesXDR(cm);
+        MeasurementEncoderXDR encoder = new MeasurementEncoderXDR(cm);
 
         // encode into an existing XDR
         encoder.encode(out);

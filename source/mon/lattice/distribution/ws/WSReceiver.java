@@ -37,6 +37,13 @@ public class WSReceiver implements Runnable {
      * The port
      */
     int port;
+    
+    
+    /*
+     * The number of internal decoding Theads 
+     */
+    int nThreads = 0;
+    
 
     /*
      * My thread.
@@ -44,11 +51,6 @@ public class WSReceiver implements Runnable {
     Thread myThread;
 
     boolean threadRunning = false;
-
-    /*
-     * A default packet size.
-     */
-    static int PACKET_SIZE = 65535; // was 1500;
 
     /*
      * The packet contents as a ByteArrayInputStream
@@ -105,23 +107,64 @@ public class WSReceiver implements Runnable {
     }
     
     
+     /**
+     * Construct a receiver for a particular IP address and number of threads
+     */
+    public WSReceiver(Receiving receiver, InetSocketAddress ipAddr, int nThreads) throws IOException {
+	//address = ipAddr;
+
+	this.receiver = receiver;
+	this.address = ipAddr.getAddress();
+	this.port = ipAddr.getPort();
+        this.nThreads = nThreads;
+        
+	setUpSocket();
+    }
+    
+    /**
+     * Construct a receiver for a particular port and number of threads
+     */
+    public WSReceiver(Receiving receiver, int port, int nThreads) throws IOException {
+	//address = ipAddr;
+
+	this.receiver = receiver;
+	this.port = port;
+        this.nThreads = nThreads;
+        
+	setUpSocket();
+    }
+    
+    
+    
     public WSReceiver(Receiving receiver, int port, String name) throws IOException {
 	this(receiver, port);
         this.threadName = name;
     }
     
-
+    
     /**
      * Set up the socket for the given addr/port,
      * and also a pre-prepared DatagramPacket.
      */
     void setUpSocket() throws IOException {
         if (this.address == null) {
-            socket = new ReceivingWebSocket(port);
+            if (this.nThreads > 0)
+                socket = new ReceivingWebSocket(port, nThreads);
+            else
+                socket = new ReceivingWebSocket(port);
         } else {
             // InetSocketAddress
-            socket = new ReceivingWebSocket(new InetSocketAddress(address, port));
+            if (this.nThreads > 0)
+                socket = new ReceivingWebSocket(new InetSocketAddress(address, port), nThreads);
+            else
+                socket = new ReceivingWebSocket(new InetSocketAddress(address, port));
         }
+        
+        socket.setConnectionLostTimeout(100);
+        
+        // this fixes the exception at startup 
+        // if there are pending existing connections on TIME_WAIT
+        socket.setReuseAddr(true);
         
         socket.start();
     }
@@ -149,11 +192,11 @@ public class WSReceiver implements Runnable {
         threadRunning = false;
 
         try {
-            // stop the WebSocket
-            socket.stop();
-
             // interrupt the read()
             myThread.interrupt();
+            
+            // stop the WebSocket
+            socket.stop();
             
         } catch (InterruptedException ie) {
             throw new IOException("Socket stop: " + ie.getMessage());

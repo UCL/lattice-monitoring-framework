@@ -36,6 +36,17 @@ public class ReceivingWebSocket extends WebSocketServer {
         super( address );
         readQueue = new LinkedBlockingQueue();
     }
+    
+    
+    public ReceivingWebSocket( int port, int nThreads ) throws UnknownHostException {
+        super( new InetSocketAddress( port ), nThreads );
+        readQueue = new LinkedBlockingQueue();
+    }
+
+    public ReceivingWebSocket( InetSocketAddress address, int nThreads ) {
+        super( address, nThreads );
+        readQueue = new LinkedBlockingQueue();
+    }
 
 
     /**
@@ -52,8 +63,6 @@ public class ReceivingWebSocket extends WebSocketServer {
     @Override
     public void onStart() {
         System.out.println("Server started!");
-        setConnectionLostTimeout(0);
-        setConnectionLostTimeout(100);
     }
 
     @Override

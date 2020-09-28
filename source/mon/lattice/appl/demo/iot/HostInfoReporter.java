@@ -108,7 +108,7 @@ public class HostInfoReporter extends AbstractControllableReporter implements Re
             outputStream = new FileOutputStream(filename);
             logger.addOutput(new PrintWriter(outputStream), new BitMask(MASK.APP));
         } catch (Exception e) {
-            LoggerFactory.getLogger(TcpdumpReporter.class).error(e.getMessage());
+            LoggerFactory.getLogger(HostInfoReporter.class).error(e.getMessage());
         }
 
     }
@@ -131,7 +131,7 @@ public class HostInfoReporter extends AbstractControllableReporter implements Re
                 values.put(((ProbeValueWithName)pv).getName(), pv);
             }
         } else {
-            LoggerFactory.getLogger(TcpdumpReporter.class).error("HostInfoReporter works with Measurements that are WithNames");
+            LoggerFactory.getLogger(HostInfoReporter.class).error("HostInfoReporter works with Measurements that are WithNames");
         }
     }
     

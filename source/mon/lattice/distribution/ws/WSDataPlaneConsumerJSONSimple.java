@@ -30,6 +30,16 @@ public class WSDataPlaneConsumerJSONSimple extends AbstractWSDataPlaneConsumer i
     public WSDataPlaneConsumerJSONSimple(int port) {
         super(port);
     }
+    
+    
+    public WSDataPlaneConsumerJSONSimple(InetSocketAddress addr, int nThreads) {
+        super(addr, nThreads);
+    }
+
+    public WSDataPlaneConsumerJSONSimple(int port, int nThreads) {
+        super(port, nThreads);
+    }
+    
 
     /**
      * This method is called just after a message

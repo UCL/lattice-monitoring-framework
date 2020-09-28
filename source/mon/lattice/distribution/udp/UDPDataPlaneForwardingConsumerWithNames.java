@@ -12,18 +12,11 @@ import mon.lattice.distribution.Receiving;
 import mon.lattice.distribution.Forwarding;
 import mon.lattice.core.plane.DataPlaneMessage;
 import mon.lattice.core.plane.DataPlane;
-import mon.lattice.core.Measurement;
 import mon.lattice.core.MeasurementReporting;
-import mon.lattice.core.MeasurementReceiver;
-import mon.lattice.core.ConsumerMeasurement;
-import mon.lattice.core.ID;
 import mon.lattice.core.TypeException;
-import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.net.InetSocketAddress;
 
 

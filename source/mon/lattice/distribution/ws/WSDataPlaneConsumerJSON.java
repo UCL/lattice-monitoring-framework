@@ -26,9 +26,17 @@ public class WSDataPlaneConsumerJSON extends AbstractWSDataPlaneConsumer impleme
     public WSDataPlaneConsumerJSON(InetSocketAddress addr) {
         super(addr);
     }
+    
+    public WSDataPlaneConsumerJSON(InetSocketAddress addr, int nThreads) {
+        super(addr);
+    }
 
     public WSDataPlaneConsumerJSON(int port) {
         super(port);
+    }
+    
+    public WSDataPlaneConsumerJSON(int port, int nThreads) {
+        super(port, nThreads);
     }
 
     /**

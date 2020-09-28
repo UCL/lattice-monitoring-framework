@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Scanner;
 import mon.lattice.core.AbstractLifecycleDataConsumer;
-import mon.lattice.distribution.ws.WSDataPlaneConsumer;
-import mon.lattice.distribution.ws.WSDataPlaneConsumerProfiled;
+import mon.lattice.distribution.ws.WSDataPlaneConsumerWithNames;
+import mon.lattice.distribution.ws.WSDataPlaneConsumerWithNamesProfiled;
 
 /**
  * A WebSocketDataConsumer receives measurements from a WS Data Plane.
  * It decodes XDR measurements and can either print them out or doing nothing
  */
-public class WebSocketXDRDataConsumer {
+public class WebSocketXDRDataConsumerWithNames {
     // The consumer
     AbstractLifecycleDataConsumer consumer;
     
@@ -24,12 +24,11 @@ public class WebSocketXDRDataConsumer {
         doProfiling = (byte) ((conf & 0x02) >>> 1);
     }
     
-
     /*
-     * Construct a WebSocketXDRDataConsumer
+     * Construct a WebSocketXDRDataConsumerWithNames
      */
     
-    private WebSocketXDRDataConsumer(byte conf) {
+    private WebSocketXDRDataConsumerWithNames(byte conf) {  
         parseConf(conf);
         
         if (printOutput == 0) {
@@ -45,29 +44,29 @@ public class WebSocketXDRDataConsumer {
     
     
     
-    public WebSocketXDRDataConsumer(int dataPort, byte conf) throws IOException {    
+    public WebSocketXDRDataConsumerWithNames(int dataPort, byte conf) throws IOException {    
         this(conf);
         
-	// set up data plane
+        // set up data plane
         if (doProfiling == 0)
-            consumer.setDataPlane(new WSDataPlaneConsumer(dataPort));
+            consumer.setDataPlane(new WSDataPlaneConsumerWithNames(dataPort));
         else
-            consumer.setDataPlane(new WSDataPlaneConsumerProfiled(dataPort));
+            consumer.setDataPlane(new WSDataPlaneConsumerWithNamesProfiled(dataPort));
 
 	consumer.connect();
     }
     
     
-    public WebSocketXDRDataConsumer(String addr, int dataPort, byte conf) throws IOException {
+    public WebSocketXDRDataConsumerWithNames(String addr, int dataPort, byte conf) throws IOException {
 	this(conf);
         
 	// set up data plane
         InetSocketAddress address = new InetSocketAddress(addr, dataPort);
         
         if (doProfiling == 0)
-            consumer.setDataPlane(new WSDataPlaneConsumer(address));
+            consumer.setDataPlane(new WSDataPlaneConsumerWithNames(address));
         else
-             consumer.setDataPlane(new WSDataPlaneConsumerProfiled(address));
+            consumer.setDataPlane(new WSDataPlaneConsumerWithNamesProfiled(address));
 
 	consumer.connect();
     }
@@ -80,16 +79,16 @@ public class WebSocketXDRDataConsumer {
         try {
             switch (args.length) {
                 case 0:
-                    new WebSocketXDRDataConsumer(port, conf);
-                    System.err.println("WebSocketXDRDataConsumer (conf=" + conf + ") listening on ws://*" + ":" + port);
+                    new WebSocketXDRDataConsumerWithNames(port, conf);
+                    System.err.println("WebSocketXDRDataConsumerWithNames (conf=" + conf + ") listening on ws://*" + ":" + port);
                     break;
                 case 2:
                     Scanner sc = new Scanner(args[0]);
                     port = sc.nextInt();
                     sc = new Scanner(args[1]);
                     conf = sc.nextByte();
-                    new WebSocketXDRDataConsumer(port, conf);
-                    System.err.println("WebSocketXDRDataConsumer (conf=" + conf + ") listening on ws://*" + ":" + port);
+                    new WebSocketXDRDataConsumerWithNames(port, conf);
+                    System.err.println("WebSocketXDRDataConsumerWithNames (conf=" + conf + ") listening on ws://*" + ":" + port);
                     break;
                 case 3:
                     sc = new Scanner(args[0]);
@@ -97,11 +96,11 @@ public class WebSocketXDRDataConsumer {
                     bindAddress = args[1];
                     sc = new Scanner(args[2]);
                     conf = sc.nextByte();
-                    new WebSocketXDRDataConsumer(bindAddress, port, conf);
-                    System.err.println("WebSocketXDRDataConsumer (conf=" + conf + ") listening on ws://" + bindAddress + ":" + port);
+                    new WebSocketXDRDataConsumerWithNames(bindAddress, port, conf);
+                    System.err.println("WebSocketXDRDataConsumerWithNames (conf=" + conf + ") listening on ws://" + bindAddress + ":" + port);
                     break;
                 default:
-                    System.err.println("usage: WebSocketXDRDataConsumer [port] [bind address] [0-3]");
+                    System.err.println("usage: WebSocketXDRDataConsumerWithNames [port] [bind address] [0-3]");
                     System.exit(1);
             }
         } catch (Exception e) {

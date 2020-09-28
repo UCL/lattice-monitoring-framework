@@ -1,9 +1,9 @@
-// UDPDataPlaneConsumerNoNames.java
+// WSDataPlaneConsumerWithNames.java
 // Author: Stuart Clayman
-// Email: sclayman@ee.ucl.ac.uk
-// Date: Feb 2010
+// Email: s.clayman@ucl.ac.uk
+// Date: May 2020
 
-package mon.lattice.distribution.udp;
+package mon.lattice.distribution.ws;
 
 import mon.lattice.distribution.Receiving;
 import mon.lattice.distribution.MetaData;
@@ -16,18 +16,26 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-public class UDPDataPlaneConsumerNoNames extends AbstractUDPDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
+/**
+ * WSDataPlaneConsumer decodes Data Plane messages sent over WebSockets.
+ * It works with XDR encoded messages without names.
+ */
+public class WSDataPlaneConsumer extends AbstractWSDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
+
+    // debug
+    int lastSize = 1;
+
+
     /**
-     * Construct a UDPDataPlaneConsumerNoNames.
+     * Construct a WSDataPlaneConsumerWithNames.
      */
-    public UDPDataPlaneConsumerNoNames(InetSocketAddress addr) {
+    public WSDataPlaneConsumer(InetSocketAddress addr) {
         super(addr);
     }
 
-    public UDPDataPlaneConsumerNoNames(int port) {
+    public WSDataPlaneConsumer(int port) {
         super(port);
     }
-
 
     /**
      * This method is called just after a packet
@@ -40,11 +48,8 @@ public class UDPDataPlaneConsumerNoNames extends AbstractUDPDataPlaneConsumer im
      */
     public void received(ByteArrayInputStream bis, MetaData metaData) throws  IOException, TypeException {
 
-	//System.out.println("DC: Received " + metaData);
-
 	try {
-            DataPlaneMessageXDRDecoder decoder = new DataPlaneMessageXDRDecoder(getSeqNoMap());
-            Measurement measurement = decoder.decode(bis, metaData, false);
+            Measurement measurement = decodeMeasurement(bis, metaData);
 
             report(measurement);
 
@@ -54,7 +59,13 @@ public class UDPDataPlaneConsumerNoNames extends AbstractUDPDataPlaneConsumer im
 	} catch (Exception e) {
 	    System.err.println("DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
             throw new TypeException(e.getMessage());
-	}
+        }
+    }
+    
+    
+    protected Measurement decodeMeasurement(ByteArrayInputStream bis, MetaData metaData) throws IOException, TypeException {
+        DataPlaneMessageXDRDecoder decoder = new DataPlaneMessageXDRDecoder(getSeqNoMap());
+        return decoder.decode(bis, metaData, false);
     }
 
 }

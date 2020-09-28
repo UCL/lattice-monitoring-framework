@@ -30,14 +30,6 @@ public class WSConsumerJSON1 {
 	// set up data plane
 	consumer.setDataPlane(new WSDataPlaneConsumerJSON(address));
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() {
-                    System.out.println("Shutting down ...");
-                    //some cleaning up code...
-                    consumer.disconnect();
-                }
-            });
-
     	consumer.connect();
         
     }

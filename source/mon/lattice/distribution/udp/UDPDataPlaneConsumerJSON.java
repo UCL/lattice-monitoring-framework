@@ -7,7 +7,6 @@ package mon.lattice.distribution.udp;
 
 import mon.lattice.distribution.Receiving;
 import mon.lattice.distribution.MetaData;
-import mon.lattice.distribution.DataPlaneMessageXDRDecoder;
 import mon.lattice.core.plane.DataPlane;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.MeasurementReporting;
@@ -15,16 +14,17 @@ import mon.lattice.core.TypeException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import mon.lattice.distribution.DataPlaneMessageJSONDecoder;
 
-public class UDPDataPlaneConsumerNoNames extends AbstractUDPDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
+public class UDPDataPlaneConsumerJSON extends AbstractUDPDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
     /**
      * Construct a UDPDataPlaneConsumerNoNames.
      */
-    public UDPDataPlaneConsumerNoNames(InetSocketAddress addr) {
+    public UDPDataPlaneConsumerJSON(InetSocketAddress addr) {
         super(addr);
     }
 
-    public UDPDataPlaneConsumerNoNames(int port) {
+    public UDPDataPlaneConsumerJSON(int port) {
         super(port);
     }
 
@@ -40,17 +40,12 @@ public class UDPDataPlaneConsumerNoNames extends AbstractUDPDataPlaneConsumer im
      */
     public void received(ByteArrayInputStream bis, MetaData metaData) throws  IOException, TypeException {
 
-	//System.out.println("DC: Received " + metaData);
-
 	try {
-            DataPlaneMessageXDRDecoder decoder = new DataPlaneMessageXDRDecoder(getSeqNoMap());
-            Measurement measurement = decoder.decode(bis, metaData, false);
+            DataPlaneMessageJSONDecoder decoder = new DataPlaneMessageJSONDecoder(getSeqNoMap());
+            Measurement measurement = decoder.decode(bis, metaData, true);
 
             report(measurement);
 
-	} catch (IOException ioe) {
-	    System.err.println("DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
-	    throw ioe;
 	} catch (Exception e) {
 	    System.err.println("DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
             throw new TypeException(e.getMessage());

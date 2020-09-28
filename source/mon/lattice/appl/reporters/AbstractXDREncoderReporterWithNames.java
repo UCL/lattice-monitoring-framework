@@ -1,45 +1,48 @@
 package mon.lattice.appl.reporters;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutput;
 import java.io.IOException;
 import mon.lattice.core.Measurement;
 import mon.lattice.core.TypeException;
-import mon.lattice.distribution.ConsumerMeasurementEncoderWithMetaDataJSON;
+import mon.lattice.distribution.ConsumerMeasurementEncoderWithMetaDataWithNamesXDR;
 import org.slf4j.LoggerFactory;
-import us.monoid.json.JSONException;
-import us.monoid.json.JSONObject;
-
+import mon.lattice.xdr.XDRDataOutputStream;
 
 /**
- * Encode a single measurement as JSON Object.
+ * Encode a single measurement as XDR Object.
  * The measurement includes the MetaData
  * Subclasses can (combine and) send measurements via different transports
  * via implementing the sendData method.
  */
-public abstract class AbstractJSONEncoderReporter extends AbstractEncoderReporter {
+public abstract class AbstractXDREncoderReporterWithNames extends AbstractEncoderReporter {
     
-    public AbstractJSONEncoderReporter(String name) {
+    public AbstractXDREncoderReporterWithNames(String name) {
         super(name);
     }
     
     
     /**
-     * Encode the measurement m as a JSON Object and returns it as an array of bytes.
+     * Encode the measurement m as an XDR Object.
      * @param m: the measurement
-     * @return the measurement the JSON Object as an array of bytes
+     * @return the measurement encoded as array of bytes
      */
     @Override
     protected byte[] encodeMeasurement(Measurement m) throws IOException {
-        JSONObject obj = new JSONObject();
+        ConsumerMeasurementEncoderWithMetaDataWithNamesXDR encoder = new ConsumerMeasurementEncoderWithMetaDataWithNamesXDR(m);
+        
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        DataOutput dataOutput = new XDRDataOutputStream(byteStream);
+        
         try {
-            // encode the measurement as JSON with MetaData, ready for transmission
-            ConsumerMeasurementEncoderWithMetaDataJSON encoder = new ConsumerMeasurementEncoderWithMetaDataJSON(m);
-            // encode into an existing JSONObject
-            encoder.encode(obj);
-        } catch (TypeException | JSONException e) {
+            encoder.encode(dataOutput);
+        } catch (IOException | TypeException e) {
             throw new IOException("Error while encoding measurement: " + e.getMessage());
         }
-        return obj.toString().getBytes();
+        
+        return byteStream.toByteArray();
     }
+    
 
     @Override
     public void report(Measurement m) {

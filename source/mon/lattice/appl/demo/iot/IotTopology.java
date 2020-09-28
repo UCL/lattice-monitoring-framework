@@ -271,7 +271,7 @@ public class IotTopology {
     
     
     void unloadReporter() throws Exception {
-        restClient.unloadReporter(reporterID);
+        System.out.println(restClient.unloadReporter(reporterID));
     }
     
     
@@ -287,7 +287,7 @@ public class IotTopology {
                 throw new Exception("Data Consumer error: " + dcSession.getString("msg"));
             
             startDataConsumer();
-            loadReporter("reporter-" + topologyId);
+            reporterID = loadReporter("reporter-" + topologyId);
             
             // starting Data Sources now
             JSONObject dsSession = restClient.createSession(hostID, userID);
@@ -472,7 +472,11 @@ public class IotTopology {
                     
                     
                 case "JSONWebSocketReporter":
-                case "XDRWebSocketReporter":    
+                case "JSONUDPReporter":
+                case "XDRWebSocketReporter":
+                case "XDRWebSocketReporterWithNames":
+                case "XDRUDPReporter":
+                case "XDRUDPReporterWithNames":
                     setDestinationParams();
                     
                     return startReporter(reporterName,
