@@ -20,7 +20,11 @@ import mon.lattice.appl.demo.iot.process.PipeProcess;
 import org.slf4j.LoggerFactory;
 
 /**
- * A probe that gets info on a host
+ * A probe that gets info on a host.
+ * This is implementation is based on a pipe that parses the output from PS
+ * and it is suitable for Mac OS where there is no proc fs.
+ * 
+ * mon.lattice.appl.probes.host.linux.ProcessInfo should be used on Linux 
  */
 public class ProcessInfoProbe extends AbstractProbe implements Probe {
     String hostname;
@@ -84,7 +88,7 @@ public class ProcessInfoProbe extends AbstractProbe implements Probe {
             processPSData(psData, list);
             
             // Create the Measurement
-            ProducerMeasurement m = new ProducerMeasurement(this, list, "ProcessInfo");
+            ProducerMeasurement m = new ProducerMeasurement(this, list, "ProcessInfoMac");
             
             return m;
 

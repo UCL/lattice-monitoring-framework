@@ -11,36 +11,42 @@ import mon.lattice.core.ProbeMeasurement;
 import mon.lattice.core.ProbeAttributeType;
 import mon.lattice.core.Probe;
 import mon.lattice.core.DefaultProbeAttribute;
-import mon.lattice.core.Rational;
 import mon.lattice.core.ProducerMeasurement;
 import mon.lattice.core.AbstractProbe;
 import java.util.*;
+import mon.lattice.core.datarate.EveryNSeconds;
 
 /**
  * A probe to get cpu info of a Process on a Linux system.
- * It uses /proc/[pid]/stat to read the underyling data.
+ * It uses /proc/[pid]/stat to read the underlying data.
  */
 public class ProcessInfo extends AbstractProbe implements Probe  {
     // A ProcessDev object that reads info about the Process.
     ProcessStat processStat;
 
+    String hostName;
+    
     int pid;
 
     int maWindowSize = 10;
 
-    // Specified in measurements per hour
-    // 1200 is once every 3 seconds
-    Rational dataRate = new Rational(1200, 1);
-
     /*
      * Construct a ProcessInfo probe
-     * given a process id and a name.
+     * given a process id and a hostName.
+     * Default data rate is set to every 5 seconds
      */
-    public ProcessInfo(int pid, String name) {
-	setName(name);
-        setDataRate(dataRate);
-
+    public ProcessInfo(int pid, String hostName) {
+	this(pid, hostName, 5);  
+    }
+    
+    
+    public ProcessInfo(int pid, String hostName, int dataRate) {
+        this.hostName = hostName;
         this.pid = pid;
+
+        // set probe name
+        setName(this.pid + ".processInfo");
+        setDataRate(new EveryNSeconds(dataRate));
 
         // allocate processStat
         // moving average window of 10 by default
@@ -52,7 +58,13 @@ public class ProcessInfo extends AbstractProbe implements Probe  {
 
 	// determine actual attributes
         int field = 0;
-
+        
+        addProbeAttribute(new DefaultProbeAttribute(field, "hostName", ProbeAttributeType.STRING, "name"));
+        field++;
+        
+        addProbeAttribute(new DefaultProbeAttribute(field, "pid", ProbeAttributeType.INTEGER, "pid"));
+        field++;
+        
         addProbeAttribute(new DefaultProbeAttribute(field, "proc-total", ProbeAttributeType.LONG, "n"));
         field++;
 	    
@@ -70,8 +82,17 @@ public class ProcessInfo extends AbstractProbe implements Probe  {
 	    
         addProbeAttribute(new DefaultProbeAttribute(field, "proc-rss", ProbeAttributeType.LONG, "bytes"));
         field++;
-	    
+        
     }
+    
+    /* This is to be used by via the REST API
+    *
+    */
+    public ProcessInfo(String hostName, String dataRate, String pid) {
+        this(Integer.valueOf(pid), hostName, Integer.valueOf(dataRate));
+    }
+    
+    
 
     /**
      * Begining of thread
@@ -92,7 +113,13 @@ public class ProcessInfo extends AbstractProbe implements Probe  {
 	if (processStat.read(true)) {
 	    try {
 		// now collect up the results	
-
+                
+                list.add(new DefaultProbeValue(field, hostName));
+                field++;
+                
+                list.add(new DefaultProbeValue(field, pid));
+                field++;
+                
                 // add total
                 list.add(new DefaultProbeValue(field, processStat.getCurrentValue("proc-total")));
                 field++;
