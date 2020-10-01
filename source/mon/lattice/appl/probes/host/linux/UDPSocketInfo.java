@@ -14,6 +14,7 @@ import mon.lattice.core.ProducerMeasurement;
 import mon.lattice.core.AbstractProbe;
 import java.util.*;
 import mon.lattice.core.datarate.EveryNSeconds;
+import org.slf4j.LoggerFactory;
 
 /**
  * A probe to get UDP socket info on a Linux system.
@@ -48,10 +49,6 @@ public class UDPSocketInfo extends AbstractProbe implements Probe  {
         // allocate socketStat
         socketStat = new SocketStat(port);
 
-	// read data
-	socketStat.read();
-
-
 	// determine actual attributes
         int field = 0;
         
@@ -76,12 +73,6 @@ public class UDPSocketInfo extends AbstractProbe implements Probe  {
         addProbeAttribute(new DefaultProbeAttribute(field, "rx_queue", ProbeAttributeType.LONG, "n"));
         field++;
 	    
-        addProbeAttribute(new DefaultProbeAttribute(field, "retrnsmt", ProbeAttributeType.LONG, "n"));
-        field++;
-	    
-        addProbeAttribute(new DefaultProbeAttribute(field, "timeout", ProbeAttributeType.LONG, "n"));
-        field++;
-        
         addProbeAttribute(new DefaultProbeAttribute(field, "drops", ProbeAttributeType.LONG, "n"));
         field++;
         
@@ -139,24 +130,16 @@ public class UDPSocketInfo extends AbstractProbe implements Probe  {
                 list.add(new DefaultProbeValue(field, socketStat.getSocketStatData().rxQueue));
                 field++;
 	    
-                list.add(new DefaultProbeValue(field, socketStat.getSocketStatData().retrnsmt));
-                field++;
-                
-                list.add(new DefaultProbeValue(field, socketStat.getSocketStatData().timeout));
-                field++;
-                
                 list.add(new DefaultProbeValue(field, socketStat.getSocketStatData().drops));
                 field++;
 	    	    
-                ProducerMeasurement producerMeasurement = new ProducerMeasurement(this, list, "UDPSocketInfo");
-                System.err.print(producerMeasurement);
-                return producerMeasurement;
-                
+                return new ProducerMeasurement(this, list, "UDPSocketInfo");
 	    } catch (Exception e) {
+                LoggerFactory.getLogger(UDPSocketInfo.class).error("Exception: " + e.getMessage());
 		return null;
 	    }
 	} else {
-	    System.err.println("Failed to read from /proc/net/udp6, local port: " + socketLocalPort);
+	    LoggerFactory.getLogger(UDPSocketInfo.class).error("Failed to read from /proc/net/udp6, local port: " + socketLocalPort);
 	    return null;
 	}
     }
