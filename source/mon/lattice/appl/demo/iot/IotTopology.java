@@ -31,6 +31,7 @@ public class IotTopology {
     Integer dsNumber;
     Integer nSensors;
     Integer rate;
+    Integer nAttr;
     Integer waitMin;
     Integer waitMax;
     Integer valueMin;
@@ -77,6 +78,7 @@ public class IotTopology {
                        int dsNumber,
                        int nSensors,
                        int rate,
+                       int nAttr,
                        int waitMin,
                        int waitMax,
                        int valueMin,
@@ -90,6 +92,7 @@ public class IotTopology {
         this.dsNumber = dsNumber;
         this.nSensors = nSensors;
         this.rate = rate;
+        this.nAttr = nAttr;
         this.waitMin = waitMin;
         this.waitMax = waitMax;
         this.valueMin = valueMin;
@@ -238,7 +241,14 @@ public class IotTopology {
         try {
             JSONObject out = restClient.loadProbe(dataSourceID, 
                                                   probeClassName, 
-                                                  probeName + "+" + probeAttributeName + "+" + value + "+" + rate + "+" + units + "+" + waitMin + "+" + waitMax
+                                                  probeName + "+" + 
+                                                  probeAttributeName + "+" + 
+                                                  value + "+" + 
+                                                  rate + "+" + 
+                                                  units + "+" +
+                                                  nAttr + "+" +
+                                                  waitMin + "+" + 
+                                                  waitMax
                                                  );
             
             if (out.has("createdProbeID")) {

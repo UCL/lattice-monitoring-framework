@@ -37,6 +37,7 @@ public class IotEmulator {
     Integer nSensors;
     Integer nEntities;
     Integer rate;
+    Integer nAttr;
     Integer waitMin;
     Integer waitMax;
     Integer valueMin;
@@ -62,6 +63,7 @@ public class IotEmulator {
         nSensors = Integer.valueOf(configuration.getProperty("sensors.number"));
         nEntities = Integer.valueOf(configuration.getProperty("entities.number"));
         rate = Integer.valueOf(configuration.getProperty("probe.rate", "2000"));
+        nAttr = Integer.valueOf(configuration.getProperty("probe.nattr", "1"));
         waitMin = Integer.valueOf(configuration.getProperty("probe.activation.min", "100"));
         waitMax = Integer.valueOf(configuration.getProperty("probe.activation.max", "200"));
         valueMin = Integer.valueOf(configuration.getProperty("probe.value.min", "10"));
@@ -77,6 +79,7 @@ public class IotEmulator {
         System.out.println("Number of Data Sources per topology: " + dsNumber);
         System.out.println("Number of Probes/Sensors per Data Source: " + nSensors);
         System.out.println("Probes/Sensors rate: " + rate);
+        System.out.println("Probes/Sensors number of attributes: " + nAttr);
         System.out.println("Probes/Sensors random activation interval: " + waitMin + "-" + waitMax);
         System.out.println("Number of concurrent topologies: " + topologies);
         System.out.println();
@@ -177,6 +180,7 @@ public class IotEmulator {
                                                 iot.dsNumber,                     
                                                 iot.nSensors,
                                                 iot.rate,
+                                                iot.nAttr,
                                                 iot.waitMin,
                                                 iot.waitMax,
                                                 iot.valueMin,

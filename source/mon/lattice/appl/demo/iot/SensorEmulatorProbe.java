@@ -35,6 +35,13 @@ public class SensorEmulatorProbe extends RandomProbe {
         this.waitMin = Integer.valueOf(waitMin);
         this.waitMax = Integer.valueOf(waitMax);
     }
+    
+    
+    public SensorEmulatorProbe(String name, String fieldName, String scaleFactor, String rate, String units, String nAttr, String waitMin, String waitMax) {
+        super(name, fieldName, scaleFactor, rate, units, nAttr);
+        this.waitMin = Integer.valueOf(waitMin);
+        this.waitMax = Integer.valueOf(waitMax);
+    }
 
     
     @Override

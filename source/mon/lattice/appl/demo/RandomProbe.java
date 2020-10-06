@@ -24,6 +24,9 @@ import mon.lattice.core.datarate.EveryNMilliseconds;
 public class RandomProbe extends AbstractProbe implements Probe  {
     Random randomNo;
     int scaleFactor;
+    
+    // by default there is 1 attribute
+    int nAttr = 1;
 
     /*
      * Construct a probe
@@ -65,6 +68,20 @@ public class RandomProbe extends AbstractProbe implements Probe  {
     }
     
     
+    public RandomProbe(String name, String fieldName, Integer scaleFactor, String units, int nAttr) {
+        setName(name);
+        setDataRate(new EveryNSeconds(2));
+        this.nAttr = nAttr;
+        
+        for (int i=0; i<nAttr; i++) {
+            addProbeAttribute(new DefaultProbeAttribute(i, fieldName + "-" + i, ProbeAttributeType.FLOAT, units));
+        }
+        
+	randomNo = new Random();
+	this.scaleFactor = scaleFactor;
+    }
+    
+    
     
 
     public RandomProbe(String name, String fieldName, String scaleFactor) {
@@ -82,6 +99,12 @@ public class RandomProbe extends AbstractProbe implements Probe  {
         this(name, fieldName, Integer.valueOf(scaleFactor), units);
         this.setDataRate(new EveryNMilliseconds(Integer.valueOf(rate)));
     }
+    
+    
+    public RandomProbe(String name, String fieldName, String scaleFactor, String rate, String units, String nAttr) {
+        this(name, fieldName, Integer.valueOf(scaleFactor), units, Integer.valueOf(nAttr));
+        this.setDataRate(new EveryNMilliseconds(Integer.valueOf(rate)));
+    }
 
 
     /**
@@ -89,13 +112,12 @@ public class RandomProbe extends AbstractProbe implements Probe  {
      */
     public ProbeMeasurement collect() {
 	try {
-	    ArrayList<ProbeValue> list = new ArrayList<ProbeValue>(1);
-
-	    float next = scaleFactor + (randomNo.nextFloat() * (scaleFactor / 5));
-
-	    //System.err.println("rand = " + next);
-
-	    list.add(new DefaultProbeValue(0, next));
+            ArrayList<ProbeValue> list = new ArrayList<ProbeValue>(nAttr);
+            
+            for (int i=0; i<nAttr; i++) {
+                float next = scaleFactor + (randomNo.nextFloat() * (scaleFactor / 5));
+                list.add(new DefaultProbeValue(i, next));
+            }
 
 	    return new ProducerMeasurement(this, list);
 	} catch (Exception e) {
