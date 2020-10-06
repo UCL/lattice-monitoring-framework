@@ -75,8 +75,6 @@ public class UDPSocketInfoReporter extends AbstractControllableReporter implemen
         
         ProbeValue txQueue = getAttribute("tx_queue");
         ProbeValue rxQueue = getAttribute("rx_queue");
-        ProbeValue retrnsmt = getAttribute("retrnsmt");
-        ProbeValue timeout = getAttribute("timeout");
         ProbeValue drops = getAttribute("drops");
         
         String netLine = timestamp.value() + " " + Timestamp.elapsed(elapsed) + " N " + 
@@ -85,8 +83,6 @@ public class UDPSocketInfoReporter extends AbstractControllableReporter implemen
                          localPort.getValue() + " " + 
                          txQueue.getValue()  + " " + 
                          rxQueue.getValue()  + " " +
-                         retrnsmt.getValue()  + " " +
-                         timeout.getValue()  + " " +
                          drops.getValue();
         
         Logger.getLogger("UDPSocketInfoReporter").logln(MASK.APP, netLine);

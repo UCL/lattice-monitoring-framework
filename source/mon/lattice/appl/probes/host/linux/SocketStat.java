@@ -38,8 +38,7 @@ public class SocketStat {
     public SocketStat(int port) {
         this.socketPort = port;
         socketPortAsHex = Integer.toHexString(socketPort).toUpperCase();
-        //this.socketStat = new File("/proc/net/udp6");
-        this.socketStat = new File("/Users/uceeftu/udp6");
+        this.socketStat = new File("/proc/net/udp6");
         socketStatData = new SocketStatData();
     }
 
@@ -81,21 +80,16 @@ public class SocketStat {
 
 	} else {
 
-            String[] parts = results.split("\\s+");
-            //System.err.println("parts: " + parts.length + " " + Arrays.asList(parts));
+            String[] parts = results.trim().split("\\s+");
 
             String localAddress = parts[1].split(":")[0];
             String remoteAddress = parts[2].split(":")[0];
-            int remotePort = Integer.valueOf(parts[2].split(":")[1]);
+            int remotePort = Integer.parseInt(parts[2].split(":")[1], 16);
             
-            long txQueue = Long.valueOf(parts[4].split(":")[0]);
-            long rxQueue = Long.valueOf(parts[4].split(":")[1]);
+            long txQueue = Long.parseLong(parts[4].split(":")[0], 16);
+            long rxQueue = Long.parseLong(parts[4].split(":")[1], 16);
             
-            long retrnsmt = Long.valueOf(parts[6]);
-            
-            long timeout = Long.valueOf(parts[8]);
-            
-            long drops = Long.valueOf(parts[12]);
+            long drops = Long.parseLong(parts[12]);
             
             
             socketStatData.localAddress = localAddress;
@@ -106,8 +100,6 @@ public class SocketStat {
             socketStatData.txQueue = txQueue;
             socketStatData.rxQueue = rxQueue;
             
-            socketStatData.retrnsmt = retrnsmt;            
-            socketStatData.timeout = timeout;
             socketStatData.drops = drops;
 
             // save timestamp
@@ -149,10 +141,6 @@ public class SocketStat {
         
         long txQueue;
         long rxQueue;
-            
-        long retrnsmt;
-            
-        long timeout;
             
         long drops;
     }
