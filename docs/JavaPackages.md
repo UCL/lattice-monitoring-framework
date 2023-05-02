@@ -38,7 +38,7 @@ mon.lattice.im.dht.planx | This package provides classes for the implementation 
 mon.lattice.im.zmq | This package provides classes for the implementation of the Info Plane that utilizes ZeroMQ
 **mon.lattice.appl** | This package provides classes that are at the application level.
 mon.lattice.appl.datasources | 
-mon.lattice.appl.demo | 
+mon.lattice.appl.demo | Classes used for demo purposes.
 mon.lattice.appl.demo.iot | 
 mon.lattice.appl.demo.iot.process | 
 mon.lattice.appl.demo.reporters | 
