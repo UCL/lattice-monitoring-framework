@@ -11,7 +11,7 @@ The main components of the framework are:
 
 The [design of Lattice](docs/Design.md) is presented, showing the main features.
 
-![Monitoring Planes](docs/images/mon_planes.png)
+<img src="docs/images/mon_planes.png" alt="Monitoring Planes" width="300" />
 
 ## Build Instructions
 
