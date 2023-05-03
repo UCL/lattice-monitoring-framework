@@ -13,6 +13,7 @@ The [design of Lattice](docs/Design.md) is presented, showing the main features.
 
 <img src="docs/images/mon_planes.png" alt="Monitoring Planes" width="600" />
 
+plus [some of the background ideas](docs/Background.md).
 ## Build Instructions
 
 Information about building Lattice can be found [here](docs/Build.md)
