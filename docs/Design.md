@@ -93,9 +93,9 @@ The measurements that are sent  will have value fields that relate directly to t
 
 A Data Consumer acts as a consumer of the measurements from a **Data Source**. It is connected to the Data source over the same Data plane.  In the same way that a Data Source has a number of different probes that collect data, a Data consumer can have a number of Reporters. Each of the measurements are passed on to all the Reporters that have been added to the Data Consumer.  Each Reporter can have it's own independent functionality.
 
-### Regulator
+### Controller
 
-In order to have some kind of control over the whole monitoring system, the role of a regulator has been devised. It's job is to ensure that the monitoring system does not flood the network or overload any applications.
+In order to have some kind of control over the whole monitoring system, the role of a controller has been devised. It's job is to ensure that the monitoring system does not flood the network or overload any applications.
 A monitoring system that supports the deployment and configuration of all the required monitoring entities at run-time, as well as their dynamic control is desirable to have. This allows to dynamically reshape the deployment, configuration and behaviour of the monitoring system according to the status of the main virtualized system that needs to be monitored.
 
 Such a Lattice Monitoring Controller can support the following dynamic run-time functionalities:
@@ -129,7 +129,7 @@ One of the easiest solutions for the Data Plane is to use IP multicast because i
 
 ### Control Plane
 
-In many monitoring systems, the probes are reporting their status at a fixed data rate and are always sending data onto the network. Such an approach is not scalable and does not fit with the design goals of Lattice. The monitoring system for Lattice requires both scalability and flexibility in order to operate effectively. Consequently, we need to have a level of control over all of the Data Sources and all of the Probes, as described in the **Regulator** section.
+In many monitoring systems, the probes are reporting their status at a fixed data rate and are always sending data onto the network. Such an approach is not scalable and does not fit with the design goals of Lattice. The monitoring system for Lattice requires both scalability and flexibility in order to operate effectively. Consequently, we need to have a level of control over all of the Data Sources and all of the Probes, as described in the **Controller** section.
 
 We have defined operations that allow individual Probes to be turned on and turned off independently of any other Probe. Furthermore, any Probe can have its data rate changed on-the-fly at run-time. It is by using these capabilities that we can achieve the scalability and flexibility we need from the monitoring system.
 
