@@ -33,13 +33,13 @@ In Lattice, the separate planes for connecting the monitoring framework are:
 
 ![Monitoring Planes](images/mon_planes.png)
 
-###Data Source
+### Data Source
 
 A Data Source can manage several Probes, and has plugins for the monitoring data plane, the control plane, and the information plane, so that it is possible to change the implementation of each plane easily and independently of the other planes. This will allow users to choose the best solution for different setup scenarios. We have a control interface so that Data Sources can be controlled from a Manager, via the control plane, and Probes can also be controlled via the Data Source. We can then develop control strategies so that it is possible to manage the lifecycle of a Probe from a Manager rather than having everything programmed-in.
 
 As there could be hundreds or thousands of probes in a Lattice system, it is important that each probe has a unique identity. Without an identity, it is not possible to identify individual probes. Using the identity it is possible for the Data Source to address the probe in order to turn it on, turn it off, change its rate of sending, or find its status. It is the probe’s identity that also allows the combination of its data with other probe’s data to create the complex information.
 
-###Probes
+### Probes
 
 In many systems, the Probes collect data at a given data rate, and transmit measurements immediately, at exactly the same data rate. In Lattice we can decouple the collection rate and the transmission rate in order to implement strategies which aid in efficiency.
 
@@ -89,7 +89,7 @@ The measurements that are sent  will have value fields that relate directly to t
 ![Probe Data Dictionary](images/impl-model.png)
 
 
-###Data Consumer
+### Data Consumer
 
 A Data Consumer acts as a consumer of the measurements from a **Data Source**. It is connected to the Data source over the same Data plane.  In the same way that a Data Source has a number of different probes that collect data, a Data consumer can have a number of Reporters. Each of the measurements are passed on to all the Reporters that have been added to the Data Consumer.  Each Reporter can have it's own independent functionality.
 
