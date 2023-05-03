@@ -24,7 +24,7 @@ Lattice has been written in Java.  A [description of the packages](docs/JavaPack
 
 ### Demos
 
-Some [demo info](docs/Demos.md) is shown.
+Some [demo info](docs/Demo.md) is shown.
 
 ## Papers with Lattice
 
