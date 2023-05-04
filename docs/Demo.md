@@ -21,3 +21,23 @@ In this snapshot, the Data Plane implementation can be done using (i) IP multica
 
 ![Example Demo](images/End-to-End.jpg)
 
+
+## Code
+
+The following is the setup of a Component which has a Data Source, and connects to the Data Plane using IP Multicast.  It uses the `MulticastDataPlaneProducer` class.
+
+
+	// set up data source
+	Data Source ds = new BasicDataSource();
+
+	// set up multicast address for data
+	MulticastAddress address = new MulticastAddress(addr, dataPort);
+
+	// set up data plane
+	ds.setDataPlane(new MulticastDataPlaneProducer(address));
+
+	// connect to all the planes
+	ds.connect();
+
+
+
